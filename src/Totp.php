@@ -24,11 +24,14 @@ use Equit\Totp\Exceptions\InvalidBase64DataException;
 use Equit\Totp\Exceptions\InvalidTotpIntervalException;
 use DateTime;
 use DateTimeZone;
+use Equit\Totp\Renderers\EightDigits;
+use Equit\Totp\Renderers\Integer;
+use Equit\Totp\Renderers\SixDigits;
 
 /**
- * Abstract base class for generating TOTP codes.
+ * Class for generating Time-based One-Time Passwords.
  */
-abstract class Totp
+class Totp
 {
     /**
      * The default update interval for codes.
@@ -60,34 +63,94 @@ abstract class Totp
      */
     private int $m_baselineTime;
 
-    /**
-     * Initialise a new TOTP.
-     *
-     * If the baseline is specified as an int, it is interpreted as the number of seconds since the Unix epoch.
-     *
-     * @param string $secret The secret for the code. This must be the binary representation of the secret.
-     * @param int $interval The update interval for the code. Defaults to 30 seconds.
-     * @param int|\DateTime $baseline The baseline time from which the code is generated.
-     * Defaults to 0.
-     *
-     * @throws InvalidTotpIntervalException if the interval is not a positive integer.
-     */
-    public function __construct(string $secret, int $interval = self::DefaultInterval, int | DateTime $baseline = self::DefaultBaselineTime)
+	private Renderer $m_renderer;
+
+	/**
+	 * Initialise a new TOTP.
+	 *
+	 * If the baseline is specified as an int, it is interpreted as the number of seconds since the Unix epoch.
+	 *
+	 * @param string $secret The secret for the code. This must be the binary representation of the secret.
+	 * @param \Equit\Totp\Renderer|null $renderer The renderer that produces one-time passwords from HMACs.
+	 * @param int $interval The update interval for the code. Defaults to 30 seconds.
+	 * @param int|\DateTime $baseline The baseline time from which the code is generated.
+	 * Defaults to 0.
+	 *
+	 * @throws \Equit\Totp\Exceptions\InvalidTotpIntervalException if the interval is not a positive integer.
+	 */
+    public function __construct(string $secret, Renderer $renderer = null, int $interval = self::DefaultInterval, int | DateTime $baseline = self::DefaultBaselineTime)
     {
         $this->setSecret($secret);
+		$this->setRenderer($renderer ?? $this->defaultRenderer());
         $this->setInterval($interval);
         $this->m_baselineTime = $baseline;
     }
 
-    /**
-     * Check whether a secret has been set.
-     *
-     * @return bool
-     */
-    public function hasSecret(): bool
-    {
-        return isset($this->m_secret);
-    }
+	/**
+	 * Instantiate a TOTP generator with a six-digit integer password renderer.
+	 *
+	 * This is a convenience factory function for a commonly-used type of TOTP.
+	 *
+	 * @param string $secret The secret for the code. This must be the binary representation of the secret.
+	 * @param int $interval The update interval for the code. Defaults to 30 seconds.
+	 * @param int|\DateTime $baseline The baseline time from which the code is generated.
+	 * Defaults to 0.
+	 *
+	 * @return \Equit\Totp\Totp
+	 * @throws \Equit\Totp\Exceptions\InvalidTotpIntervalException if the interval is < 1.
+	 */
+	public static function sixDigitTotp(string $secret, int $interval = self::DefaultInterval, int | DateTime $baseline = self::DefaultBaselineTime): Totp
+	{
+		return new Totp($secret, new SixDigits(), $interval, $baseline);
+	}
+
+	/**
+	 * Instantiate a TOTP generator with an eight-digit integer password renderer.
+	 *
+	 * This is a convenience factory function for a commonly-used type of TOTP.
+	 *
+	 * @param string $secret The secret for the code. This must be the binary representation of the secret.
+	 * @param int $interval The update interval for the code. Defaults to 30 seconds.
+	 * @param int|\DateTime $baseline The baseline time from which the code is generated.
+	 * Defaults to 0.
+	 *
+	 * @return \Equit\Totp\Totp
+	 * @throws \Equit\Totp\Exceptions\InvalidTotpIntervalException if the interval is < 1.
+	 */
+	public static function eightDigitTotp(string $secret, int $interval = self::DefaultInterval, int | DateTime $baseline = self::DefaultBaselineTime): Totp
+	{
+		return new Totp($secret, new EightDigits(), $interval, $baseline);
+	}
+
+	/**
+	 * Instantiate a TOTP generator with an integer password renderer of a given number of digits.
+	 *
+	 * This is a convenience factory function for commonly-used types of TOTP.
+	 *
+	 * @param string $secret The secret for the code. This must be the binary representation of the secret.
+	 * @param int $digits The number of digits in generated one-time passwords.
+	 * @param int $interval The update interval for the code. Defaults to 30 seconds.
+	 * @param int|\DateTime $baseline The baseline time from which the code is generated.
+	 * Defaults to 0.
+	 *
+	 * @return \Equit\Totp\Totp
+	 * @throws \Equit\Totp\Exceptions\InvalidTotpDigitsException if the number of digits is < 1.
+	 * @throws \Equit\Totp\Exceptions\InvalidTotpIntervalException if the interval is < 1.
+	 */
+	public static function integerTotp(string $secret, int $digits, int $interval = self::DefaultInterval, int | DateTime $baseline = self::DefaultBaselineTime): Totp
+	{
+		return new Totp($secret, new Integer($digits), $interval, $baseline);
+	}
+
+	/**
+	 * Helper to create the default renderer when none is provided in the constructor.
+	 *
+	 * @return \Equit\Totp\Renderer The default renderer.
+	 */
+	protected function defaultRenderer(): Renderer
+	{
+		return new SixDigits();
+	}
 
     /**
      * Fetch the raw secret.
@@ -154,6 +217,26 @@ abstract class Totp
     {
         $this->setSecret(Base64::decode($secret));
     }
+
+	/**
+	 * Fetch the renderer being used to generate one-time passwords from HMACs.
+	 *
+	 * @return \Equit\Totp\Renderer The renderer.
+	 */
+	public function renderer(): Renderer
+	{
+		return $this->m_renderer;
+	}
+
+	/**
+	 * Set the renderer to use to generate one-time passwords from HMACs.
+	 *
+	 * @param \Equit\Totp\Renderer $renderer The renderer.
+	 */
+	public function setRenderer(Renderer $renderer)
+	{
+		$this->m_renderer = $renderer;
+	}
 
     /**
      * Fetch the interval at which the TOTP code changes, in seconds.
@@ -284,7 +367,10 @@ abstract class Totp
      * @return string The current TOTP code, formatted for display.
      * @noinspection PhpDocMissingThrowsInspection DateTime constructor does not throw in this instance.
      */
-    public abstract function passwordAt(DateTime | int $time): string;
+    public function passwordAt(DateTime | int $time): string
+	{
+		return $this->renderer()->render($this->hmacAt($time));
+	}
 
     /**
      * Fetch the current TOTP password.

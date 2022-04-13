@@ -10,8 +10,7 @@ logins.
 1. Generate a secure, random secret for your user and have them import it into their
    authenticator
 2. When a user logs in, ask them for their current TOTP
-3. Instantiate an `Equit\Totp\Totp` - most likely a `SixDigitIntegerTotp` is what you want -
-   and tell it the user's secret
+3. Instantiate an `Equit\Totp\Totp` and tell it the user's secret
 4. Compare the user's input to the return value from the Totp instance's `currentPassword()`
    method. If they're the same, the user is authenticated.
 
@@ -31,7 +30,7 @@ $user->setTotpSecret($secret);
 // get hold of your user object in whatever way you normally do it
 $user = get_user();
 $inputPassword = $_POST["totp"];
-$totp = new Equit\Totp\SixDigitTotp($user->totpSecret());
+$totp = Equit\Totp\Totp::sixDigitTotp($user->totpSecret());
 
 if ($totp->currentPassword() === $inputPassword) {
     // user is authenticated
