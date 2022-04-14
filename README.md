@@ -1,4 +1,7 @@
 # php-totp
+
+**Warning** This is pre-release software, the API has not yet stabilised.
+
 Time-based One Time Password Generator for PHP
 
 Add two-factor authentication to your app using TOTP and enable your users to use
