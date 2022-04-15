@@ -17,9 +17,8 @@ trait RendersIntegerPasswords
 	/**
 	 * @return int The number of digits in the rendered password.
 	 */
-	protected function digits(): int
+	public function digits(): int
 	{
-		assert (is_int($this->digitCount) && 0 < $this->digitCount, "Invalid digit count in Renderer class " . get_class($this));
 		return $this->digitCount;
 	}
 
@@ -32,6 +31,8 @@ trait RendersIntegerPasswords
 	 */
 	public function render(string $hmac): string
 	{
+		$digits = $this->digits();
+		assert (5 < $digits, "Invalid digit count in Renderer class " . get_class($this));
 		$offset = ord($hmac[19]) & 0xf;
 
 		$password = (
@@ -39,9 +40,8 @@ trait RendersIntegerPasswords
 				| ord($hmac[$offset + 1]) << 16
 				| ord($hmac[$offset + 2]) << 8
 				| ord($hmac[$offset + 3])
-			) % (10 ** $this->digits());
+			) % (10 ** $digits);
 
-		return str_pad("{$password}", 6, "0", STR_PAD_LEFT);
-
+		return str_pad("{$password}", $digits, "0", STR_PAD_LEFT);
 	}
 }

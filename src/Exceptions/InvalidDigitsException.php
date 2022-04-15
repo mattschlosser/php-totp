@@ -24,7 +24,7 @@ use Throwable;
 /**
  * Exception thrown when an invalid number of password digits is given for an IntegerTOTP instance.
  */
-class InvalidTotpDigitsException extends TotpException
+class InvalidDigitsException extends TotpException
 {
     /**
      * @var int The invalid number of digits.
