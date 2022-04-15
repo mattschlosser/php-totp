@@ -48,9 +48,9 @@ To generate good secrets for your users you need a good source of random data. P
 
 The TOTP algorithm uses SHA1 HMACs under the hood when generating one-time passwords, whose keys are limited to 160 bits as per [RFC 2104](https://www.ietf.org/rfc/rfc2104.txt), the HMAC specification:
 
-> The authentication key K can be of any length up to B, the block length of the hash function. Applications that use keys longer than B bytes will first hash the key using H [the hashing algorithm] and then use the resultant L [the block length of the hashing algorithm] byte string as the actual key to HMAC.
+> The authentication key K can be of any length up to B, the block length of the hash function. Applications that use keys longer than B bytes will first hash the key using H [the hashing algorithm] and then use the resultant L [the byte length of the computed hash] byte string as the actual key to HMAC.
 
-The absolute minimum size for a shared secret, according to [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt), the HOTP specification on which TOTP is based, is 128 bits (16 bytes).
+The absolute minimum size for a shared secret, according to [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt), the HOTP specification on which TOTP is based, is 128 bits (16 bytes):
 
 > R6 - The algorithm MUST use a strong shared secret.  The length of the shared secret MUST be at least 128 bits. This document RECOMMENDs a shared secret length of 160 bits.
 
