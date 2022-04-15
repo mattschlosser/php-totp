@@ -34,12 +34,16 @@ $user->setTotpSecret($secret);
 $user = get_user();
 $inputPassword = $_POST["totp"];
 $totp = Equit\Totp\Totp::sixDigitTotp($user->totpSecret());
+$authenticated = ($totp->currentPassword() === $inputPassword);
+$totp->setSecret(random_bytes(20));
 
-if ($totp->currentPassword() === $inputPassword) {
+if ($authenticated) {
     // user is authenticated
 } else {
     // user is not authenticated
 }
+
+$totp = null;
 ````
 
 ## Generating secure secrets
@@ -48,9 +52,9 @@ To generate good secrets for your users you need a good source of random data. P
 
 The TOTP algorithm uses SHA1 HMACs under the hood when generating one-time passwords, whose keys are limited to 160 bits as per [RFC 2104](https://www.ietf.org/rfc/rfc2104.txt), the HMAC specification:
 
-> The authentication key K can be of any length up to B, the block length of the hash function. Applications that use keys longer than B bytes will first hash the key using H [the hashing algorithm] and then use the resultant L [the block length of the hashing algorithm] byte string as the actual key to HMAC.
+> The authentication key K can be of any length up to B, the block length of the hash function. Applications that use keys longer than B bytes will first hash the key using H [the hashing algorithm] and then use the resultant L [the byte length of the computed hash] byte string as the actual key to HMAC.
 
-The absolute minimum size for a shared secret, according to [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt), the HOTP specification on which TOTP is based, is 128 bits (16 bytes).
+The absolute minimum size for a shared secret, according to [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt), the HOTP specification on which TOTP is based, is 128 bits (16 bytes):
 
 > R6 - The algorithm MUST use a strong shared secret.  The length of the shared secret MUST be at least 128 bits. This document RECOMMENDs a shared secret length of 160 bits.
 
@@ -59,3 +63,29 @@ Since SHA1 HMACs can use at most 160 bits in a shared secret, and since this pro
 Once you have generated the secret you must store it securely. Never store it unencrypted, and make sure you have a strong key for your encryption. Use different keys for your various environments, and make sure you refresh your key often.
 
 Most authenticator apps can scan QR codes or allow the user to enter the shared secret as text. The secrets themselves are binary data - a byte sequence not a string. As such, in their raw form they are not easy for users to type into their authenticator app. Base32 is usually used for this purpose in TOTP. Whether you store your users' secrets as raw bytes or Base32 encoded, you still need to encrypt the stored secret.
+
+## Authenticating
+
+Once you have received the OTP the user has input, you need to compare it to the generated OTP. This involves the following logical steps:
+
+1. Retrieve the shared secret for the appropriate user from your storage.
+2. Decrypt the shared secret.
+3. Use the shared secret to generate the expected OTP.
+4. Compare the expeted OTP to the OTP provided by the user.
+
+There are two primary security concerns with authenticating using TOTP:
+
+1. Ensuring that the shared secret remains decrypted for the shortest time possible.
+2. Ensuring that each OTP generated is only used to authenticate once.
+
+### Minimising the secret's unencrypted availability
+
+You should strive to minimise the time that the shared secret is unencrypted in RAM, so you should only retrieve it just before you are ready to compare it to the user's input and you should overwrite the variable's RAM as soon as you have done the comparison. Practically, this means you should set the secret in the `Totp` object to a random byte sequence at least as long as the secret as soon as you have done the comparison. This is necessary because PHP does not specify precisely when an object is destroyed, only that it is garbage collected at some point after it goes out of scope. So when the Totp object is no longer in scope, the unencrypted secret still resides in RAM for an indeterminate period of time.
+
+To do this, first call `setSecret(random_bytes(20))` on your `Totp` object (use whatever equivalent of `random_bytes()` you're using to generate secrets if `random_bytes()` is not available on your platform). This will overwrite the stored secret in the `Totp` object with random data. Then set the `Totp` object to `null` so that it gets garbage collected as soon as possible.
+
+### Ensuring generated OTPs are only used once
+
+The simplest way to ensure that each OTP is only used for at most one successful authentication attempt is to record the timestamp or counter of the most recently used successful OTP. When the user attempts to authenticate, if the `Totp` object's current timestamp/counter is equal to or lower than the last recorded successful authentication attempt then the OTP is considered stale and must not be used to authenticate.
+
+It is important that you ensure that all routes to authentication that use the TOTP secret are protected in this way - for example if you have a mobile app and a web app, you must ensure that a OTP used to authenticate with the web app cannot subsequently be used to authenticate using the mobile app. [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt) has a good discussion of the reasoning for this.
