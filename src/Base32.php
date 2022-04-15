@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * Copyright 2022 Darren Edale
  *
@@ -26,10 +28,10 @@ use Equit\Totp\Exceptions\InvalidBase32DataException;
  *
  * @warn A 64-bit underlying platform is required.
  *
- * Enables conversion between plain text and Base32 encoding. Can be constructed with plain text data, or can have
- * either plain text or encoded data set using setPlain() and setEncoded() respectively. The plain text and Base32-
- * encoded content can be retrieved using plain() and encoded() respectively. setEncoded() will throw an
- * InvalidBase32DataException if given data that is not valid base32.
+ * Enables conversion between raw binary and Base32 encoding. Can be constructed with raw data, or can have either raw
+ * or encoded data set using setRaw() and setEncoded() respectively. The raw and Base32-encoded content can be retrieved
+ * using raw() and encoded() respectively. setEncoded() will throw an InvalidBase32DataException if given data that is
+ * not valid base32.
  *
  * Encoding/decoding is only performed when required, so the class is relatively lightweight.
  */
@@ -41,40 +43,40 @@ class Base32
     protected const Dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
     /**
-     * @var string|null The plain data.
+     * @var string|null The raw data.
      *
-     * Always use plain() instead of accessing this - due to the decode-on-read feature, the member will be null after
-     * the encoded data has been set until decode() is called.
+     * @warn Due to the decode-on-read feature, the member will be null after the encoded data has been set until
+	 * decode() is called.
      */
-    private ?string $m_plainData;
+    private ?string $m_rawData;
 
     /**
-     * @var string|null The plain data.
+     * @var string|null The raw data.
      *
-     * Always use encoded() instead of accessing this - due to the encode-on-read feature, the member will be null after
-     * the plain data has been set until encode() is called.
+     * @warn |Due to the encode-on-read feature, the member will be null after the raw data has been set until encode()
+	 * is called.
      */
     private ?string $m_encodedData;
 
     /**
-     * Initialise a new object, optionally with some specified plain text.
+     * Initialise a new object, optionally with some specified raw data.
      *
-     * @param string $plainData
+     * @param string $rawData The raw data.
      */
-    public function __construct(string $plainData = "")
+    public function __construct(string $rawData = "")
     {
-        $this->m_plainData = $plainData;
+        $this->m_rawData = $rawData;
         $this->m_encodedData = null;
     }
 
     /**
-     * Set the plain-text data.
+     * Set the raw data.
      *
-     * @param string $data The plain-text data to encode.
+     * @param string $data The raw data to encode.
      */
-    public function setPlain(string $data)
+    public function setRaw(string $data)
     {
-        $this->m_plainData = $data;
+        $this->m_rawData = $data;
         $this->m_encodedData = null;
     }
 
@@ -83,7 +85,7 @@ class Base32
      *
      * If the provided content is not valid Base32, the state of the object is undefined.
      *
-     * @param string $base32
+     * @param string $base32 The base-32 encoded content.
      *
      * @throws InvalidBase32DataException
      */
@@ -91,10 +93,30 @@ class Base32
     {
         $length = strlen($base32);
 
-        while ($base32[$length - 1] === "=") {
+		if (0 !== ($length % 8)) {
+			throw new InvalidBase32DataException($base32, "Base32 data must be padded to a multiple of 8 bytes.");
+		}
+
+		// ensure any padding is a valid length
+		$paddedLength = $length;
+
+		while (0 < $length && $base32[$length - 1] === "=") {
             --$length;
         }
 
+		switch ($paddedLength - $length) {
+			case 0:
+			case 1:
+			case 3:
+			case 4:
+			case 6:
+				break;
+
+			default:
+				throw new InvalidBase32DataException($base32, "Base32 data must be padded with either 0, 1, 3, 4 or 6 '=' characters.");
+		}
+
+		// ensure all non-padding characters are from the Base32 dictionary
         $validLength = strspn($base32, self::Dictionary, 0, $length);
 
         if ($length !== $validLength) {
@@ -102,34 +124,32 @@ class Base32
         }
 
         $this->m_encodedData = $base32;
-        $this->m_plainData = null;
+        $this->m_rawData     = null;
     }
 
     /**
-     * Fetch the plain-text content.
+     * Fetch the raw content.
      *
-     * @return string The plain text content of the object.
+     * @return string The raw content of the object.
      */
-    public function plain(): string
+    public function raw(): string
     {
-        if(!isset($this->m_plainData)) {
+        if(!isset($this->m_rawData)) {
             $this->decodeBase32Data();
         }
 
-        return $this->m_plainData;
+        return $this->m_rawData;
     }
 
     /**
      * Fetch the Base32 encoded content.
-     *
-     * If the object is not valid, this is undefined.
      *
      * @return string The Base32 encoded content of the object.
      */
     public function encoded(): string
     {
         if(!isset($this->m_encodedData)) {
-            $this->encodePlainData();
+            $this->encodeRawData();
         }
 
         return $this->m_encodedData;
@@ -138,13 +158,13 @@ class Base32
     /**
      * Encode a string as base32.
      *
-     * @param string $plain The byte sequence to encode.
+     * @param string $raw The byte sequence to encode.
      *
      * @return string The base32-encoded string.
      */
-    public static function encode(string $plain): string
+    public static function encode(string $raw): string
     {
-        return (new static($plain))->encoded();
+        return (new static($raw))->encoded();
     }
 
     /**
@@ -159,18 +179,18 @@ class Base32
     {
         $codec = new static();
         $codec->setEncoded($base32);
-        return $codec->plain();
+        return $codec->raw();
     }
 
     /**
      * Internal helper to decode the Base32 encoded content.
      *
-     * This is called when the plain text content is requested and the internal cache of the plain text content is out of sync.
+     * This is called when the raw content is requested and the internal cache of the raw content is out of sync.
      */
     protected function decodeBase32Data()
     {
-        $byteSequence = strtoupper($this->m_encodedData);
-        $this->m_plainData = "";
+        $byteSequence    = strtoupper($this->m_encodedData);
+        $this->m_rawData = "";
 
         // tolerate badly terminated encoded strings by padding with = to appropriate len
         $len = strlen($byteSequence);
@@ -211,47 +231,46 @@ class Base32
                 default => assert (false, "Processed invalid chunk size - error in Base32 decoding algorithm implementation."),
             };
 
-            $outBytes          = chr(($out >> 32) & 0xff)
+            $outBytes        = chr(($out >> 32) & 0xff)
                 . chr(($out >> 24) & 0xff)
                 . chr(($out >> 16) & 0xff)
                 . chr(($out >> 8) & 0xff)
                 . chr($out & 0xff);
-            $this->m_plainData .= substr($outBytes, 0, $outByteCount);
+            $this->m_rawData .= substr($outBytes, 0, $outByteCount);
         }
     }
 
     /**
-     * Internal helper to encode the plain text content as Base32 when required.
+     * Internal helper to encode the raw data as Base32 when required.
      *
      * This is called when the encoded content is requested and the internal cache of the encoded content is out of sync.
      */
-    protected function encodePlainData()
+    protected function encodeRawData()
     {
         $this->m_encodedData = "";
-        $len = strlen($this->m_plainData);
+        $len = strlen($this->m_rawData);
 
-        if(0 == $len) {
+        if (0 == $len) {
             return;
         }
 
-        $remainder = $len % 5;
+		$paddedLen = (int) ceil($len / 5.0) * 5;
 
-        if (0 < $remainder) {
+        if ($paddedLen !== $len) {
             // temporarily pad so that we've a multiple of 5 characters to encode
-            $this->m_plainData .= str_repeat("\0", 5 - $remainder);
+            $this->m_rawData .= str_repeat("\0", $paddedLen - $len);
         }
 
-        $paddedLen = $len + (5 - $remainder);
         $pos = 0;
 
         while ($pos < $paddedLen) {
-            // 5 chars of plain convert to 8 chars of base32. the 40 bits of the 5 chars are read in 5-bit chunks,
+            // 5 chars of raw convert to 8 chars of base32. the 40 bits of the 5 chars are read in 5-bit chunks,
             // each of which is the index of a base32 character in Dictionary
-            $bits = 0x00 | (ord($this->m_plainData[$pos]) << 32)
-                         | (ord($this->m_plainData[$pos + 1]) << 24)
-                         | (ord($this->m_plainData[$pos + 2]) << 16)
-                         | (ord($this->m_plainData[$pos + 3]) << 8)
-                         | (ord($this->m_plainData[$pos + 4]));
+            $bits = 0x00 | (ord($this->m_rawData[$pos]) << 32)
+                         | (ord($this->m_rawData[$pos + 1]) << 24)
+                         | (ord($this->m_rawData[$pos + 2]) << 16)
+                         | (ord($this->m_rawData[$pos + 3]) << 8)
+                         | (ord($this->m_rawData[$pos + 4]));
 
             // the bit pattern contains the groups of 5 bits that form the dictionary lookup indices from left to
             // right:
@@ -261,8 +280,8 @@ class Base32
             // so the next encoded character is identified by bits 35-39, the one after that by bits 30-34 and
             // so on until the eighth encoded character, represented by bits 0-4.
             //
-            // this means thatwe can't just use 0x1f for the mask to successively take the rightmost 5 bits
-            //(shifting the bits 5 to the right as we go) and append the appropriate dictionary character to the
+            // this means that we can't just use 0x1f for the mask to successively take the rightmost 5 bits
+            // (shifting the bits 5 to the right as we go) and append the appropriate dictionary character to the
             // encoded data. this would result in the right characters but in reverse order. so we need to start
             // with the mask extracting the leftmost 5 bits for the first character and shift the mask in each
             // iteration to extract the next 5 bits, and we need to track how far to shift the extracted bits so
@@ -281,18 +300,18 @@ class Base32
 
         // to keep things simple we've padded the data and therefore produced extraneous encoded data. this works
         // out how much to replace with '=' characters
-        $encodedPadding = match($remainder) {
+        $encodedPadding = match($paddedLen - $len) {
             0 => 0,
-            1 => 6,
-            2 => 4,
-            3 => 3,
-            4 => 1,
+            1 => 1,
+            2 => 3,
+            3 => 4,
+            4 => 6,
         };
 
-        // undo the temporary padding of the plain data and pad the encoded data
+        // undo the temporary padding of the raw data and pad the encoded data
         if (0 != $encodedPadding) {
             $this->m_encodedData = substr($this->m_encodedData, 0, -$encodedPadding) . str_repeat("=", $encodedPadding);
-            $this->m_plainData = substr($this->m_plainData, 0, $len);
+            $this->m_rawData     = substr($this->m_rawData, 0, $len);
         }
     }
 }

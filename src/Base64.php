@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * Copyright 2022 Darren Edale
  *
@@ -24,49 +26,52 @@ use Equit\Totp\Exceptions\InvalidBase64DataException;
 /**
  * Codec class for Base64 data.
  *
- * @warn A 64-bit underlying platform is required.
- *
  * Thin wrapper around PHP's built-in base64 encoding/decoding, for consistency with Base32 interface.
  *
  * Encoding/decoding is only performed when required, so the class is relatively lightweight.
  */
 class Base64
 {
-    /**
-     * @var string|null The plain data.
-     *
-     * Always use plain() instead of accessing this - due to the decode-on-read feature, the member will be null after
-     * the encoded data has been set until decode() is called.
-     */
-    private ?string $m_plainData;
+	/**
+	 * The base64 dictionary.
+	 */
+	protected const Dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     /**
-     * @var string|null The plain data.
+     * @var string|null The raw data.
      *
-     * Always use encoded() instead of accessing this - due to the encode-on-read feature, the member will be null after
-     * the plain data has been set until encode() is called.
+     * Always use raw() instead of accessing this - due to decode-on-demand, the member will be null after the encoded
+	 * data has been set until decode() is called.
+     */
+    private ?string $m_rawData;
+
+    /**
+     * @var string|null The Base64 encoded data.
+     *
+     * Always use encoded() instead of accessing this - due to encode-on-demand, the member will be null after the raw
+	 * data has been set until encode() is called.
      */
     private ?string $m_encodedData;
 
     /**
-     * Initialise a new object, optionally with some specified plain text.
+     * Initialise a new object, optionally with some specified raw data.
      *
-     * @param string $plainData
+     * @param string $rawData
      */
-    public function __construct(string $plainData = "")
+    public function __construct(string $rawData = "")
     {
-        $this->m_plainData = $plainData;
+        $this->m_rawData     = $rawData;
         $this->m_encodedData = null;
     }
 
     /**
-     * Set the plain-text data.
+     * Set the raw data.
      *
-     * @param string $data The plain-text data to encode.
+     * @param string $rawData The raw data to encode.
      */
-    public function setPlain(string $data)
+    public function setRaw(string $rawData)
     {
-        $this->m_plainData = $data;
+        $this->m_rawData     = $rawData;
         $this->m_encodedData = null;
     }
 
@@ -81,30 +86,54 @@ class Base64
      */
     public function setEncoded(string $base64)
     {
-        // ensure it's valid
-        $plain = base64_decode($base64);
+		// note base64_decode() is too tolerant of invalid data so we roll our own validation instead of relying on
+		// false being returned from base64_decode()
+		$length = strlen($base64);
 
-        if (false === $plain) {
-            throw new InvalidBase64DataException($base64, "Invalid base64 character found in data.");
-        }
+		if (0 !== ($length % 4)) {
+			throw new InvalidBase64DataException($base64, "Base64 data must be padded to a multiple of 4 bytes.");
+		}
 
-        // may as well keep the decoded data since we have it
-        $this->m_encodedData = $base64;
-        $this->m_plainData = $plain;
+		// ensure any padding is a valid length
+		$paddedLength = $length;
+
+		while (0 < $length && $base64[$length - 1] === "=") {
+			--$length;
+		}
+
+		switch ($paddedLength - $length) {
+			case 0:
+			case 1:
+			case 2:
+				break;
+
+			default:
+				throw new InvalidBase64DataException($base64, "Base64 data must be padded with either 0, 1 or 2 '=' characters.");
+		}
+
+		// ensure all non-padding characters are from the Base32 dictionary
+		$validLength = strspn($base64, self::Dictionary, 0, $length);
+
+		if ($length !== $validLength) {
+			throw new InvalidBase64DataException($base64, "Invalid base64 character found at position {$validLength}.");
+		}
+
+		$this->m_encodedData = $base64;
+		$this->m_rawData     = null;
     }
 
     /**
-     * Fetch the plain-text content.
+     * Fetch the raw content.
      *
-     * @return string The plain text content of the object.
+     * @return string The raw content of the object.
      */
-    public function plain(): string
+    public function raw(): string
     {
-        if(!isset($this->m_plainData)) {
+        if(!isset($this->m_rawData)) {
             $this->decodeBase64Data();
         }
 
-        return $this->m_plainData;
+        return $this->m_rawData;
     }
 
     /**
@@ -117,7 +146,7 @@ class Base64
     public function encoded(): string
     {
         if(!isset($this->m_encodedData)) {
-            $this->encodePlainData();
+            $this->encodeRawData();
         }
 
         return $this->m_encodedData;
@@ -126,13 +155,13 @@ class Base64
     /**
      * Encode a string as base64.
      *
-     * @param string $plain The byte sequence to encode.
+     * @param string $raw The byte sequence to encode.
      *
      * @return string The base64-encoded string.
      */
-    public static function encode(string $plain): string
+    public static function encode(string $raw): string
     {
-        return (new static($plain))->encoded();
+        return (new static($raw))->encoded();
     }
 
     /**
@@ -147,26 +176,27 @@ class Base64
     {
         $codec = new static();
         $codec->setEncoded($base64);
-        return $codec->plain();
+        return $codec->raw();
     }
 
     /**
-     * Internal helper to decode the Base64 encoded content.
+     * Internal helper to decode the Base64 encoded content when required.
      *
-     * This is called when the plain text content is requested and the internal cache of the plain text content is out of sync.
+     * This is called when the raw content is requested and the internal cache of the raw content is out of sync.
      */
     protected function decodeBase64Data()
     {
-        $this->m_plainData = base64_decode($this->m_encodedData);
+        $this->m_rawData = base64_decode($this->m_encodedData);
     }
 
     /**
-     * Internal helper to encode the plain text content as Base64 when required.
+     * Internal helper to encode the raw content as Base64 when required.
      *
-     * This is called when the encoded content is requested and the internal cache of the encoded content is out of sync.
+     * This is called when the encoded content is requested and the internal cache of the encoded content is out of
+	 * sync.
      */
-    protected function encodePlainData()
+    protected function encodeRawData()
     {
-        $this->m_encodedData = base64_encode($this->m_plainData);
+        $this->m_encodedData = base64_encode($this->m_rawData);
     }
 }
