@@ -24,7 +24,7 @@ use Throwable;
 /**
  * Exception thrown when an interval < 1 is given for a TOTP instance.
  */
-class InvalidTotpIntervalException extends TotpException
+class InvalidIntervalException extends TotpException
 {
     /**
      * @var int The invalid interval.
