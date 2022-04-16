@@ -14,10 +14,9 @@ logins.
    authenticator
 2. When a user logs in, ask them for their current TOTP
 3. Instantiate an `Equit\Totp\Totp` and tell it the user's secret
-4. Compare the user's input to the return value from the Totp instance's `currentPassword()`
-   method. If they're the same, the user is authenticated.
+4. Pass the user's input to `Totp::verify()` - if it returns `true`, the user is authenticated.
 
-## Pseudo-code examples
+## Examples
 
 ### Generating a secret
 ````php
@@ -32,17 +31,15 @@ $user->setTotpSecret($secret);
 ````php
 // get hold of your user object in whatever way you normally do it
 $user = get_user();
-$inputPassword = $_POST["totp"];
-$totp = Equit\Totp\Totp::sixDigitTotp($user->totpSecret());
-$authenticated = ($totp->currentPassword() === $inputPassword);
-$totp->setSecret(random_bytes(20));
+$totp = Equit\Totp\Totp::sixDigitTotp(secret: $user->totpSecret());
 
-if ($authenticated) {
+if ($totp->verify(password: $_POST["totp"], window: 1)) {
     // user is authenticated
 } else {
     // user is not authenticated
 }
 
+$totp->setSecret(random_bytes(20));
 $totp = null;
 ````
 

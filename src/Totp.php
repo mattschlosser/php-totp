@@ -226,7 +226,7 @@ class Totp
 	public function setHashAlgorithm(string $algorithm)
 	{
 		$this->m_hashAlgorithm = match ($algorithm) {
-			self::Sha1Algorithm | self::Sha256Algorithm | self::Sha512Algorithm => $algorithm,
+			self::Sha1Algorithm, self::Sha256Algorithm, self::Sha512Algorithm => $algorithm,
 			default => throw new InvalidHashAlgorithmException($algorithm, "The hash algorithm must be one of " . self::Sha1Algorithm . ", " . self::Sha256Algorithm . " or " . self::Sha512Algorithm . "."),
 		};
 	}
