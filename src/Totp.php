@@ -19,8 +19,7 @@
 
 namespace Equit\Totp;
 
-use Equit\Totp\Exceptions\InvalidBase32DataException;
-use Equit\Totp\Exceptions\InvalidBase64DataException;
+use Equit\Totp\Exceptions\SecureRandomDataUnavailableException;
 use Equit\Totp\Exceptions\InvalidDigitsException;
 use Equit\Totp\Exceptions\InvalidHashAlgorithmException;
 use Equit\Totp\Exceptions\InvalidSecretException;
@@ -32,6 +31,7 @@ use DateTimeZone;
 use Equit\Totp\Renderers\EightDigits;
 use Equit\Totp\Renderers\Integer;
 use Equit\Totp\Renderers\SixDigits;
+use Exception;
 
 /**
  * Class for generating Time-based One-Time Passwords.
@@ -69,11 +69,6 @@ class Totp
      * The default reference time for codes.
      */
     public const DefaultReferenceTime = 0;
-
-    /**
-     * The hashing algorithm to use when generating HMACs.
-     */
-    protected const DefaultHashAlgorithm = "sha1";
 
 	/**
 	 * Error code for InvalidVerificationWindowException when the window is < 0.
@@ -118,7 +113,7 @@ class Totp
 	 * If the reference time is specified as an int, it is interpreted as the number of seconds since the Unix epoch.
 	 * The default hashing algorithm is SHA1.
 	 *
-	 * @param string $secret The secret for the code. This must be the binary representation of the secret.
+	 * @param TotpSecret|string|null $secret The secret for the code. If given as a string, it's assumed to be raw.
 	 * @param Renderer|null $renderer The renderer that produces one-time passwords from HMACs.
 	 * @param int $interval The update interval for the code. Defaults to 30 seconds.
 	 * @param int|DateTime $referenceTime The reference time from which the code is generated.
@@ -126,14 +121,38 @@ class Totp
 	 *
 	 * @throws InvalidIntervalException if the interval is not a positive integer.
 	 * @throws InvalidSecretException if the provided secret is less than 128 bits in length.
+	 * @throws InvalidHashAlgorithmException if the provided hash algorithm is not one of the supported algorithms. See
+	 * the class constants.
+	 * @throws SecureRandomDataUnavailableException if a randomly-generated secret is required but a
+	 * source of cryptographically-secure random data is not available.
 	 */
-    public function __construct(string $secret, Renderer $renderer = null, int $interval = self::DefaultInterval, int | DateTime $referenceTime = self::DefaultReferenceTime)
+    public function __construct(TotpSecret | string $secret = null, Renderer $renderer = null, int $interval = self::DefaultInterval, int | DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm)
     {
-        $this->setSecret($secret);
+        $this->setSecret($secret ?? self::randomSecret());
 		$this->setRenderer($renderer ?? static::defaultRenderer());
         $this->setInterval($interval);
+		$this->setHashAlgorithm($hashAlgorithm);
         $this->m_referenceTime = $referenceTime;
     }
+
+	/**
+	 * Helper to generate a random secret.
+	 *
+	 * The constructor uses this if no secret is provided. The secret is 64 bytes (512 bits) in length so that it is
+	 * sufficiently strong for all the supported algorithms.
+	 *
+	 * @return string The random secret.
+	 * @throws SecureRandomDataUnavailableException if random_bytes() is unable to generate
+	 * cryptographically secure random data.
+	 */
+	public static function randomSecret(): string
+	{
+		try {
+			return random_bytes(64);
+		} catch (Exception $e) {
+			throw new SecureRandomDataUnavailableException($e->getMessage(), $e->getCode(), $e);
+		}
+	}
 
 	/**
 	 * Instantiate a TOTP generator with a six-digit integer password renderer.
@@ -146,11 +165,14 @@ class Totp
 	 * Defaults to 0.
 	 *
 	 * @return Totp
-	 * @throws InvalidIntervalException if the interval is < 1.
-	 * @throws InvalidSecretException if the provided secret is less than 128 bits in length.
+	 * @throws \Equit\Totp\Exceptions\InvalidIntervalException if the interval is < 1.
+	 * @throws \Equit\Totp\Exceptions\InvalidSecretException if the provided secret is less than 128 bits in length.
+	 * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
+	 *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
 	 */
 	public static function sixDigitTotp(string $secret, int $interval = self::DefaultInterval, int | DateTime $referenceTime = self::DefaultReferenceTime): Totp
 	{
+		/** @noinspection PhpUnhandledExceptionInspection */
 		return new Totp($secret, new SixDigits(), $interval, $referenceTime);
 	}
 
@@ -167,9 +189,12 @@ class Totp
 	 * @return Totp
 	 * @throws InvalidIntervalException if the interval is < 1.
 	 * @throws InvalidSecretException if the provided secret is less than 128 bits in length.
+	 * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
+	 *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
 	 */
 	public static function eightDigitTotp(string $secret, int $interval = self::DefaultInterval, int | DateTime $referenceTime = self::DefaultReferenceTime): Totp
 	{
+		/** @noinspection PhpUnhandledExceptionInspection */
 		return new Totp($secret, new EightDigits(), $interval, $referenceTime);
 	}
 
@@ -188,9 +213,12 @@ class Totp
 	 * @throws InvalidIntervalException if the interval is < 1.
 	 * @throws InvalidSecretException if the provided secret is less than 128 bits in length.
 	 * @throws InvalidDigitsException if the number of digits is < 1.
+	 * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
+	 *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
 	 */
 	public static function integerTotp(string $secret, int $digits, int $interval = self::DefaultInterval, int | DateTime $referenceTime = self::DefaultReferenceTime): Totp
 	{
+		/** @noinspection PhpUnhandledExceptionInspection */
 		return new Totp($secret, new Integer($digits), $interval, $referenceTime);
 	}
 
@@ -265,47 +293,22 @@ class Totp
 	 * The secret must be at least 128 bits (16 bytes) in length, ideally 160 bits. There is minimal value in setting a
 	 * secret with more than 160 bits.
 	 *
-	 * @param string $secret The binary secret.
+	 * @param TotpSecret|string $secret The secret. If given as a string, the string is assumed to be the raw secret.
 	 *
 	 * @throws InvalidSecretException if the secret is less than 128 bits in length.
 	 */
-    public function setSecret(string $secret)
+    public function setSecret(TotpSecret | string $secret)
     {
+		if ($secret instanceof TotpSecret) {
+			$this->m_secret = $secret->raw();
+			return;
+		}
+
 		if (16 > strlen($secret)) {
 			throw new InvalidSecretException($secret, "TOTP secrets must be at least 128 bits (16 octets) in size.");
 		}
 
-        $this->m_secret = $secret;
-    }
-
-	/**
-	 * Set the secret for generated codes.
-	 *
-	 * The provided secret must be base32 encoded.
-	 *
-	 * @param string $secret
-	 *
-	 * @throws InvalidBase32DataException if the provided secret is not a valid base32 encoding.
-	 * @throws InvalidSecretException if the provided secret, when decoded, is less than 128 bits in length.
-	 */
-    public function setBase32Secret(string $secret)
-    {
-        $this->setSecret(Base32::decode($secret));
-    }
-
-	/**
-	 * Set the secret for generated codes.
-	 *
-	 * The provided secret must be base64 encoded.
-	 *
-	 * @param string $secret The binary secret, base64-encoded.
-	 *
-	 * @throws InvalidBase64DataException if the provided secret is not a valid base64 encoding.
-	 * @throws InvalidSecretException if the provided secret, when decoded, is less than 128 bits in length.
-	 */
-    public function setBase64Secret(string $secret)
-    {
-        $this->setSecret(Base64::decode($secret));
+		$this->m_secret = $secret;
     }
 
 	/**
