@@ -27,5 +27,8 @@
     "psr-4": {
       "Equit\\Totp\\Tests\\": "tests/"
     }
+  },
+  "scripts": {
+    "test": "phpunit --configuration tests/phpunit.xml --coverage-text --testsuite \"Equit Totp Full Test Suite\""
   }
 }

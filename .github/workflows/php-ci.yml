@@ -32,7 +32,7 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
       
-  build-test:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -44,8 +44,4 @@ jobs:
       - name: PHPUnit Tests
         env: 
           XDEBUG_MODE: coverage
-        run: >
-             vendor/bin/phpunit
-             --configuration tests/phpunit.xml
-             --coverage-text
-             --testsuite "Equit Totp Full Test Suite"
+        run: composer test
