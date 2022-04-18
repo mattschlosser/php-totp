@@ -5,14 +5,75 @@
  *
  * Use oathtool (https://www.nongnu.org/oath-toolkit/oathtool.1.html) to generate test data for php-totp unit tests.
  * This most likely requires a unix-like platform
- *
- * TODO more options
- * TODO help output
  */
 require_once(__DIR__ . "/../vendor/autoload.php");
 
 use Equit\Totp\Base32;
 use Equit\Totp\Base64;
+
+/**
+ * Show the usage/help message.
+ */
+function usage()
+{
+	global $argv;
+	$bin = basename($argv[0]);
+
+	echo <<<EOT
+{$bin} - Generate some test data for php-totp.
+
+Usage: {$argv[0]} [--help | OPTIONS]
+
+The oathtool command must be in your path. If it's not, this script will fail.
+
+--help
+    Show this help message and exit.
+    
+OPTIONS
+  --secret SECRET
+      Set the secret to use when generating test TOTP data. SECRET is the secret to use. Specify -32 (the default) or
+      -64 - see below - to use Base32 or Base64 encoded binary secrets. If this is not specified, a random  secret will
+      be generated for each TOTP output.
+      
+  -32
+      Indicates that supplied secret is Base32 encoded.
+      
+  -64
+      Indicates that supplied secret is Base64 encoded.
+
+  --digits DIGITS
+      Set the number of digits to use for generated passwords. DIGITS is the number of digits. It must be between 6 and
+      10 inclusive. If this is not specified, a random number of digits will be generated for each TOTP output. 
+      
+  --reference-time TIME
+      Set the reference time for generated TOTPs. TIME is the time to use, specified either as a Unix timestamp or a
+      date in a format that PHP's DateTime class can parse. It must be before the current time if specified with the 
+      --current-time option.
+      
+      If this is not specified a random time between the Unix epoch and 20 years before the current system time will be
+      chosen for each TOTP output.
+      
+  --current-time TIME
+      Set the current time for generated TOTPs. TIME is the time to use, specified either as a Unix timestamp or a date 
+      in a format that PHP's DateTime class can parse. If this is specified, --reference-time must also be specified,
+      and the current time must be after the reference time.
+      
+      If this is not specified a random time between the Unix epoch and 20 years before the current system time will be
+       chosen for each TOTP output.
+      
+  --interval INTERVAL
+      Set the interval to use when generating test TOTP data. INTERVAL is the number of seconds. It must be at least 1.
+      If this is not specified, a random interval between 1 and 3660 (1 day) will be generated for each TOTP output. 
+      
+  --algorithm ALGORITHM
+      Set the hash algorithm to use when generating test TOTP data. ALGORITHM is the algorithm to use. It must be one
+      of SHA1, SHA256 and SHA512. If this is not specified, a random algorithm will be chosen for each TOTP output. 
+
+  --times N
+      Output test data for N TOTPs.
+
+EOT;
+}
 
 /**
  * Choose one of a number of options, optionally with a weighting attached to each option.
@@ -43,6 +104,14 @@ function chooseOne(array $options, array $weights = null): mixed
 }
 
 /**
+ * @return array The valid TOTP algorithms.
+ */
+function validAlgorithms(): array
+{
+	return ["SHA1", "SHA256", "SHA512",];
+}
+
+/**
  * Choose a random algorithm from those supported by TOTP.
  *
  * This will be one of sha1, sah256 and sha512.
@@ -51,7 +120,7 @@ function chooseOne(array $options, array $weights = null): mixed
  */
 function randomAlgorithm(): string
 {
-	return chooseOne(["SHA1", "SHA256", "SHA512",]);
+	return chooseOne(validAlgorithms());
 }
 
 /**
@@ -134,22 +203,104 @@ $opts = [
 
 for ($idx = 1; $idx < $argc; ++$idx) {
 	switch ($argv[$idx]) {
+		case "--help":
+			usage();
+			exit(1);
+
 		case "--secret":
-			$opts["secret"] = $argv[++$idx] ?? die("--secret requires the secret to be specified as the next argument.");
+			$opts["secret"] = $argv[++$idx] ?? die("--secret requires the secret to be specified as the next argument. See ${argv[0]} --help for details.");
+			break;
+
+		case "--reference-time":
+			++$idx;
+
+			if (!isset($argv[$idx])) {
+				die("--reference-time requires the time to be specified as the next argument. See ${argv[0]} --help for details.");
+			}
+
+			if (filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 0,],])) {
+				$opts["referenceTimestamp"] = intval($argv[$idx]);
+			} else {
+				try {
+					$opts["referenceTimestamp"] = (new DateTime($argv[$idx]))->getTimestamp();
+				} catch (Exception $e) {
+					die("The provided time for --reference-time was not valid. See ${argv[0]} --help for details.");
+				}
+			}
+			break;
+
+		case "--current-time":
+			++$idx;
+
+			if (!isset($argv[$idx])) {
+				die("--current-time requires the time to be specified as the next argument. See ${argv[0]} --help for details.");
+			}
+
+			if (filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 0,],])) {
+				$opts["now"] = intval($argv[$idx]);
+			} else {
+				try {
+					$opts["now"] = (new DateTime($argv[$idx]))->getTimestamp();
+				} catch (Exception $e) {
+					die("The provided time for --current-time was not valid. See ${argv[0]} --help for details.");
+				}
+			}
 			break;
 
 		case "--times":
 			++$idx;
 
 			if (!isset($argv[$idx])) {
-				die("--times requires the number of test data items to be specified as the next argument.");
+				die("--times requires the number of test data items to be specified as the next argument. See ${argv[0]} --help for details.");
 			}
 
 			if (!filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 1,],])) {
-				die("The number of test data items must be a positive integer.");
+				die("The number of test data items must be a positive integer. See ${argv[0]} --help for details.");
 			}
 
 			$opts["times"] = intval($argv[$idx]);
+			break;
+
+		case "--digits":
+			++$idx;
+
+			if (!isset($argv[$idx])) {
+				die("--digits requires the number of digits to be specified as the next argument. See ${argv[0]} --help for details.");
+			}
+
+			if (!filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 6, "max_range" => 10,],])) {
+				die("The number of digits items must be between 6 and 10 inclusive. See ${argv[0]} --help for details.");
+			}
+
+			$opts["digits"] = intval($argv[$idx]);
+			break;
+
+		case "--algorithm":
+			++$idx;
+
+			if (!isset($argv[$idx])) {
+				die("--algorithm requires the algorithm to be specified as the next argument. See ${argv[0]} --help for details.");
+			}
+
+			if (!in_array($argv[$idx], validAlgorithms())) {
+				die("The algorithm must be one of [" . implode(", ", validAlgorithms()) . "]. See ${argv[0]} --help for details.");
+			}
+
+			$opts["algorithm"] = $argv[$idx];
+			break;
+
+		case "--interval":
+			++$idx;
+
+			if (!isset($argv[$idx])) {
+				die("--interval requires the interval to be specified as the next argument. See ${argv[0]} --help for details.");
+			}
+
+			if (!filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 1,],])) {
+				die("The interval must be at least 1 second. See ${argv[0]} --help for details.");
+			}
+
+			$opts["interval"] = intval($argv[$idx]);
 			break;
 
 		case "-32":
@@ -161,7 +312,17 @@ for ($idx = 1; $idx < $argc; ++$idx) {
 			break;
 
 		default:
-			die ("Unrecognised argument {$argv[$idx]}.");
+			die ("Unrecognised argument {$argv[$idx]}. See ${argv[0]} --help for details.");
+	}
+}
+
+if (isset($opts["now"])) {
+	if (!isset($opts["referenceTimestamp"])) {
+		die("--reference-time must be specified if --current-time is specified. See ${argv[0]} --help for details.");
+	}
+
+	if ($opts["now"] < $opts["referenceTimestamp"]) {
+		die("--current-time must be on or after if --reference-time. See ${argv[0]} --help for details.");
 	}
 }
 
