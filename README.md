@@ -1,5 +1,7 @@
 # php-totp
 
+[![Conmposer Validation and Unit Tests](https://github.com/darrenedale/php-totp/actions/workflows/php-ci.yml/badge.svg)](https://github.com/darrenedale/php-totp/actions/workflows/php-ci.yml)
+
 **Warning** This is pre-release software, the API has not yet stabilised.
 
 Time-based One Time Password Generator for PHP
