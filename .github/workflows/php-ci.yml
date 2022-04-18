@@ -45,5 +45,5 @@ jobs:
         run: >
              vendor/bin/phpunit
              --configuration tests/phpunit.xml
-             --converage-text="tests/coverage-report.txt"
+             --coverage-text
              --testsuite "Equit Totp Full Test Suite"
