@@ -113,7 +113,7 @@ class TotpTest extends TestCase
 		}
 
 		$totp = self::createTotp();
-		$totp->setBase32Secret($base32);
+		$totp->setSecret(TotpSecret::fromBase32($base32));
 		$this->assertSame($base32, $totp->base32Secret());
 
 		if (isset($raw)) {
@@ -158,7 +158,7 @@ class TotpTest extends TestCase
 		}
 
 		$totp = self::createTotp();
-		$totp->setBase64Secret($base64);
+		$totp->setSecret(TotpSecret::fromBase64($base64));
 		$this->assertSame($base64, $totp->base64Secret());
 
 		if (isset($raw)) {

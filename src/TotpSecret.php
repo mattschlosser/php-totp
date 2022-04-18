@@ -51,7 +51,7 @@ final class TotpSecret
 	 */
 	private function __construct(string $secret)
 	{
-		if (16 < strlen($secret)) {
+		if (16 > strlen($secret)) {
 			throw new InvalidSecretException($secret, "Raw secrets for TOTP are required to be 128 bits (16 bytes) or longer.");
 		}
 
