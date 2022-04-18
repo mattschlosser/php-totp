@@ -3,7 +3,7 @@
      xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
      beStrictAboutTestsThatDoNotTestAnything="true"
      beStrictAboutOutputDuringTests="true"
-     bootstrap="vendor/autoload.php"
+     bootstrap="../vendor/autoload.php"
      colors="true"
      convertErrorsToExceptions="true"
      convertNoticesToExceptions="true"
@@ -18,13 +18,13 @@
 >
     <coverage processUncoveredFiles="true">
         <include>
-            <directory suffix=".php">./src</directory>
+            <directory suffix=".php">../src</directory>
         </include>
     </coverage>
 
     <testsuites>
         <testsuite name="Equit Totp Full Test Suite">
-            <directory>./tests</directory>
+            <directory>./</directory>
         </testsuite>
     </testsuites>
 </phpunit>
