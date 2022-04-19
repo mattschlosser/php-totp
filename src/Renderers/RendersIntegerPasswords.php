@@ -25,23 +25,25 @@ trait RendersIntegerPasswords
 	/**
 	 * Render the integer password from a given HMAC.
 	 *
+	 * The HMAC must be 152 bits (19 bytes) or more in length. HMACs provided by Totp instances always meet this
+	 * requirement.
+	 *
 	 * @param string $hmac The HMAC to process.
 	 *
 	 * @return string The digits of the generated password.
 	 */
 	public function render(string $hmac): string
 	{
-		$digits = $this->digits();
-		assert (5 < $digits, "Invalid digit count in Renderer class " . get_class($this));
-		$offset = ord($hmac[19]) & 0xf;
+		assert (5 < $this->digits(), "Invalid digit count in Renderer subclass " . get_class($this));
+		$offset = ord($hmac[strlen($hmac) - 1]) & 0xf;
 
 		$password = (
 				(ord($hmac[$offset]) & 0x7f) << 24
 				| ord($hmac[$offset + 1]) << 16
 				| ord($hmac[$offset + 2]) << 8
 				| ord($hmac[$offset + 3])
-			) % (10 ** $digits);
+			) % (10 ** $this->digits());
 
-		return str_pad("{$password}", $digits, "0", STR_PAD_LEFT);
+		return str_pad("{$password}", $this->digits(), "0", STR_PAD_LEFT);
 	}
 }

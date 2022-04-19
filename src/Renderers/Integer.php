@@ -3,7 +3,6 @@
 namespace Equit\Totp\Renderers;
 
 use Equit\Totp\Exceptions\InvalidDigitsException;
-use Equit\Totp\Renderer;
 
 /**
  * Render a TOTP with an arbitrary number of decimal digits.
@@ -12,7 +11,7 @@ use Equit\Totp\Renderer;
  * specification (see RFC 4226, https://datatracker.ietf.org/doc/html/rfc4226). The number of digits must be 6 or more
  * and should ordinarily be 9 or lower.
  */
-class Integer implements Renderer
+class Integer implements IntegerRenderer
 {
 	use RendersIntegerPasswords;
 

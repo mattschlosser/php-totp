@@ -88,3 +88,8 @@ To do this, first call `setSecret(random_bytes(20))` on your `Totp` object (use 
 The simplest way to ensure that each OTP is only used for at most one successful authentication attempt is to record the timestamp or counter of the most recently used successful OTP. When the user attempts to authenticate, if the `Totp` object's current timestamp/counter is equal to or lower than the last recorded successful authentication attempt then the OTP is considered stale and must not be used to authenticate.
 
 It is important that you ensure that all routes to authentication that use the TOTP secret are protected in this way - for example if you have a mobile app and a web app, you must ensure that a OTP used to authenticate with the web app cannot subsequently be used to authenticate using the mobile app. [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt) has a good discussion of the reasoning for this.
+
+## References
+- H. Krawczyk, M. Bellare & R. Canetti, _[RFC2104: HMAC: Keyed-Hashing for Message Authentication](https://www.ietf.org/rfc/rfc2104.txt)_, https://www.ietf.org/rfc/rfc2104.txt, retrieved 17th April, 2022.
+- D. M'Raihi, M. Bellare, F. Hoornaert, D. Naccache & O. Ranen, 2005, _[RFC4226: HOTP: An HMAC-Based One-Time Password Algorithm](https://www.ietf.org/rfc/rfc4226.txt)_, https://www.ietf.org/rfc/rfc4226.txt, retrieved 17th April, 2022.
+- D. M'Raihi, S. Machani, M. Pei & J. Rydell, 2011, _[RFC6238: TOTP: Time-Based One-Time Password Algorithm](https://www.ietf.org/rfc/rfc6238.txt)_, https://www.ietf.org/rfc/rfc6238.txt, retrieved 17th April, 2022.

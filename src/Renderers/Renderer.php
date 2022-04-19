@@ -1,6 +1,6 @@
 <?php
 
-namespace Equit\Totp;
+namespace Equit\Totp\Renderers;
 
 /**
  * Interface for renderers that turn TOTP HMACs into the actual one-time passwords required.

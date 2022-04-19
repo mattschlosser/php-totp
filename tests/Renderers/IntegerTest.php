@@ -1,6 +1,6 @@
 <?php
 
-namespace Renderers;
+namespace Equit\Totp\Tests\Renderers;
 
 use Equit\Totp\Exceptions\InvalidDigitsException;
 use Equit\Totp\Renderers\Integer;
@@ -67,7 +67,7 @@ class IntegerTest extends TestCase
 			[6, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", "000000",],
 			[7, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", "0000000",],
 			[8, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", "00000000",],
-			
+
 			// offset = 0, padding with 5 0s
 			[6, "\x00\x00\x00\x01\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x00", "000001",],
 			[7, "\x00\x00\x00\x01\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x00", "0000001",],
@@ -120,7 +120,7 @@ class IntegerTest extends TestCase
 			[6, "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x00\x00\x11\x11\x0f", "004369",],
 			[7, "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x00\x00\x11\x11\x0f", "0004369",],
 			[8, "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x00\x00\x11\x11\x0f", "00004369",],
-			
+
 			// test offset masking at byte 19 - all should produce an offset of 8
 			[6, "\x43\x82\x1f\x68\xf2\xda\x10\xbc\x01\x02\x03\x04\xa7\x1c\xff\xef\x01\xba\xd6\x08", "909060",],
 			[7, "\x43\x82\x1f\x68\xf2\xda\x10\xbc\x01\x02\x03\x04\xa7\x1c\xff\xef\x01\xba\xd6\x08", "6909060",],
@@ -219,6 +219,6 @@ class IntegerTest extends TestCase
 		$actualPassword = $renderer->render($hmac);
 		$this->assertSame($digits, strlen($actualPassword), "{$digits}-digit renderer produced a password of " . strlen($actualPassword) . " digits.");
 		$this->assertStringContainsOnly("0123456789", $actualPassword, "Renderer produced a non-decimal password.");
-		$this->assertSame($expectedPassword, $actualPassword, "Renderer produced a mismatching password.");
+		$this->assertSame($expectedPassword, $actualPassword, "Renderer produced an incorrect password.");
 	}
 }

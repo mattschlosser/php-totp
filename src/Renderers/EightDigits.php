@@ -2,12 +2,10 @@
 
 namespace Equit\Totp\Renderers;
 
-use Equit\Totp\Renderer;
-
 /**
  * Render a TOTP of eight decimal digits.
  */
-class EightDigits implements Renderer
+class EightDigits implements IntegerRenderer
 {
 	use RendersIntegerPasswords;
 	protected int $digitCount = 8;
