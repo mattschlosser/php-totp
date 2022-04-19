@@ -19,22 +19,25 @@
 
 namespace Equit\Totp;
 
+use DateTime;
+use DateTimeZone;
 use Equit\Totp\Exceptions\SecureRandomDataUnavailableException;
 use Equit\Totp\Exceptions\InvalidDigitsException;
 use Equit\Totp\Exceptions\InvalidHashAlgorithmException;
-use Equit\Totp\Exceptions\InvalidSecretException;
 use Equit\Totp\Exceptions\InvalidIntervalException;
+use Equit\Totp\Exceptions\InvalidSecretException;
 use Equit\Totp\Exceptions\InvalidTimeException;
 use Equit\Totp\Exceptions\InvalidVerificationWindowException;
-use DateTime;
-use DateTimeZone;
 use Equit\Totp\Renderers\EightDigits;
 use Equit\Totp\Renderers\Integer;
+use Equit\Totp\Renderers\Renderer;
 use Equit\Totp\Renderers\SixDigits;
 use Exception;
 
 /**
  * Class for generating Time-based One-Time Passwords.
+ *
+ * TODO is reference time constrained to no earlier than Unix epoch?
  */
 class Totp
 {
@@ -60,7 +63,7 @@ class Totp
 	 */
 	protected const DefaultAlgorithm = self::Sha1Algorithm;
 
-   /**
+    /**
      * The default update interval for codes.
      */
     public const DefaultInterval = 30;
@@ -132,7 +135,7 @@ class Totp
 		$this->setRenderer($renderer ?? static::defaultRenderer());
         $this->setInterval($interval);
 		$this->setHashAlgorithm($hashAlgorithm);
-        $this->m_referenceTime = $referenceTime;
+        $this->m_referenceTime = ($referenceTime instanceof DateTime ? $referenceTime->getTimestamp() : $referenceTime);
     }
 
 	/**
@@ -165,12 +168,12 @@ class Totp
 	 * Defaults to 0.
 	 *
 	 * @return Totp
-	 * @throws \Equit\Totp\Exceptions\InvalidIntervalException if the interval is < 1.
-	 * @throws \Equit\Totp\Exceptions\InvalidSecretException if the provided secret is less than 128 bits in length.
+	 * @throws InvalidIntervalException if the interval is < 1.
+	 * @throws InvalidSecretException if the provided secret is less than 128 bits in length.
 	 * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
 	 *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
 	 */
-	public static function sixDigitTotp(string $secret, int $interval = self::DefaultInterval, int | DateTime $referenceTime = self::DefaultReferenceTime): Totp
+	public static function sixDigitTotp(TotpSecret | string $secret, int $interval = self::DefaultInterval, int | DateTime $referenceTime = self::DefaultReferenceTime): Totp
 	{
 		/** @noinspection PhpUnhandledExceptionInspection */
 		return new Totp($secret, new SixDigits(), $interval, $referenceTime);
@@ -192,7 +195,7 @@ class Totp
 	 * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
 	 *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
 	 */
-	public static function eightDigitTotp(string $secret, int $interval = self::DefaultInterval, int | DateTime $referenceTime = self::DefaultReferenceTime): Totp
+	public static function eightDigitTotp(TotpSecret | string $secret, int $interval = self::DefaultInterval, int | DateTime $referenceTime = self::DefaultReferenceTime): Totp
 	{
 		/** @noinspection PhpUnhandledExceptionInspection */
 		return new Totp($secret, new EightDigits(), $interval, $referenceTime);
@@ -216,7 +219,7 @@ class Totp
 	 * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
 	 *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
 	 */
-	public static function integerTotp(string $secret, int $digits, int $interval = self::DefaultInterval, int | DateTime $referenceTime = self::DefaultReferenceTime): Totp
+	public static function integerTotp(TotpSecret | string $secret, int $digits, int $interval = self::DefaultInterval, int | DateTime $referenceTime = self::DefaultReferenceTime): Totp
 	{
 		/** @noinspection PhpUnhandledExceptionInspection */
 		return new Totp($secret, new Integer($digits), $interval, $referenceTime);
@@ -308,13 +311,13 @@ class Totp
 			throw new InvalidSecretException($secret, "TOTP secrets must be at least 128 bits (16 octets) in size.");
 		}
 
-		$this->m_secret = $secret;
+        $this->m_secret = $secret;
     }
 
 	/**
 	 * Fetch the renderer being used to generate one-time passwords from HMACs.
 	 *
-	 * @return \Equit\Totp\Renderer The renderer.
+	 * @return \Equit\Totp\Renderers\Renderer The renderer.
 	 */
 	public function renderer(): Renderer
 	{
@@ -324,7 +327,7 @@ class Totp
 	/**
 	 * Set the renderer to use to generate one-time passwords from HMACs.
 	 *
-	 * @param \Equit\Totp\Renderer $renderer The renderer.
+	 * @param \Equit\Totp\Renderers\Renderer $renderer The renderer.
 	 */
 	public function setRenderer(Renderer $renderer)
 	{
