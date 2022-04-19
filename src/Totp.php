@@ -36,7 +36,10 @@ use Exception;
 /**
  * Class for generating Time-based One-Time Passwords.
  *
- * TODO is reference time constrained to no earlier than Unix epoch?
+ * RFC 6238 does not say anything on the subject of whether T0 (the reference timestamp) can be a negative value, only
+ * that the timestamp integer type used must enable the authentication time to extend beyond 2038 (i.e not a 32-bit
+ * integer). Since it mentions nothing regarding the signedness of T0, this implementation does not forbid reference
+ * times before the Unix epoch (i.e. -ve timestamps).
  */
 class Totp
 {
@@ -60,7 +63,7 @@ class Totp
 	 *
 	 * This is equal to Sha1Algorithm.
 	 */
-	protected const DefaultAlgorithm = self::Sha1Algorithm;
+	public const DefaultAlgorithm = self::Sha1Algorithm;
 
     /**
      * The default update interval for passowrds.
