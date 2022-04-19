@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Tests;
 
-use Closure;
 use DateTime;
 use DateTimeZone;
 use Equit\Totp\Renderers\EightDigits;
@@ -16,9 +15,7 @@ use Equit\Totp\Exceptions\InvalidHashAlgorithmException;
 use Equit\Totp\Exceptions\InvalidIntervalException;
 use Equit\Totp\Exceptions\InvalidSecretException;
 use Equit\Totp\TotpSecret;
-use Exception;
 use Generator;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -638,7 +635,6 @@ class TotpTest extends TestCase
 		}
 	}
 
-
 	/**
 	 * Helper to provide some test data for testConstructor.
 	 *
@@ -728,6 +724,46 @@ class TotpTest extends TestCase
 			$actual = $totp->$method(...$args);
 			$this->assertEquals($expected, $actual, "Return value from {$method}() not as expected.");
 		}
+	}
+
+	/**
+	 * Test data for testDestructor().
+	 *
+	 * @return \Generator
+	 * @throws \Exception if random_bytes() is unable to generate cryptographically-secure random data.
+	 */
+	public function dataForTestDestructor(): Generator
+	{
+		yield "typicalAsciiSecret" => ["password-password"];
+		yield "nullBytes16Secret" => ["\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"];
+		yield "nullBytes20Secret" => ["\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"];
+
+		// yield 100 random valid secrets
+		for ($idx = 0; $idx < 100; ++$idx) {
+			yield [random_bytes(mt_rand(16, 20)),];
+		}
+	}
+
+	/**
+	 * Test the Totp destructor.
+	 *
+	 * @dataProvider dataForTestDestructor
+	 *
+	 * @param string $secret The secret to use to initialise the Totp object.
+	 *
+	 * @noinspection PhpDocMissingThrowsInspection Totp constructor won't throw, secret is guaranteed by the data
+	 * provider to be valid. ReflectionProperty won't throw because we know the property exists.
+	 */
+	public function testDestructor(string $secret)
+	{
+		/** @noinspection PhpUnhandledExceptionInspection */
+		$totp = new Totp($secret);
+
+		/** @noinspection PhpUnhandledExceptionInspection */
+		$secretProperty = new ReflectionProperty($totp, "m_secret");
+		$secretProperty->setAccessible(true);
+		$totp->__destruct();
+		$this->assertNotEquals($secret, $secretProperty->getValue($totp), "The secret was not overwritten with random data.");
 	}
 
 	/**

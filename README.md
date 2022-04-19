@@ -24,9 +24,10 @@ logins.
 ````php
 // get hold of your user object in whatever way you normally do it
 $user = get_user();
-$secret = random_bytes(20);
-$user->setTotpSecret($secret);
-// show secret to user, just this once, so they can import it into their authetnicator app
+$totp = new Totp(algorithm: Totp::Sha512Algorithm);
+$user->setTotpSecret($totp->secret());
+echo "{$totp->base32Secret()}\n";       // show the user the secret for import into their authenticator app
+unset($totp);                           // ensure the secret is wiped from memory
 ````
 
 ### Authenticating
@@ -47,25 +48,51 @@ $totp = null;
 
 ## Generating secure secrets
 
-To generate good secrets for your users you need a good source of random data. PHP's `random_bytes()` function is a suitable source. If this is not available on your platform you'll need to look elsewhere. PHP's other random number generation functions are not necessarily good sources of cryptographically secure randomness.
+To generate good secrets for your users you need a good source of random data. PHP's `random_bytes()` function is a
+suitable source. If this is not available on your platform you'll need to look elsewhere. PHP's other random number
+generation functions are not necessarily good sources of cryptographically secure randomness.
 
-The TOTP algorithm uses SHA1 HMACs under the hood when generating one-time passwords, whose keys are limited to 160 bits as per [RFC 2104](https://www.ietf.org/rfc/rfc2104.txt), the HMAC specification:
+The HOTP algorithm which is used by TOTP, uses SHA1 HMACs under the hood when generating one-time passwords. Keys for
+this type of HMAC are limited to 160 bits as per [RFC 2104](https://www.ietf.org/rfc/rfc2104.txt):
 
-> The authentication key K can be of any length up to B, the block length of the hash function. Applications that use keys longer than B bytes will first hash the key using H [the hashing algorithm] and then use the resultant L [the byte length of the computed hash] byte string as the actual key to HMAC.
+> The authentication key K can be of any length up to B, the block length of the hash function. **Applications that use
+> keys longer than B bytes will first hash the key using H [the hashing algorithm]** and then use the resultant L
+> [the byte length of the computed hash] byte string as the actual key to HMAC.
 
-The absolute minimum size for a shared secret, according to [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt), the HOTP specification on which TOTP is based, is 128 bits (16 bytes):
+The absolute minimum size for a shared secret, according to [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt) (the HOTP
+specification) is 128 bits (16 bytes):
 
-> R6 - The algorithm MUST use a strong shared secret.  The length of the shared secret MUST be at least 128 bits. This document RECOMMENDs a shared secret length of 160 bits.
+> R6 - The algorithm MUST use a strong shared secret.  **The length of the shared secret MUST be at least 128 bits.**
+> This document RECOMMENDs a shared secret length of 160 bits.
 
-Since SHA1 HMACs can use at most 160 bits in a shared secret, and since this provides siginficantly more protection against brute-force attacks, you should probably go for 160-bit secrets generated using a cryptographically-secure random generator. 160 bits is 20 octets (bytes), so `random_bytes(20)` is a good option for a sufficiently secure secret. There is little to be gained in generating secrets of more than 160 bits.
+The TOTP specification allows for the use of SHA256 or SHA512 algorithms, while using SHA1 by default. Since it depends
+on HOTP, HOTP uses HMACs, and HMACs reduce any key longer than the digest produced by the hashing algorithm to the
+length of the digest by hashing it, there is little value in providing a secret longer than the digest size of the
+algorithm in use. HOTP recommends 160 bits on the basis of the SHA1 algorithm's digests being of that length; if you are
+using SHA256 or SHA512 algorithms with your TOTPs, that recommendation should probably increase to the length of their
+digests - 256 bits (32 bytes) for SHA256 and 512 bits (64 bytes) for SHA512.
 
-Once you have generated the secret you must store it securely. Never store it unencrypted, and make sure you have a strong key for your encryption. Use different keys for your various environments, and make sure you refresh your key often.
+Totp's internal random secret generator always generates 512 bit secrets. While this produces little extra benefit over
+160 bits if the algorithm is SHA1 (256 bits if it's SHA256), the only downside is an undetectable performance cost. If
+you are providing your own random secrets, the following would be good ways to generate them:
 
-Most authenticator apps can scan QR codes or allow the user to enter the shared secret as text. The secrets themselves are binary data - a byte sequence not a string. As such, in their raw form they are not easy for users to type into their authenticator app. Base32 is usually used for this purpose in TOTP. Whether you store your users' secrets as raw bytes or Base32 encoded, you still need to encrypt the stored secret.
+| Algorithm | Random secret generator |
+|-----------|-------------------------|
+| SHA1      | `random_bytes(20)`      |
+| SHA256    | `random_bytes(32)`      |
+| SHA512    | `random_bytes(64)`      |
+
+Once you have generated the secret you must store it securely. Never store it unencrypted, and make sure you have a
+strong key for your encryption. Use different keys for your various environments, and make sure you refresh your key
+often.
+
+Most authenticator apps can scan QR codes or allow the user to enter the shared secret as text. The secrets themselves
+are binary data - a byte sequence not a string. As such, in their raw form they are not easy for users to type into their authenticator app. Base32 is usually used for this purpose in TOTP. Whether you store your users' secrets as raw bytes or Base32 encoded, you still need to encrypt the stored secret.
 
 ## Authenticating
 
-Once you have received the OTP the user has input, you need to compare it to the generated OTP. This involves the following logical steps:
+Once you have received the OTP the user has input, you need to compare it to the generated OTP. This involves the
+following logical steps:
 
 1. Retrieve the shared secret for the appropriate user from your storage.
 2. Decrypt the shared secret.
@@ -79,15 +106,25 @@ There are two primary security concerns with authenticating using TOTP:
 
 ### Minimising the secret's unencrypted availability
 
-You should strive to minimise the time that the shared secret is unencrypted in RAM, so you should only retrieve it just before you are ready to compare it to the user's input and you should overwrite the variable's RAM as soon as you have done the comparison. Practically, this means you should set the secret in the `Totp` object to a random byte sequence at least as long as the secret as soon as you have done the comparison. This is necessary because PHP does not specify precisely when an object is destroyed, only that it is garbage collected at some point after it goes out of scope. So when the Totp object is no longer in scope, the unencrypted secret still resides in RAM for an indeterminate period of time.
-
-To do this, first call `setSecret(random_bytes(20))` on your `Totp` object (use whatever equivalent of `random_bytes()` you're using to generate secrets if `random_bytes()` is not available on your platform). This will overwrite the stored secret in the `Totp` object with random data. Then set the `Totp` object to `null` so that it gets garbage collected as soon as possible.
+You should strive to minimise the time that the shared secret is unencrypted in RAM, so you should only retrieve it just
+before you are ready to compare it to the user's input and you should unset the variable as soon as you have
+done the comparison. The Totp class destructor will overwrite the contents of the unencrypted secret with random data so
+that after the object's memory has been freed it no longer contains the unencrypted secret. The destuctor only does its
+work once all references to the object have been discarded - i.e. its reference count reaches 0 or the only remaining
+references are circular references in objects that are themselves no longer accessible. You should therefore also strive
+to ensure that you don't keep unnecessary references to your Totp objects.
 
 ### Ensuring generated OTPs are only used once
 
-The simplest way to ensure that each OTP is only used for at most one successful authentication attempt is to record the timestamp or counter of the most recently used successful OTP. When the user attempts to authenticate, if the `Totp` object's current timestamp/counter is equal to or lower than the last recorded successful authentication attempt then the OTP is considered stale and must not be used to authenticate.
+The simplest way to ensure that each OTP is only used for at most one successful authentication attempt is to record the
+timestamp or counter of the most recently used successful OTP. When the user attempts to authenticate, if the `Totp`
+object's current timestamp/counter is equal to or lower than the last recorded successful authentication attempt then
+the OTP is considered stale and must not be used to authenticate.
 
-It is important that you ensure that all routes to authentication that use the TOTP secret are protected in this way - for example if you have a mobile app and a web app, you must ensure that a OTP used to authenticate with the web app cannot subsequently be used to authenticate using the mobile app. [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt) has a good discussion of the reasoning for this.
+It is important that you ensure that all routes to authentication that use the TOTP secret are protected in this way -
+for example if you have a mobile app and a web app, you must ensure that a OTP used to authenticate with the web app
+cannot subsequently be used to authenticate using the mobile app. [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt) has a
+good discussion of the reasoning for this.
 
 ## References
 - H. Krawczyk, M. Bellare & R. Canetti, _[RFC2104: HMAC: Keyed-Hashing for Message Authentication](https://www.ietf.org/rfc/rfc2104.txt)_, https://www.ietf.org/rfc/rfc2104.txt, retrieved 17th April, 2022.
