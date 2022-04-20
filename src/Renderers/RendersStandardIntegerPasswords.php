@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Equit\Totp\Renderers;
 
 /**
@@ -12,8 +14,10 @@ namespace Equit\Totp\Renderers;
  * Renderer subclasses can import this trait and provide a digitCount property with the number of digits and the trait
  * will take care of the rest. The number of digits must be > 0.
  */
-trait RendersIntegerPasswords
+trait RendersStandardIntegerPasswords
 {
+	use ExtractsStandard31BitInteger;
+
 	/**
 	 * @return int The number of digits in the rendered password.
 	 */
@@ -35,15 +39,7 @@ trait RendersIntegerPasswords
 	public function render(string $hmac): string
 	{
 		assert (5 < $this->digits(), "Invalid digit count in Renderer subclass " . get_class($this));
-		$offset = ord($hmac[strlen($hmac) - 1]) & 0xf;
-
-		$password = (
-				(ord($hmac[$offset]) & 0x7f) << 24
-				| ord($hmac[$offset + 1]) << 16
-				| ord($hmac[$offset + 2]) << 8
-				| ord($hmac[$offset + 3])
-			) % (10 ** $this->digits());
-
+		$password = self::extractIntFromHmac($hmac) % (10 ** $this->digits());
 		return str_pad("{$password}", $this->digits(), "0", STR_PAD_LEFT);
 	}
 }

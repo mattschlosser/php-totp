@@ -13,7 +13,7 @@ use Equit\Totp\Exceptions\InvalidDigitsException;
  */
 class Integer implements IntegerRenderer
 {
-	use RendersIntegerPasswords;
+	use RendersStandardIntegerPasswords;
 
 	/**
 	 * @var int The number of digits.
