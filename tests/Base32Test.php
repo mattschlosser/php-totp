@@ -63,7 +63,7 @@ class Base32Test extends TestCase
 	 *
 	 * @return array
 	 */
-	public function dataForTestSetPlain(): array
+	public function dataForTestSetRaw(): array
 	{
 		return $this->dataForTestConstructor();
 	}
@@ -71,12 +71,12 @@ class Base32Test extends TestCase
 	/**
 	 * Test setting plain data for a Base32 codec.
 	 *
-	 * @dataProvider dataForTestSetPlain
+	 * @dataProvider dataForTestSetRaw
 	 *
 	 * @param mixed $plainData
 	 * @param string|null $exceptionClass
 	 */
-	public function testSetPlain(mixed $plainData, ?string $exceptionClass = null)
+	public function testSetRaw(mixed $plainData, ?string $exceptionClass = null)
 	{
 		if (isset($exceptionClass)) {
 			$this->expectException($exceptionClass);
