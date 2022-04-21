@@ -163,8 +163,8 @@ class Totp
 	/**
 	 * Helper to generate a random secret.
 	 *
-	 * The constructor uses this if no secret is provided. The secret is 64 bytes (512 bits) in length so that it is
-	 * sufficiently strong for all the supported algorithms.
+	 * The constructor uses this if no secret is provided. The secret is guaranteed to be valid for a TOTP. Currently
+     * it is always 64 bytes (512 bits) in length so that it is sufficiently strong for all the supported algorithms.
 	 *
 	 * @return string The random secret.
 	 * @throws SecureRandomDataUnavailableException if random_bytes() is unable to generate
