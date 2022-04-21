@@ -20,7 +20,6 @@ use Equit\Totp\TotpSecret;
 use Generator;
 use ReflectionMethod;
 use ReflectionProperty;
-use Stringable;
 use TypeError;
 
 /**
@@ -1042,13 +1041,7 @@ class TotpTest extends TestCase
 			"invalidEmpty" => ["", null, InvalidSecretException::class,],
 			"invalidTooShort" => ["OBQXG43XN5ZGI===", null, InvalidSecretException::class,],
 			"invalidWrongTypeNull" => [null, null, TypeError::class,],
-			"invalidWrongTypeStringable" => [new class implements Stringable
-			{
-				public function __toString(): string
-				{
-					return "OBQXG43XN5ZGILLQMFZXG53POJSA====";
-				}
-			}, null, TypeError::class,],
+			"invalidWrongTypeStringable" => [self::createStringable("OBQXG43XN5ZGILLQMFZXG53POJSA===="), null, TypeError::class,],
 		];
 	}
 
@@ -1087,13 +1080,7 @@ class TotpTest extends TestCase
 			"invalidEmpty" => ["", null, InvalidSecretException::class,],
 			"invalidTooShort" => ["cGFzc3dvcmQ=", null, InvalidSecretException::class,],
 			"invalidWrongTypeNull" => [null, null, TypeError::class,],
-			"invalidWrongTypeStringable" => [new class implements Stringable
-			{
-				public function __toString(): string
-				{
-					return "cGFzc3dvcmQtcGFzc3dvcmQ=";
-				}
-			}, null, TypeError::class,],
+			"invalidWrongTypeStringable" => [self::createStringable("cGFzc3dvcmQtcGFzc3dvcmQ="), null, TypeError::class,],
 		];
 	}
 
@@ -1229,25 +1216,11 @@ class TotpTest extends TestCase
 			"invalidFloat1.0" => [1.0, TypeError::class,],
 			"invalidFloat256.0" => [256.0, TypeError::class,],
 			"invalidFloat512.0" => [512.0, TypeError::class,],
-			"invalidStringableSha1" => [new class implements Stringable {
-				public function __toString(): string
-				{
-					return "Sha1";
-				}
-			}, TypeError::class,],
-			"invalidStringableSha256" => [new class implements Stringable {
-				public function __toString(): string
-				{
-					return "Sha256";
-				}
-			}, TypeError::class,],
-			"invalidStringableSha512" => [new class implements Stringable {
-				public function __toString(): string
-				{
-					return "Sha512";
-				}
-			}, TypeError::class,],
-			"invalidArray" => [[Totp::Sha1Algorithm,], TypeError::class,],		];
+			"invalidStringableSha1" => [self::createStringable("Sha1"), TypeError::class,],
+			"invalidStringableSha256" => [self::createStringable("Sha256"), TypeError::class,],
+			"invalidStringableSha512" => [self::createStringable("Sha512"), TypeError::class,],
+			"invalidArray" => [[Totp::Sha1Algorithm,], TypeError::class,],
+        ];
 	}
 
 	/**

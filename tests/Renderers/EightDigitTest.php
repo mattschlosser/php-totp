@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Equit\Totp\Tests\Renderers;
 
 use Equit\Totp\Renderers\EightDigits;
