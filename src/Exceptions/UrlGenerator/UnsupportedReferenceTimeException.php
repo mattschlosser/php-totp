@@ -34,12 +34,12 @@ class UnsupportedReferenceTimeException extends UrlGeneratorException
      *
      * @noinspection PhpDocMissingThrowsInspection DateTime constructor guaranteed not to throw here.
      */
-    public function __construct(int | DateTime $time, string $message = "", int $code = 0, ?Throwable $previous = null)
+    public function __construct(int|DateTime $time, string $message = "", int $code = 0, ?Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
 
         if ($time instanceof DateTime) {
-            $this->m_time = $time;
+            $this->m_time      = $time;
             $this->m_timestamp = $time->getTimestamp();
         } else {
             $this->m_timestamp = $time;
