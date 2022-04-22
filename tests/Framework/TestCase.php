@@ -9,6 +9,9 @@ use Equit\Totp\Tests\Framework\Constraints\StringContainsOnly;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Stringable;
 
+/**
+ * Base class for all test cases in the php-totp library.
+ */
 class TestCase extends BaseTestCase
 {
     /**

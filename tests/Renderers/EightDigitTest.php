@@ -7,6 +7,9 @@ namespace Equit\Totp\Tests\Renderers;
 use Equit\Totp\Renderers\EightDigits;
 use Equit\Totp\Tests\Framework\TestCase;
 
+/**
+ * Test case for EightDigit Totp renderer.
+ */
 class EightDigitTest extends TestCase
 {
 	/**

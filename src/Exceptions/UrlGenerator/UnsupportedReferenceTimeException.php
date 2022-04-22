@@ -8,7 +8,7 @@ use DateTime;
 use Throwable;
 
 /**
- * Exception thrown when an UrlGenrator encounters a Totp with a timestamp it can't represent.
+ * Exception thrown when an UrlGenerator encounters a Totp with a timestamp it can't represent.
  *
  * The URI scheme does not allow for custom timestamps, so only the default of 0 is supported.
  */

@@ -7,6 +7,9 @@ namespace Equit\Totp\Tests\Renderers;
 use Equit\Totp\Renderers\SixDigits;
 use Equit\Totp\Tests\Framework\TestCase;
 
+/**
+ * Test case for SixDigit Totp renderer.
+ */
 class SixDigitTest extends TestCase
 {
 	/**

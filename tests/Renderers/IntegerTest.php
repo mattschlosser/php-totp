@@ -8,6 +8,9 @@ use Equit\Totp\Exceptions\InvalidDigitsException;
 use Equit\Totp\Renderers\Integer;
 use Equit\Totp\Tests\Framework\TestCase;
 
+/**
+ * Test case for Integer Totp renderer.
+ */
 class IntegerTest extends TestCase
 {
 	/**

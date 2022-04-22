@@ -5,6 +5,12 @@ namespace Equit\Totp\Exceptions\UrlGenerator;
 use Equit\Totp\Renderers\Renderer;
 use Throwable;
 
+/**
+ * Exception thrown when an UrlGenerator encounters a Renderer it can't work with.
+ *
+ * When the digits URL parameter is configured always to be included the renderer must be an instance of IntegerRenderer
+ * in order to be able to determine the value for the parameter.
+ */
 class UnsupportedRendererException extends UrlGeneratorException
 {
 	/**
