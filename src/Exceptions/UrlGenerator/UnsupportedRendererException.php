@@ -1,11 +1,11 @@
 <?php
 
-namespace Equit\Totp\Exceptions;
+namespace Equit\Totp\Exceptions\UrlGenerator;
 
 use Equit\Totp\Renderers\Renderer;
 use Throwable;
 
-class InvalidRendererException extends UrlGeneratorException
+class UnsupportedRendererException extends UrlGeneratorException
 {
 	/**
 	 * @var Renderer The invalid renderer.

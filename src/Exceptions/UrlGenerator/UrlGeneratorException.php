@@ -1,6 +1,6 @@
 <?php
 
-namespace Equit\Totp\Exceptions;
+namespace Equit\Totp\Exceptions\UrlGenerator;
 
 use Exception;
 
