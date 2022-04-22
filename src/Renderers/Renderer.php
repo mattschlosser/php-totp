@@ -7,12 +7,12 @@ namespace Equit\Totp\Renderers;
  */
 interface Renderer
 {
-	/**
-	 * Produce the one-time password for an HMAC.
-	 *
-	 * @param string $hmac The HMAC to process.
-	 *
-	 * @return string The one-time password.
-	 */
-	public function render(string $hmac): string;
+    /**
+     * Produce the one-time password for an HMAC.
+     *
+     * @param string $hmac The HMAC to process.
+     *
+     * @return string The one-time password.
+     */
+    public function render(string $hmac): string;
 }

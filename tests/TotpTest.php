@@ -19,6 +19,8 @@ use Equit\Totp\Tests\Framework\TestCase;
 use Equit\Totp\Totp;
 use Equit\Totp\TotpSecret;
 use Generator;
+use InvalidArgumentException;
+use ReflectionException;
 use ReflectionMethod;
 use ReflectionProperty;
 use TypeError;
@@ -889,7 +891,7 @@ class TotpTest extends TestCase
 				$actual = $method(...$details["args"]);
 				$this->assertEquals($expected, $actual, "Expected return value from {$methodName} not found.");
 			}
-			catch (\ReflectionException $e) {
+			catch (ReflectionException $e) {
 				$this->fail("Invalid method name in expectations given to testSixDigitTotp().");
 			}
 		}
@@ -1023,7 +1025,7 @@ class TotpTest extends TestCase
 				$actual = $method(...$details["args"]);
 				$this->assertEquals($expected, $actual, "Expected return value from {$methodName} not found.");
 			}
-			catch (\ReflectionException $e) {
+			catch (ReflectionException $e) {
 				$this->fail("Invalid method name in expectations given to testSixDigitTotp().");
 			}
 		}
@@ -1385,7 +1387,7 @@ class TotpTest extends TestCase
 	{
 		if (!isset($expectedTimestamp)) {
 			if (!is_int($time)) {
-				throw new \InvalidArgumentException("Test data for testReferenceTimestamp expects \$time to be an int if \$expectedTimestamp is not specified.");
+				throw new InvalidArgumentException("Test data for testReferenceTimestamp expects \$time to be an int if \$expectedTimestamp is not specified.");
 			}
 
 			$expectedTimestamp = $time;
@@ -1444,7 +1446,7 @@ class TotpTest extends TestCase
 	{
 		if (!isset($expectedDateTime)) {
 			if (!($time instanceof DateTime)) {
-				throw new \InvalidArgumentException("Test data for testReferenceTimestamp expects \$time to be a DateTime instance if \$expectedDateTime is not specified.");
+				throw new InvalidArgumentException("Test data for testReferenceTimestamp expects \$time to be a DateTime instance if \$expectedDateTime is not specified.");
 			}
 
 			$expectedDateTime = $time;

@@ -41,17 +41,17 @@ class TestCase extends BaseTestCase
         };
     }
 
-	/**
-	 * Assert that a string contains only characters that are present in another string.
-	 *
-	 * @param string $allowableCharacters The string containing the allowable characters.
-	 * @param string $actualString The string to test.
-	 * @param string $message Optional message for use when the assertion fails.
-	 */
-	public static function assertStringContainsOnly(string $allowableCharacters, string $actualString, string $message = ""): void
-	{
-		static::assertThat($actualString, new StringContainsOnly($allowableCharacters), $message);
-	}
+    /**
+     * Assert that a string contains only characters that are present in another string.
+     *
+     * @param string $allowableCharacters The string containing the allowable characters.
+     * @param string $actualString The string to test.
+     * @param string $message Optional message for use when the assertion fails.
+     */
+    public static function assertStringContainsOnly(string $allowableCharacters, string $actualString, string $message = ""): void
+    {
+        static::assertThat($actualString, new StringContainsOnly($allowableCharacters), $message);
+    }
 
     /**
      * Assert that an OTP provisioning URL is equivalent to another.
@@ -60,7 +60,8 @@ class TestCase extends BaseTestCase
      * @param string $actualUrl The URL to test.
      * @param string $message Optional message for use when the assertion fails.
      *
-     * @throws \Equit\Totp\Tests\Framework\Exceptions\InvalidOtpUrlException if the reference URL is found not to be valid.
+     * @throws \Equit\Totp\Tests\Framework\Exceptions\InvalidOtpUrlException if the reference URL is found not to be
+     *     valid.
      */
     public static function assertOtpUrlIsEquivalentTo(string $referenceUrl, string $actualUrl, string $message = ""): void
     {

@@ -25,4 +25,5 @@ use Exception;
  * Base class for all exceptions related to TOTP instances.
  */
 class TotpException extends Exception
-{}
+{
+}

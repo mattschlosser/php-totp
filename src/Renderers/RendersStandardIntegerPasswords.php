@@ -16,30 +16,30 @@ namespace Equit\Totp\Renderers;
  */
 trait RendersStandardIntegerPasswords
 {
-	use ExtractsStandard31BitInteger;
+    use ExtractsStandard31BitInteger;
 
-	/**
-	 * @return int The number of digits in the rendered password.
-	 */
-	public function digits(): int
-	{
-		return $this->digitCount;
-	}
+    /**
+     * @return int The number of digits in the rendered password.
+     */
+    public function digits(): int
+    {
+        return $this->digitCount;
+    }
 
-	/**
-	 * Render the integer password from a given HMAC.
-	 *
-	 * The HMAC must be 152 bits (19 bytes) or more in length. HMACs provided by Totp instances always meet this
-	 * requirement.
-	 *
-	 * @param string $hmac The HMAC to process.
-	 *
-	 * @return string The digits of the generated password.
-	 */
-	public function render(string $hmac): string
-	{
-		assert (5 < $this->digits(), "Invalid digit count in Renderer subclass " . get_class($this));
-		$password = self::extractIntFromHmac($hmac) % (10 ** $this->digits());
-		return str_pad("{$password}", $this->digits(), "0", STR_PAD_LEFT);
-	}
+    /**
+     * Render the integer password from a given HMAC.
+     *
+     * The HMAC must be 152 bits (19 bytes) or more in length. HMACs provided by Totp instances always meet this
+     * requirement.
+     *
+     * @param string $hmac The HMAC to process.
+     *
+     * @return string The digits of the generated password.
+     */
+    public function render(string $hmac): string
+    {
+        assert(5 < $this->digits(), "Invalid digit count in Renderer subclass " . get_class($this));
+        $password = self::extractIntFromHmac($hmac) % (10 ** $this->digits());
+        return str_pad("{$password}", $this->digits(), "0", STR_PAD_LEFT);
+    }
 }

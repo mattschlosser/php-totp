@@ -8,6 +8,7 @@
  *
  * The oathtool command is expected to be in your path. If it is not, this script will fail.
  */
+
 use Equit\Totp\Base32;
 use Equit\Totp\Base64;
 
@@ -18,10 +19,10 @@ require_once("bootstrap.php");
  */
 function usage(): void
 {
-	global $argv;
-	$bin = basename($argv[0]);
+    global $argv;
+    $bin = basename($argv[0]);
 
-	echo <<<EOT
+    echo <<<EOT
 {$bin} - Generate test data for php-totp's unit tests based on the test data in RFC 6238.
 
 Usage: {$argv[0]} [--help]
@@ -35,25 +36,25 @@ EOT;
 }
 
 if (isset($argv[1]) && "--help" === $argv[1]) {
-	usage();
-	exit(1);
+    usage();
+    exit(1);
 }
 
-$secret = "12345678901234567890";
+$secret       = "12345678901234567890";
 $base32secret = Base32::encode($secret);
 $base64secret = Base64::encode($secret);
 
 echo "[\n";
 
 foreach (["sha1", "sha256", "sha512"] as $algorithm) {
-	foreach ([59, 1111111109, 1111111111, 1234567890, 2000000000, 20000000000,] as $timestamp) {
-		$time = new DateTime("@{$timestamp}", new DateTimeZone("UTC"));
-		$otp  = trim(`oathtool -b -d 8 --now="{$time->format("Y-m-d H:i:s")} UTC" --totp="{$algorithm}" "{$base32secret}"`);
-		$otp7 = substr($otp, 1);
-		$otp6 = substr($otp, 2);
+    foreach ([59, 1111111109, 1111111111, 1234567890, 2000000000, 20000000000,] as $timestamp) {
+        $time = new DateTime("@{$timestamp}", new DateTimeZone("UTC"));
+        $otp  = trim(`oathtool -b -d 8 --now="{$time->format("Y-m-d H:i:s")} UTC" --totp="{$algorithm}" "{$base32secret}"`);
+        $otp7 = substr($otp, 1);
+        $otp6 = substr($otp, 2);
 
         // NOTE the secret is ASCII-safe, so we can output it without escaping any binary
-		echo <<<EOT
+        echo <<<EOT
     "rfcTestData-{$algorithm}-{$timestamp}" => [
       "algorithm" => "${algorithm}",
       "referenceTimestamp" => 0,

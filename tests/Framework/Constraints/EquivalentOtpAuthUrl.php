@@ -59,7 +59,7 @@ class EquivalentOtpAuthUrl extends Constraint
 
         // NOTE the type is always either "totp" or "hotp" so it doesn't need decoding
         $this->m_referenceIssuer = urldecode($this->m_referenceIssuer);
-        $this->m_referenceUser = urldecode($this->m_referenceUser);
+        $this->m_referenceUser   = urldecode($this->m_referenceUser);
 
         // NOTE we don't need to extract the key/value of each parameter, it's sufficient to check that the full
         // parameter string including its name has a match in the tested URL
@@ -73,7 +73,7 @@ class EquivalentOtpAuthUrl extends Constraint
      * @param string $value The URL parameter (key and value).
      * @param string $void The array key for the URL parameter (which is ignored).
      */
-    private static function urlDecodeParameter(string & $value, string $void): void
+    private static function urlDecodeParameter(string &$value, string $void): void
     {
         $value = urldecode($value);
     }
@@ -114,7 +114,8 @@ class EquivalentOtpAuthUrl extends Constraint
 
         try {
             [$void, $otpType, $issuer, $user, $params,] = $parts;
-        } catch (RuntimeException $err) {
+        }
+        catch (RuntimeException $err) {
             return false;
         }
 

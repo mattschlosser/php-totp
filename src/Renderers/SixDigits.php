@@ -7,6 +7,7 @@ namespace Equit\Totp\Renderers;
  */
 class SixDigits implements IntegerRenderer
 {
-	use RendersStandardIntegerPasswords;
-	protected int $digitCount = 6;
+    use RendersStandardIntegerPasswords;
+
+    protected int $digitCount = 6;
 }

@@ -11,5 +11,5 @@
  */
 function toPhpHexString(string $binary): string
 {
-	return "\\x" . implode("\\x", str_split(bin2hex($binary), 2));
+    return "\\x" . implode("\\x", str_split(bin2hex($binary), 2));
 }

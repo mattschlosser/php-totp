@@ -15,23 +15,23 @@ namespace Equit\Totp\Renderers;
  */
 trait ExtractsStandard31BitInteger
 {
-	/**
-	 * Extract the int from an HMAC.
-	 *
-	 * The int extracted is the value of the big-endian integer in to the platform's native byte order. In other words,
-	 * the value you get is the same value as the bytes would represent on a big-endian platform.
-	 *
-	 * @param string $hmac The HMAC from which to extract the int.
-	 *
-	 * @return int The extracted int.
-	 */
-	protected static function extractIntFromHmac(string $hmac): int
-	{
-		$offset = ord($hmac[strlen($hmac) - 1]) & 0xf;
+    /**
+     * Extract the int from an HMAC.
+     *
+     * The int extracted is the value of the big-endian integer in to the platform's native byte order. In other words,
+     * the value you get is the same value as the bytes would represent on a big-endian platform.
+     *
+     * @param string $hmac The HMAC from which to extract the int.
+     *
+     * @return int The extracted int.
+     */
+    protected static function extractIntFromHmac(string $hmac): int
+    {
+        $offset = ord($hmac[strlen($hmac) - 1]) & 0xf;
 
-		return (ord($hmac[$offset]) & 0x7f) << 24
-				| ord($hmac[$offset + 1]) << 16
-				| ord($hmac[$offset + 2]) << 8
-				| ord($hmac[$offset + 3]);
-	}
+        return (ord($hmac[$offset]) & 0x7f) << 24
+            | ord($hmac[$offset + 1]) << 16
+            | ord($hmac[$offset + 2]) << 8
+            | ord($hmac[$offset + 3]);
+    }
 }

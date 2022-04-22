@@ -13,10 +13,10 @@ require_once("bootstrap.php");
  */
 function usage(): void
 {
-	global $argv;
-	$bin = basename($argv[0]);
+    global $argv;
+    $bin = basename($argv[0]);
 
-	echo <<<EOT
+    echo <<<EOT
 {$bin} - Generate a random binary string.
 
 Usage: {$argv[0]} [--help | bytes]
@@ -31,8 +31,8 @@ EOT;
 }
 
 if (isset($argv[1]) && "--help" === $argv[1]) {
-	usage();
-	exit(1);
+    usage();
+    exit(1);
 }
 
 echo toPhpHexString(random_bytes($argv[1] ?? 20)) . "\n";

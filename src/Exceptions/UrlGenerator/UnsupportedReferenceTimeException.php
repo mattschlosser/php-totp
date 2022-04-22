@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Equit\Totp\Exceptions\UrlGenerator;
 
 use DateTime;
+use DateTimeZone;
 use Throwable;
 
 /**
@@ -44,7 +45,7 @@ class UnsupportedReferenceTimeException extends UrlGeneratorException
         } else {
             $this->m_timestamp = $time;
             /** @noinspection PhpUnhandledExceptionInspection DateTime constructor will not throw here */
-            $this->m_time = new DateTime("@{$time}", new \DateTimeZone("UTC"));
+            $this->m_time = new DateTime("@{$time}", new DateTimeZone("UTC"));
         }
     }
 

@@ -2,12 +2,13 @@
 
 namespace Equit\Totp\Tests\Framework\Exceptions;
 
+use Exception;
 use Throwable;
 
 /**
  * Exception thrown when an EquivalentUrl constraint is constructed with an invalid reference URL.
  */
-class InvalidOtpUrlException extends \Exception
+class InvalidOtpUrlException extends Exception
 {
     /**
      * @var string The invalid URL.

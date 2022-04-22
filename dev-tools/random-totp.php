@@ -13,10 +13,10 @@ use Equit\Totp\Totp;
  */
 function usage(): void
 {
-	global $argv;
-	$bin = basename($argv[0]);
+    global $argv;
+    $bin = basename($argv[0]);
 
-	echo <<<EOT
+    echo <<<EOT
 {$bin} - Output verbose details of a random TOTP.
 
 Usage: {$argv[0]} [--help]
@@ -28,15 +28,15 @@ EOT;
 }
 
 if (isset($argv[1]) && "--help" === $argv[1]) {
-	usage();
-	exit(1);
+    usage();
+    exit(1);
 }
 
 $totp = Totp::integerTotp(
-	random_bytes(20),
-	6,
-	10 * mt_rand(1, 6),							// random interval, 10, 20, 30 40, 50 or 60 seconds
-	mt_rand(0, time() - (60 * 60 * 24 * 365 * 20))		// reference time is a random time up to 20 years ago
+    random_bytes(20),
+    6,
+    10 * mt_rand(1, 6),                            // random interval, 10, 20, 30 40, 50 or 60 seconds
+    mt_rand(0, time() - (60 * 60 * 24 * 365 * 20))        // reference time is a random time up to 20 years ago
 );
 
 // "current" time is some point in time between the reference time and actual current time

@@ -7,8 +7,8 @@ namespace Equit\Totp\Renderers;
  */
 interface IntegerRenderer extends Renderer
 {
-	/**
-	 * @return int The number of digits to render.
-	 */
-	public function digits(): int;
+    /**
+     * @return int The number of digits to render.
+     */
+    public function digits(): int;
 }

@@ -7,6 +7,7 @@ namespace Equit\Totp\Renderers;
  */
 class EightDigits implements IntegerRenderer
 {
-	use RendersStandardIntegerPasswords;
-	protected int $digitCount = 8;
+    use RendersStandardIntegerPasswords;
+
+    protected int $digitCount = 8;
 }

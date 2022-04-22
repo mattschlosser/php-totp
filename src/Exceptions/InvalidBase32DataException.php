@@ -27,9 +27,9 @@ use Throwable;
  */
 class InvalidBase32DataException extends Exception
 {
-	/**
-	 * @var string The data that was found to be invalid.
-	 */
+    /**
+     * @var string The data that was found to be invalid.
+     */
     private string $m_data;
 
     /**

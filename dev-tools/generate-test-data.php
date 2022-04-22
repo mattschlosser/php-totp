@@ -14,12 +14,12 @@ use Equit\Totp\Base64;
 /**
  * Show the usage/help message.
  */
-function usage()
+function usage(): void
 {
-	global $argv;
-	$bin = basename($argv[0]);
+    global $argv;
+    $bin = basename($argv[0]);
 
-	echo <<<EOT
+    echo <<<EOT
 {$bin} - Generate some test data for php-totp.
 
 Usage: {$argv[0]} [--help | OPTIONS]
@@ -85,22 +85,22 @@ EOT;
  */
 function chooseOne(array $options, array $weights = null): mixed
 {
-	if (!isset($weights)) {
-		return $options[mt_rand(0, count($options) - 1)];
-	}
+    if (!isset($weights)) {
+        return $options[mt_rand(0, count($options) - 1)];
+    }
 
-	$item = mt_rand(0, array_sum($weights) - 1);
-	$cumulativeWeight = 0;
+    $item             = mt_rand(0, array_sum($weights) - 1);
+    $cumulativeWeight = 0;
 
-	for ($idx = 0; $idx < count($weights); ++$idx) {
-		$cumulativeWeight += $weights[$idx];
+    for ($idx = 0; $idx < count($weights); ++$idx) {
+        $cumulativeWeight += $weights[$idx];
 
-		if ($cumulativeWeight > $item) {
-			break;
-		}
-	}
+        if ($cumulativeWeight > $item) {
+            break;
+        }
+    }
 
-	return $options[$idx];
+    return $options[$idx];
 }
 
 /**
@@ -108,7 +108,7 @@ function chooseOne(array $options, array $weights = null): mixed
  */
 function validAlgorithms(): array
 {
-	return ["SHA1", "SHA256", "SHA512",];
+    return ["SHA1", "SHA256", "SHA512",];
 }
 
 /**
@@ -120,7 +120,7 @@ function validAlgorithms(): array
  */
 function randomAlgorithm(): string
 {
-	return chooseOne(validAlgorithms());
+    return chooseOne(validAlgorithms());
 }
 
 /**
@@ -132,7 +132,7 @@ function randomAlgorithm(): string
  */
 function randomReferenceTimestamp(): int
 {
-	return mt_rand(0, time() - 20 * 365 * 24 * 60 * 60);
+    return mt_rand(0, time() - 20 * 365 * 24 * 60 * 60);
 }
 
 /**
@@ -150,14 +150,14 @@ function randomReferenceTimestamp(): int
  */
 function randomNow(int $referenceTimestamp, int $maxYear = null): int
 {
-	if (isset($maxYear)) {
-		$maxTimestamp = (DateTime::createFromFormat("Y-m-d H:i:s", "{$maxYear}-12-31 23:59:59", new DateTimeZone("UTC")))->getTimestamp();
-	} else {
-		// 9999-12-31 23:59:59
-		$maxTimestamp = 253402300799;
-	}
+    if (isset($maxYear)) {
+        $maxTimestamp = (DateTime::createFromFormat("Y-m-d H:i:s", "{$maxYear}-12-31 23:59:59", new DateTimeZone("UTC")))->getTimestamp();
+    } else {
+        // 9999-12-31 23:59:59
+        $maxTimestamp = 253402300799;
+    }
 
-	return mt_rand($referenceTimestamp, $maxTimestamp);
+    return mt_rand($referenceTimestamp, $maxTimestamp);
 }
 
 /**
@@ -169,7 +169,7 @@ function randomNow(int $referenceTimestamp, int $maxYear = null): int
  */
 function randomInterval(): int
 {
-	return 10 * mt_rand(1, 360);
+    return 10 * mt_rand(1, 360);
 }
 
 /**
@@ -181,7 +181,7 @@ function randomInterval(): int
  */
 function randomDigits(): int
 {
-	return chooseOne([6, 7, 8,]);
+    return chooseOne([6, 7, 8,]);
 }
 
 /**
@@ -193,145 +193,147 @@ function randomDigits(): int
  */
 function phpHexStringLiteral(string $str): string
 {
-	return "\\x" . implode("\\x", str_split(bin2hex($str), 2));
+    return "\\x" . implode("\\x", str_split(bin2hex($str), 2));
 }
 
 $opts = [
-	"secret-type" => "base32",
-	"times" => 1,
+    "secret-type" => "base32",
+    "times" => 1,
 ];
 
 for ($idx = 1; $idx < $argc; ++$idx) {
-	switch ($argv[$idx]) {
-		case "--help":
-			usage();
-			exit(1);
+    switch ($argv[$idx]) {
+        case "--help":
+            usage();
+            exit(1);
 
-		case "--secret":
-			$opts["secret"] = $argv[++$idx] ?? die("--secret requires the secret to be specified as the next argument. See ${argv[0]} --help for details.");
-			break;
+        case "--secret":
+            $opts["secret"] = $argv[++$idx] ?? die("--secret requires the secret to be specified as the next argument. See ${argv[0]} --help for details.");
+            break;
 
-		case "--reference-time":
-			++$idx;
+        case "--reference-time":
+            ++$idx;
 
-			if (!isset($argv[$idx])) {
-				die("--reference-time requires the time to be specified as the next argument. See ${argv[0]} --help for details.");
-			}
+            if (!isset($argv[$idx])) {
+                die("--reference-time requires the time to be specified as the next argument. See ${argv[0]} --help for details.");
+            }
 
-			if (filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 0,],])) {
-				$opts["referenceTimestamp"] = intval($argv[$idx]);
-			} else {
-				try {
-					$opts["referenceTimestamp"] = (new DateTime($argv[$idx]))->getTimestamp();
-				} catch (Exception $e) {
-					die("The provided time for --reference-time was not valid. See ${argv[0]} --help for details.");
-				}
-			}
-			break;
+            if (filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 0,],])) {
+                $opts["referenceTimestamp"] = intval($argv[$idx]);
+            } else {
+                try {
+                    $opts["referenceTimestamp"] = (new DateTime($argv[$idx]))->getTimestamp();
+                }
+                catch (Exception $e) {
+                    die("The provided time for --reference-time was not valid. See ${argv[0]} --help for details.");
+                }
+            }
+            break;
 
-		case "--current-time":
-			++$idx;
+        case "--current-time":
+            ++$idx;
 
-			if (!isset($argv[$idx])) {
-				die("--current-time requires the time to be specified as the next argument. See ${argv[0]} --help for details.");
-			}
+            if (!isset($argv[$idx])) {
+                die("--current-time requires the time to be specified as the next argument. See ${argv[0]} --help for details.");
+            }
 
-			if (filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 0,],])) {
-				$opts["now"] = intval($argv[$idx]);
-			} else {
-				try {
-					$opts["now"] = (new DateTime($argv[$idx]))->getTimestamp();
-				} catch (Exception $e) {
-					die("The provided time for --current-time was not valid. See ${argv[0]} --help for details.");
-				}
-			}
-			break;
+            if (filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 0,],])) {
+                $opts["now"] = intval($argv[$idx]);
+            } else {
+                try {
+                    $opts["now"] = (new DateTime($argv[$idx]))->getTimestamp();
+                }
+                catch (Exception $e) {
+                    die("The provided time for --current-time was not valid. See ${argv[0]} --help for details.");
+                }
+            }
+            break;
 
-		case "--times":
-			++$idx;
+        case "--times":
+            ++$idx;
 
-			if (!isset($argv[$idx])) {
-				die("--times requires the number of test data items to be specified as the next argument. See ${argv[0]} --help for details.");
-			}
+            if (!isset($argv[$idx])) {
+                die("--times requires the number of test data items to be specified as the next argument. See ${argv[0]} --help for details.");
+            }
 
-			if (!filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 1,],])) {
-				die("The number of test data items must be a positive integer. See ${argv[0]} --help for details.");
-			}
+            if (!filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 1,],])) {
+                die("The number of test data items must be a positive integer. See ${argv[0]} --help for details.");
+            }
 
-			$opts["times"] = intval($argv[$idx]);
-			break;
+            $opts["times"] = intval($argv[$idx]);
+            break;
 
-		case "--digits":
-			++$idx;
+        case "--digits":
+            ++$idx;
 
-			if (!isset($argv[$idx])) {
-				die("--digits requires the number of digits to be specified as the next argument. See ${argv[0]} --help for details.");
-			}
+            if (!isset($argv[$idx])) {
+                die("--digits requires the number of digits to be specified as the next argument. See ${argv[0]} --help for details.");
+            }
 
-			if (!filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 6, "max_range" => 10,],])) {
-				die("The number of digits items must be between 6 and 10 inclusive. See ${argv[0]} --help for details.");
-			}
+            if (!filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 6, "max_range" => 10,],])) {
+                die("The number of digits items must be between 6 and 10 inclusive. See ${argv[0]} --help for details.");
+            }
 
-			$opts["digits"] = intval($argv[$idx]);
-			break;
+            $opts["digits"] = intval($argv[$idx]);
+            break;
 
-		case "--algorithm":
-			++$idx;
+        case "--algorithm":
+            ++$idx;
 
-			if (!isset($argv[$idx])) {
-				die("--algorithm requires the algorithm to be specified as the next argument. See ${argv[0]} --help for details.");
-			}
+            if (!isset($argv[$idx])) {
+                die("--algorithm requires the algorithm to be specified as the next argument. See ${argv[0]} --help for details.");
+            }
 
-			if (!in_array($argv[$idx], validAlgorithms())) {
-				die("The algorithm must be one of [" . implode(", ", validAlgorithms()) . "]. See ${argv[0]} --help for details.");
-			}
+            if (!in_array($argv[$idx], validAlgorithms())) {
+                die("The algorithm must be one of [" . implode(", ", validAlgorithms()) . "]. See ${argv[0]} --help for details.");
+            }
 
-			$opts["algorithm"] = $argv[$idx];
-			break;
+            $opts["algorithm"] = $argv[$idx];
+            break;
 
-		case "--interval":
-			++$idx;
+        case "--interval":
+            ++$idx;
 
-			if (!isset($argv[$idx])) {
-				die("--interval requires the interval to be specified as the next argument. See ${argv[0]} --help for details.");
-			}
+            if (!isset($argv[$idx])) {
+                die("--interval requires the interval to be specified as the next argument. See ${argv[0]} --help for details.");
+            }
 
-			if (!filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 1,],])) {
-				die("The interval must be at least 1 second. See ${argv[0]} --help for details.");
-			}
+            if (!filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 1,],])) {
+                die("The interval must be at least 1 second. See ${argv[0]} --help for details.");
+            }
 
-			$opts["interval"] = intval($argv[$idx]);
-			break;
+            $opts["interval"] = intval($argv[$idx]);
+            break;
 
-		case "-32":
-			$opts["secret-type"] = "base32";
-			break;
+        case "-32":
+            $opts["secret-type"] = "base32";
+            break;
 
-		case "-64":
-			$opts["secret-type"] = "base64";
-			break;
+        case "-64":
+            $opts["secret-type"] = "base64";
+            break;
 
-		default:
-			die ("Unrecognised argument {$argv[$idx]}. See ${argv[0]} --help for details.");
-	}
+        default:
+            die ("Unrecognised argument {$argv[$idx]}. See ${argv[0]} --help for details.");
+    }
 }
 
 if (isset($opts["now"])) {
-	if (!isset($opts["referenceTimestamp"])) {
-		die("--reference-time must be specified if --current-time is specified. See ${argv[0]} --help for details.");
-	}
+    if (!isset($opts["referenceTimestamp"])) {
+        die("--reference-time must be specified if --current-time is specified. See ${argv[0]} --help for details.");
+    }
 
-	if ($opts["now"] < $opts["referenceTimestamp"]) {
-		die("--current-time must be on or after if --reference-time. See ${argv[0]} --help for details.");
-	}
+    if ($opts["now"] < $opts["referenceTimestamp"]) {
+        die("--current-time must be on or after if --reference-time. See ${argv[0]} --help for details.");
+    }
 }
 
 if (isset($opts["secret"])) {
-	$opts["secret"] = match($opts["secret-type"]) {
-		"base32" => $opts["secret"],
-		"base64" => Base32::encode(Base64::decode($opts["secret"])),
-		"hex" => Base32::encode(hex2bin($opts["secret"])),
-	};
+    $opts["secret"] = match ($opts["secret-type"]) {
+        "base32" => $opts["secret"],
+        "base64" => Base32::encode(Base64::decode($opts["secret"])),
+        "hex" => Base32::encode(hex2bin($opts["secret"])),
+    };
 }
 
 echo "[\n";
@@ -339,49 +341,49 @@ echo "[\n";
 $timesDigits = strlen("{$opts["times"]}");
 
 for ($idx = 0; $idx < $opts["times"]; ++$idx) {
-	$secret = $opts["secret"] ?? Base32::encode(random_bytes(20));
-	$algorithm = $opts["algorithm"] ?? randomAlgorithm();
-	$referenceTimestamp = $opts["referenceTimestamp"] ?? randomReferenceTimestamp();
-	$interval = $opts["interval"] ?? randomInterval();
-	$digits = $opts["digits"] ?? randomDigits();
-	$nowTimestamp = $opts["now"] ?? randomNow($referenceTimestamp, 2299);
-	$referenceTime = new DateTime("@{$referenceTimestamp}", new DateTimeZone("UTC"));
-	$nowTime = new DateTime("@{$nowTimestamp}", new DateTimeZone("UTC"));
-	$oathToolOutput = explode("\n", trim(`oathtool -b -v --totp={$algorithm} -d {$digits} --now "{$nowTime->format("Y-m-d H:i:s")} UTC" -s {$interval}s -S "{$referenceTime->format("Y-m-d H:i:s")} UTC" "{$secret}"`));
-	$password = array_pop($oathToolOutput);
+    $secret             = $opts["secret"] ?? Base32::encode(random_bytes(20));
+    $algorithm          = $opts["algorithm"] ?? randomAlgorithm();
+    $referenceTimestamp = $opts["referenceTimestamp"] ?? randomReferenceTimestamp();
+    $interval           = $opts["interval"] ?? randomInterval();
+    $digits             = $opts["digits"] ?? randomDigits();
+    $nowTimestamp       = $opts["now"] ?? randomNow($referenceTimestamp, 2299);
+    $referenceTime      = new DateTime("@{$referenceTimestamp}", new DateTimeZone("UTC"));
+    $nowTime            = new DateTime("@{$nowTimestamp}", new DateTimeZone("UTC"));
+    $oathToolOutput     = explode("\n", trim(`oathtool -b -v --totp={$algorithm} -d {$digits} --now "{$nowTime->format("Y-m-d H:i:s")} UTC" -s {$interval}s -S "{$referenceTime->format("Y-m-d H:i:s")} UTC" "{$secret}"`));
+    $password           = array_pop($oathToolOutput);
 
-	foreach ($oathToolOutput as $line) {
-		if (preg_match("/Counter: 0x([a-zA-Z0-9]+) \(([0-9]+)\)/", $line, $matches)) {
-			$counterValue = intval($matches[2]);
-			$counterBytes = hex2bin(str_pad($matches[1], 16, "0", STR_PAD_LEFT));
-		}
-	}
+    foreach ($oathToolOutput as $line) {
+        if (preg_match("/Counter: 0x([a-zA-Z0-9]+) \(([0-9]+)\)/", $line, $matches)) {
+            $counterValue = intval($matches[2]);
+            $counterBytes = hex2bin(str_pad($matches[1], 16, "0", STR_PAD_LEFT));
+        }
+    }
 
-	echo "   \"randomDataset" . sprintf("%0{$timesDigits}d", $idx + 1) . "\" => [\n";
-	echo "      \"algorithm\" => \"" . strtolower($algorithm) . "\"\n";
-	echo "      \"secret\" => [\n";
-	echo "         \"raw\" => \"" . phpHexStringLiteral(Base32::decode($secret)) . "\"\n";
-	echo "         \"base32\" => \"{$secret}\"\n";
-	echo "         \"base64\" => \"" . Base64::encode(Base32::decode($secret)) . "\"\n";
-	echo "      ],\n";
-	echo "      \"referenceTime\" => [\n";
-	echo "         // {$referenceTime->format("Y-m-d H:i:s")} UTC\n";
-	echo "         \"timestamp\" => {$referenceTimestamp},\n";
-	echo "         \"datetime\" => new DateTime(\"@{$referenceTimestamp}\", new DateTimeZone(\"UTC\")),\n";
-	echo "      ],\n";
-	echo "      \"interval\" => {$interval},\n";
-	echo "      \"currentTime\" => [\n";
-	echo "         // {$nowTime->format("Y-m-d H:i:s")} UTC\n";
-	echo "         \"timestamp\" => {$nowTimestamp},\n";
-	echo "         \"datetime\" => new DateTime(\"@{$nowTimestamp}\", new DateTimeZone(\"UTC\")),\n";
-	echo "      ],\n";
-	echo "      \"digits\" => {$digits},\n";
-	echo "      \"counter\" => [\n";
-	echo "         \"bytes\" => \"" . phpHexStringLiteral($counterBytes) . "\",\n";
-	echo "         \"value\" => {$counterValue},\n";
-	echo "      ],\n";
-	echo "      \"password\" => \"{$password}\",\n";
-	echo "   ],\n";
+    echo "   \"randomDataset" . sprintf("%0{$timesDigits}d", $idx + 1) . "\" => [\n";
+    echo "      \"algorithm\" => \"" . strtolower($algorithm) . "\"\n";
+    echo "      \"secret\" => [\n";
+    echo "         \"raw\" => \"" . phpHexStringLiteral(Base32::decode($secret)) . "\"\n";
+    echo "         \"base32\" => \"{$secret}\"\n";
+    echo "         \"base64\" => \"" . Base64::encode(Base32::decode($secret)) . "\"\n";
+    echo "      ],\n";
+    echo "      \"referenceTime\" => [\n";
+    echo "         // {$referenceTime->format("Y-m-d H:i:s")} UTC\n";
+    echo "         \"timestamp\" => {$referenceTimestamp},\n";
+    echo "         \"datetime\" => new DateTime(\"@{$referenceTimestamp}\", new DateTimeZone(\"UTC\")),\n";
+    echo "      ],\n";
+    echo "      \"interval\" => {$interval},\n";
+    echo "      \"currentTime\" => [\n";
+    echo "         // {$nowTime->format("Y-m-d H:i:s")} UTC\n";
+    echo "         \"timestamp\" => {$nowTimestamp},\n";
+    echo "         \"datetime\" => new DateTime(\"@{$nowTimestamp}\", new DateTimeZone(\"UTC\")),\n";
+    echo "      ],\n";
+    echo "      \"digits\" => {$digits},\n";
+    echo "      \"counter\" => [\n";
+    echo "         \"bytes\" => \"" . phpHexStringLiteral($counterBytes) . "\",\n";
+    echo "         \"value\" => {$counterValue},\n";
+    echo "      ],\n";
+    echo "      \"password\" => \"{$password}\",\n";
+    echo "   ],\n";
 }
 
 echo "]\n";

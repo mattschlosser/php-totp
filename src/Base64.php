@@ -32,16 +32,16 @@ use Equit\Totp\Exceptions\InvalidBase64DataException;
  */
 class Base64
 {
-	/**
-	 * The base64 dictionary.
-	 */
-	protected const Dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    /**
+     * The base64 dictionary.
+     */
+    protected const Dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     /**
      * @var string|null The raw data.
      *
      * Always use raw() instead of accessing this - due to decode-on-demand, the member will be null after the encoded
-	 * data has been set until decode() is called.
+     * data has been set until decode() is called.
      */
     private ?string $m_rawData;
 
@@ -49,7 +49,7 @@ class Base64
      * @var string|null The Base64 encoded data.
      *
      * Always use encoded() instead of accessing this - due to encode-on-demand, the member will be null after the raw
-	 * data has been set until encode() is called.
+     * data has been set until encode() is called.
      */
     private ?string $m_encodedData;
 
@@ -86,40 +86,40 @@ class Base64
      */
     public function setEncoded(string $base64)
     {
-		// note base64_decode() is too tolerant of invalid data so we roll our own validation instead of relying on
-		// false being returned from base64_decode()
-		$length = strlen($base64);
+        // note base64_decode() is too tolerant of invalid data so we roll our own validation instead of relying on
+        // false being returned from base64_decode()
+        $length = strlen($base64);
 
-		if (0 !== ($length % 4)) {
-			throw new InvalidBase64DataException($base64, "Base64 data must be padded to a multiple of 4 bytes.");
-		}
+        if (0 !== ($length % 4)) {
+            throw new InvalidBase64DataException($base64, "Base64 data must be padded to a multiple of 4 bytes.");
+        }
 
-		// ensure any padding is a valid length
-		$paddedLength = $length;
+        // ensure any padding is a valid length
+        $paddedLength = $length;
 
-		while (0 < $length && $base64[$length - 1] === "=") {
-			--$length;
-		}
+        while (0 < $length && $base64[$length - 1] === "=") {
+            --$length;
+        }
 
-		switch ($paddedLength - $length) {
-			case 0:
-			case 1:
-			case 2:
-				break;
+        switch ($paddedLength - $length) {
+            case 0:
+            case 1:
+            case 2:
+                break;
 
-			default:
-				throw new InvalidBase64DataException($base64, "Base64 data must be padded with either 0, 1 or 2 '=' characters.");
-		}
+            default:
+                throw new InvalidBase64DataException($base64, "Base64 data must be padded with either 0, 1 or 2 '=' characters.");
+        }
 
-		// ensure all non-padding characters are from the Base32 dictionary
-		$validLength = strspn($base64, self::Dictionary, 0, $length);
+        // ensure all non-padding characters are from the Base32 dictionary
+        $validLength = strspn($base64, self::Dictionary, 0, $length);
 
-		if ($length !== $validLength) {
-			throw new InvalidBase64DataException($base64, "Invalid base64 character found at position {$validLength}.");
-		}
+        if ($length !== $validLength) {
+            throw new InvalidBase64DataException($base64, "Invalid base64 character found at position {$validLength}.");
+        }
 
-		$this->m_encodedData = $base64;
-		$this->m_rawData     = null;
+        $this->m_encodedData = $base64;
+        $this->m_rawData     = null;
     }
 
     /**
@@ -129,7 +129,7 @@ class Base64
      */
     public function raw(): string
     {
-        if(!isset($this->m_rawData)) {
+        if (!isset($this->m_rawData)) {
             $this->decodeBase64Data();
         }
 
@@ -145,7 +145,7 @@ class Base64
      */
     public function encoded(): string
     {
-        if(!isset($this->m_encodedData)) {
+        if (!isset($this->m_encodedData)) {
             $this->encodeRawData();
         }
 
@@ -193,7 +193,7 @@ class Base64
      * Internal helper to encode the raw content as Base64 when required.
      *
      * This is called when the encoded content is requested and the internal cache of the encoded content is out of
-	 * sync.
+     * sync.
      */
     protected function encodeRawData()
     {
