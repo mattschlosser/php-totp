@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Generate a random string of bytes of a specified length and output it as a PHP string literal.
  *

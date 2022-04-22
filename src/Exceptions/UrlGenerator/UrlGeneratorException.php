@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Equit\Totp\Exceptions\UrlGenerator;
 
 use Exception;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Convert a binary string to a PHP source string literal.
  *

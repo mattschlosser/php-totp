@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Equit\Totp\Exceptions;
 
 use DateTime;
@@ -47,6 +49,6 @@ class InvalidTimeException extends TotpException
      */
     public function getDateTime(): DateTime
     {
-        return DateTime::createFromFormat("U", $this->m_timestamp, new DateTimeZone("UTC"));
+        return DateTime::createFromFormat("U", "{$this->m_timestamp}", new DateTimeZone("UTC"));
     }
 }
