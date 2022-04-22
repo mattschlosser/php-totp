@@ -29,15 +29,15 @@ use Equit\Totp\Renderers\IntegerRenderer;
  *
  * Each of these methods can be called statically to create a UrlGenerator. You can also chain them to fluently
  * construct a UrlGenerator with the required feature set. For example:
- * 
+ *
  *     $generator = UrlGenerator::for("darren")->from("Equit")->withDigits();
- * 
+ *
  * and
  *
  *     $generator = UrlGenerator::from("Equit")->for("darren")->withDigits();
  *
  * are both valid, and will produce UrlGenerators with the same features.
- * 
+ *
  * @method static self for(string $user) Initialise a generator for a given user.
  * @method static self from(string|null $issuer) Initialise a generator from a given issuer.
  * @method static self withPeriod() Initialise a generator that includes the period parameter in URLs it generates.
