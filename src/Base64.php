@@ -1,7 +1,4 @@
 <?php
-
-declare(strict_types=1);
-
 /*
  * Copyright 2022 Darren Edale
  *
@@ -18,6 +15,8 @@ declare(strict_types=1);
  * You should have received a copy of the Apache License v2.0
  * along with php-totp. If not, see <http://www.apache.org/licenses/>.
  */
+
+declare(strict_types=1);
 
 namespace Equit\Totp;
 
