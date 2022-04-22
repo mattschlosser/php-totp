@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Bootstrap script for all the command-line tools in this directory.
  */

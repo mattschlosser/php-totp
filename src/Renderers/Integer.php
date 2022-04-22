@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Equit\Totp\Renderers;
 
 use Equit\Totp\Exceptions\InvalidDigitsException;

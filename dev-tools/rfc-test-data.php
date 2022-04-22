@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Use the oathtool utility (https://www.nongnu.org/oath-toolkit/oathtool.1.html) to generate PHP test data for the
  * RFC 6238 test data (see page 15 of the RFC).
