@@ -6,6 +6,7 @@ namespace Equit\Totp\Tests;
 
 use Equit\Totp\Base32;
 use Equit\Totp\Exceptions\InvalidBase32DataException;
+use Equit\Totp\Tests\Framework\TestCase;
 use Error;
 
 /**

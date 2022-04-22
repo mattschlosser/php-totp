@@ -6,7 +6,7 @@ namespace Equit\Totp\Tests\Renderers;
 
 use Equit\Totp\Exceptions\InvalidDigitsException;
 use Equit\Totp\Renderers\Integer;
-use Equit\Totp\Tests\TestCase;
+use Equit\Totp\Tests\Framework\TestCase;
 
 class IntegerTest extends TestCase
 {

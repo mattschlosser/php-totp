@@ -7,6 +7,7 @@ namespace Equit\Totp\Tests;
 use Equit\Totp\Exceptions\InvalidBase32DataException;
 use Equit\Totp\Exceptions\InvalidBase64DataException;
 use Equit\Totp\Exceptions\InvalidSecretException;
+use Equit\Totp\Tests\Framework\TestCase;
 use Equit\Totp\TotpSecret;
 use Generator;
 use TypeError;

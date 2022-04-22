@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests;
+namespace Equit\Totp\Tests\Framework;
 
-use Equit\Totp\Tests\Constraints\EquivalentOtpAuthUrl;
-use PHPUnit\Framework\TestCase as FrameworkTestCase;
+use Equit\Totp\Tests\Framework\Constraints\EquivalentOtpAuthUrl;
+use Equit\Totp\Tests\Framework\Constraints\StringContainsOnly;
+use PHPUnit\Framework\TestCase as BaseTestCase;
 use Stringable;
 
-class TestCase extends FrameworkTestCase
+class TestCase extends BaseTestCase
 {
     /**
      * Helper to create a Stringable instance for testing purposes.
@@ -46,7 +47,7 @@ class TestCase extends FrameworkTestCase
 	 */
 	public static function assertStringContainsOnly(string $allowableCharacters, string $actualString, string $message = ""): void
 	{
-		static::assertThat($actualString, new Constraints\StringContainsOnly($allowableCharacters), $message);
+		static::assertThat($actualString, new StringContainsOnly($allowableCharacters), $message);
 	}
 
     /**
@@ -56,7 +57,7 @@ class TestCase extends FrameworkTestCase
      * @param string $actualUrl The URL to test.
      * @param string $message Optional message for use when the assertion fails.
      *
-     * @throws \Equit\Totp\Tests\Exceptions\InvalidOtpUrlException if the reference URL is found not to be valid.
+     * @throws \Equit\Totp\Tests\Framework\Exceptions\InvalidOtpUrlException if the reference URL is found not to be valid.
      */
     public static function assertOtpUrlIsEquivalentTo(string $referenceUrl, string $actualUrl, string $message = ""): void
     {

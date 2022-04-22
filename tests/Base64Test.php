@@ -6,6 +6,7 @@ namespace Equit\Totp\Tests;
 
 use Equit\Totp\Base64;
 use Equit\Totp\Exceptions\InvalidBase64DataException;
+use Equit\Totp\Tests\Framework\TestCase;
 use Error;
 
 /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Equit\Totp\Tests\Renderers;
 
 use Equit\Totp\Renderers\SixDigits;
-use Equit\Totp\Tests\TestCase;
+use Equit\Totp\Tests\Framework\TestCase;
 
 class SixDigitTest extends TestCase
 {
