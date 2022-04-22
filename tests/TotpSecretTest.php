@@ -7,9 +7,9 @@ namespace Equit\Totp\Tests;
 use Equit\Totp\Exceptions\InvalidBase32DataException;
 use Equit\Totp\Exceptions\InvalidBase64DataException;
 use Equit\Totp\Exceptions\InvalidSecretException;
+use Equit\Totp\Tests\Framework\TestCase;
 use Equit\Totp\TotpSecret;
 use Generator;
-use Stringable;
 use TypeError;
 
 /**
@@ -51,14 +51,8 @@ class TotpSecretTest extends TestCase
 			"invalidJustTooShortBinary" => ["\x10\x72\x47\x33\x70\xd1\x5a\xd7\xad\xee\x38\xb3\x48\x9f\x6b", InvalidSecretException::class,],
 			"invalidJustTooShortNullBinary" => ["\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", InvalidSecretException::class,],
 			"invalidNull" => [null, TypeError::class],
-			"invalidStringable" => [new class implements Stringable {
-				public function __toString(): string
-				{
-					return "\x10\x72\x47\x33\x70\xd1\x5a\xd7\xad\xee\x38\xb3\x48\x9f\x6b\x23\x3f\x40\x55\x5a";
-				}
-			}, TypeError::class],
-			"invalidArray" => [["\x10\x72\x47\x33\x70\xd1\x5a\xd7\xad\xee\x38\xb3\x48\x9f\x6b\x23\x3f\x40\x55\x5a",], TypeError::class],
-			"invalidInt" => [16, TypeError::class],
+			"invalidStringable" => [self::createStringable("\x10\x72\x47\x33\x70\xd1\x5a\xd7\xad\xee\x38\xb3\x48\x9f\x6b\x23\x3f\x40\x55\x5a"), TypeError::class], "invalidArray" => [["\x10\x72\x47\x33\x70\xd1\x5a\xd7\xad\xee\x38\xb3\x48\x9f\x6b\x23\x3f\x40\x55\x5a",], TypeError::class],
+            "invalidInt" => [16, TypeError::class],
 			"invalidFloat" => [1234567890123456.789, TypeError::class],
 			"invalidTrue" => [true, TypeError::class],
 			"invalidFalse" => [false, TypeError::class],
@@ -104,12 +98,7 @@ class TotpSecretTest extends TestCase
 			"invalidNonBase32Characters" => ["cBZEOM3Q2FNNPLPOHCZURH3L", "", InvalidBase32DataException::class,],
 			"invalidBadBase32" => ["7HXO4WFASDGM7WVBIKNNTURERCMOIJQD3WZ6MGXLEUREUWDTIGJA===", "", InvalidBase32DataException::class,],
 			"invalidNull" => [null, "", TypeError::class],
-			"invalidStringable" => [new class implements Stringable {
-				public function __toString(): string
-				{
-					return "7HXO4WFASDGM7WVBIKNNTURERCMOIJQD3WZ6MGXLEUREUWDTIGJA====";
-				}
-			}, "", TypeError::class],
+			"invalidStringable" => [self::createStringable("7HXO4WFASDGM7WVBIKNNTURERCMOIJQD3WZ6MGXLEUREUWDTIGJA===="), "", TypeError::class,],
 			"invalidArray" => [["7HXO4WFASDGM7WVBIKNNTURERCMOIJQD3WZ6MGXLEUREUWDTIGJA====",], "", TypeError::class],
 			"invalidInt" => [16, "", TypeError::class],
 			"invalidFloat" => [1234567890123456.789, "", TypeError::class],
@@ -158,12 +147,7 @@ class TotpSecretTest extends TestCase
 			"invalidNonBase64Characters" => ["_HJHM3DRWtet7jizSJ9r", "", InvalidBase64DataException::class,],
 			"invalidBadBase64" => ["cGFzc3dvcmQtcGFzc3dvcmQ", "", InvalidBase64DataException::class,],
 			"invalidNull" => [null, "", TypeError::class],
-			"invalidStringable" => [new class implements Stringable {
-				public function __toString(): string
-				{
-					return "cGFzc3dvcmQtcGFzc3dvcmQ=";
-				}
-			}, "", TypeError::class],
+			"invalidStringable" => [self::createStringable("cGFzc3dvcmQtcGFzc3dvcmQ="), "", TypeError::class],
 			"invalidArray" => [["cGFzc3dvcmQtcGFzc3dvcmQ=",], "", TypeError::class],
 			"invalidInt" => [16, "", TypeError::class],
 			"invalidFloat" => [1234567890123456.789, "", TypeError::class],

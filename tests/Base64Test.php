@@ -6,8 +6,8 @@ namespace Equit\Totp\Tests;
 
 use Equit\Totp\Base64;
 use Equit\Totp\Exceptions\InvalidBase64DataException;
+use Equit\Totp\Tests\Framework\TestCase;
 use Error;
-use Stringable;
 
 /**
  * Test case for the Base64 codec.
@@ -26,14 +26,7 @@ class Base64Test extends TestCase
 			"typicalBinaryData" => ["\xff\xfe\xfd\xfc\xfb\xfa\xf8\xf7",],
 			"extremeEmptyData" => ["",],
 			"invalidNullData" => [null, Error::class],
-			"invalidStringableData" => [
-				new class implements Stringable {
-					public function __toString(): string {
-						return "test-data-to-encode";
-					}
-				},
-				Error::class,
-			],
+			"invalidStringableData" => [self::createStringable("test-data-to-encode"), Error::class,],
 		];
 	}
 
@@ -109,14 +102,7 @@ class Base64Test extends TestCase
 			"invalidStringData" => ["dGVzdC1kYXRhLXRvLWVuY29kZ_==", InvalidBase64DataException::class,],
 			"invalidBinaryData" => ["\xff\xfe\xfd\xfc\xfb\xfa\xf8\xf7", InvalidBase64DataException::class,],
 			"invalidNonStringData" => [null, Error::class],
-			"invalidStringableData" => [
-				new class implements Stringable {
-					public function __toString(): string {
-						return "dGVzdC1kYXRhLXRvLWVuY29kZQ==";
-					}
-				},
-				Error::class,
-			],
+			"invalidStringableData" => [self::createStringable("dGVzdC1kYXRhLXRvLWVuY29kZQ=="), Error::class,],
 			"invalidMixedData" => ["dGVzdC3/LW1peGVkLYAtZGF0YS0ALXRvLY8tZW5jb2RlCg_=", InvalidBase64DataException::class,],
 			"invalidPaddedData" => ["dGVzdC1kYXRhLXRvLWVuY29kZQ=", InvalidBase64DataException::class,],
 			"invalidPNGImageData" => [

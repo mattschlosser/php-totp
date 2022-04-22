@@ -6,8 +6,8 @@ namespace Equit\Totp\Tests;
 
 use Equit\Totp\Base32;
 use Equit\Totp\Exceptions\InvalidBase32DataException;
+use Equit\Totp\Tests\Framework\TestCase;
 use Error;
-use Stringable;
 
 /**
  * Test case for the Base32 codec.
@@ -26,14 +26,7 @@ class Base32Test extends TestCase
 			"typicalBinaryData" => ["\xff\xfe\xfd\xfc\xfb\xfa\xf8\xf7",],
 			"extremeEmptyData" => ["",],
 			"invalidNullData" => [null, Error::class],
-			"invalidStringableData" => [
-				new class implements Stringable {
-					public function __toString(): string {
-						return "test-data-to-encode";
-					}
-				},
-				Error::class,
-			],
+			"invalidStringableData" => [self::createStringable("test-data-to-encode"), Error::class,],
 		];
 	}
 
@@ -110,14 +103,7 @@ class Base32Test extends TestCase
 			"invalidStringData" => ["ORSXG5BNMRQXIYJNORXS2ZLOMNXWIZi=", InvalidBase32DataException::class,],
 			"invalidBinaryData" => ["\xff\xfe\xfd\xfc\xfb\xfa\xf8\xf7", InvalidBase32DataException::class,],
 			"invalidNonStringData" => [null, Error::class],
-			"invalidStringableData" => [
-				new class implements Stringable {
-					public function __toString(): string {
-						return "ORSXG5BNMRQXIYJNORXS2ZLOMNXWIZI=";
-					}
-				},
-				Error::class,
-			],
+			"invalidStringableData" => [self::createStringable("ORSXG5BNMRQXIYJNORXS2ZLOMNXWIZI="), Error::class,],
 			"invalidMixedData" => ["ORSXG5BN74WW22LYMVSC3ABNMRQXIYJNAAWXI3ZNR4WWK3TDN5SGKCQk", InvalidBase32DataException::class,],
 			"invalidPaddedData" => ["777P37H37L4PO==", InvalidBase32DataException::class,],
 			"invalidPNGImageData" => [

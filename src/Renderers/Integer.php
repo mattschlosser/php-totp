@@ -13,6 +13,16 @@ use Equit\Totp\Exceptions\InvalidDigitsException;
  */
 class Integer implements IntegerRenderer
 {
+    /**
+     * The minimum number of digits, as per RFC 6238.
+     */
+    public const MinimumDigits = 6;
+
+    /**
+     * The default number of digits.
+     */
+    public const DefaultDigits = 6;
+
 	use RendersStandardIntegerPasswords;
 
 	/**
@@ -23,11 +33,11 @@ class Integer implements IntegerRenderer
 	/**
 	 * Initialise a new renderer for a given number of digits.
 	 *
-	 * @param int $digits The digit count for rendered passwords.
+	 * @param int $digits The digit count for rendered passwords. Defaults to 6.
 	 *
-	 * @throws \Equit\Totp\Exceptions\InvalidDigitsException if the number of digits is < 1.
+	 * @throws \Equit\Totp\Exceptions\InvalidDigitsException if the number of digits is < 6.
 	 */
-	public function __construct(int $digits)
+	public function __construct(int $digits = self::DefaultDigits)
 	{
 		$this->setDigits($digits);
 	}
@@ -45,7 +55,7 @@ class Integer implements IntegerRenderer
 	 */
 	public function setDigits(int $digits)
 	{
-		if (6 > $digits) {
+		if (self::MinimumDigits > $digits) {
 			throw new InvalidDigitsException($digits, "Integer renderers must have at least six digits in the password.");
 		}
 

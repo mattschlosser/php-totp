@@ -26,5 +26,8 @@
         <testsuite name="Equit Totp Full Test Suite">
             <directory>./</directory>
         </testsuite>
+        <testsuite name="Equit Totp Renderers">
+            <directory>./Renderers/</directory>
+        </testsuite>
     </testsuites>
 </phpunit>

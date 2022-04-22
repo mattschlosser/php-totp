@@ -20,14 +20,32 @@ logins.
 
 ## Examples
 
-### Generating a secret
+### Provisioning a user
+
+Provision a user with TOTP and send them a notification with a URL they can import into their authenticator app.
+
 ````php
 // get hold of your user object in whatever way you normally do it
 $user = get_user();
 $totp = new Totp(algorithm: Totp::Sha512Algorithm);
 $user->setTotpSecret($totp->secret());
-echo "{$totp->base32Secret()}\n";       // show the user the secret for import into their authenticator app
-unset($totp);                           // ensure the secret is wiped from memory
+$user->notify(\Equit\Totp\UrlGenerator::for($user->userName())->from("Equit")->urlFor($totp));
+unset($totp);     // ensure the secret is wiped from memory
+````
+
+### Provisioning multiple users
+
+Provision multiple users with TOTP and send each a notification with a URL they can import into their authenticator app.
+
+````php
+$generator = \Equit\Totp\UrlGenerator::from("Equit");
+
+// get hold of your user objects in whatever way you need
+foreach (get_users() as $user) {
+   $totp = new Totp(algorithm: Totp::Sha512Algorithm);
+   $user->setTotpSecret($totp->secret());
+   $user->notify($generator->for($user->userName())->urlFor($totp));
+}
 ````
 
 ### Authenticating
@@ -47,6 +65,13 @@ $totp = null;
 ````
 
 ## Generating secure secrets
+
+The TOTP specification mandates that secrets are generated randomly (i.e. not chosen by the user). The Totp class will
+generate a cryptographically-secure random secret if none is provided to the constructor (or one of the factory methods 
+if that's how you're instantiating your Totp). Such internally-generated secrets will be 64 bytes (512 bits) in length
+and are sufficiently strong for all configurations of Totp. If you want to generate your own random secrets when
+provisioning TOTP for your users, read on. If you're happy to let the Totp class do this for you, you need not read this
+section.
 
 To generate good secrets for your users you need a good source of random data. PHP's `random_bytes()` function is a
 suitable source. If this is not available on your platform you'll need to look elsewhere. PHP's other random number
@@ -87,7 +112,9 @@ strong key for your encryption. Use different keys for your various environments
 often.
 
 Most authenticator apps can scan QR codes or allow the user to enter the shared secret as text. The secrets themselves
-are binary data - a byte sequence not a string. As such, in their raw form they are not easy for users to type into their authenticator app. Base32 is usually used for this purpose in TOTP. Whether you store your users' secrets as raw bytes or Base32 encoded, you still need to encrypt the stored secret.
+are binary data - a byte sequence not a string. As such, in their raw form they are not easy for users to type into
+their authenticator app. Base32 is usually used for this purpose in TOTP. Whether you store your users' secrets as raw
+bytes or Base32 encoded, you still need to encrypt the stored secret.
 
 ## Authenticating
 
