@@ -63,7 +63,7 @@ class UnsupportedRendererException extends UrlGeneratorException
      *
      * @return string The renderer class name.
      */
-    public function rendererClass(): string
+    public function getRendererClass(): string
     {
         return get_class($this->getRenderer());
     }

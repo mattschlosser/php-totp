@@ -52,7 +52,7 @@ class InvalidHashAlgorithmException extends TotpException
      *
      * @return string The algorithm name.
      */
-    public function getAlgorithm(): string
+    public function getHashAlgorithm(): string
     {
         return $this->m_algorithm;
     }
