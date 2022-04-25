@@ -1,8 +1,12 @@
 {
   "name": "equit/totp",
   "description": "TOTP generator for PHP",
-  "keywords": ["authentication", "totp", "2fa"],
-  "homepage": "https://github.com/bugsnag/bugsnag-laravel",
+  "keywords": [
+    "authentication",
+    "totp",
+    "2fa"
+  ],
+  "homepage": "https://github.com/darrenedale/php-totp",
   "minimum-stability": "stable",
   "license": "Apache-2.0",
   "authors": [
