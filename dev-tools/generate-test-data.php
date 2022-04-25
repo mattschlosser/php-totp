@@ -389,7 +389,7 @@ for ($idx = 0; $idx < $opts["times"]; ++$idx) {
     echo "         \"timestamp\" => {$referenceTimestamp},\n";
     echo "         \"datetime\" => new DateTime(\"@{$referenceTimestamp}\", new DateTimeZone(\"UTC\")),\n";
     echo "      ],\n";
-    echo "      \"time step\" => {$timeStep},\n";
+    echo "      \"time-step\" => {$timeStep},\n";
     echo "      \"currentTime\" => [\n";
     echo "         // {$nowTime->format("Y-m-d H:i:s")} UTC\n";
     echo "         \"timestamp\" => {$nowTimestamp},\n";
