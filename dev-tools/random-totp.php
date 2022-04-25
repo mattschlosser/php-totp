@@ -51,10 +51,10 @@ if (isset($argv[1]) && "--help" === $argv[1]) {
 }
 
 $totp = Totp::integerTotp(
-    6,
-    Totp::randomSecret(),
-    10 * mt_rand(1, 6),                            // random interval, 10, 20, 30 40, 50 or 60 seconds
-    mt_rand(0, time() - (60 * 60 * 24 * 365 * 20))        // reference time is a random time up to 20 years ago
+    digits: 6,
+    secret: Totp::randomSecret(),
+    timeStep: 10 * mt_rand(1, 6),                                  // random time-step, 10, 20, 30 40, 50 or 60 seconds
+    referenceTime: mt_rand(0, time() - (60 * 60 * 24 * 365 * 20))  // reference time is a random time up to 20 years ago
 );
 
 // "current" time is some point in time between the reference time and actual current time
@@ -69,7 +69,7 @@ echo "Secret         : " . toPhpHexString($totp->secret()) . "\n";
 echo "Secret (B32)   : {$totp->base32Secret()}\n";
 echo "Secret (B64)   : {$totp->base64Secret()}\n";
 echo "Reference Time : {$totp->referenceTimestamp()} {$totp->referenceDateTime()->format("Y-m-d H:i:s T")}\n";
-echo "Interval       : {$totp->interval()}\n";
+echo "Time step       : {$totp->timeStep()}\n";
 echo "Current Time   : {$currentTime} " . (new DateTime("@{$currentTime}"))->format("Y-m-d H:i:s T") . "\n\n";
 
 // OTP details at current time
@@ -81,8 +81,8 @@ echo "OTP (7)        : {$totp->passwordAt($currentTime)}\n";
 $totp->renderer()->setDigits(8);
 echo "OTP (8)        : {$totp->passwordAt($currentTime)}\n\n";
 
-// OTP details at -1 interval
-$currentTime -= $totp->interval();
+// OTP details at -1 time step
+$currentTime -= $totp->timeStep();
 echo "Counter - 1     : " . $totp->counterAt($currentTime) . " - " . toPhpHexString($counterBytesAt($currentTime)) . "\n";
 echo "HMAC - 1        : " . toPhpHexString($totp->hmacAt($currentTime)) . "\n";
 $totp->renderer()->setDigits(6);
@@ -92,8 +92,8 @@ echo "OTP - 1 (7)     : {$totp->passwordAt($currentTime)}\n";
 $totp->renderer()->setDigits(8);
 echo "OTP - 1 (8)     : {$totp->passwordAt($currentTime)}\n\n";
 
-// OTP details at +1 interval
-$currentTime += (2 * $totp->interval());
+// OTP details at +1 time step
+$currentTime += (2 * $totp->timeStep());
 echo "Counter + 1     : " . $totp->counterAt($currentTime) . " - " . toPhpHexString($counterBytesAt($currentTime)) . "\n";
 echo "HMAC + 1        : " . toPhpHexString($totp->hmacAt($currentTime)) . "\n";
 $totp->renderer()->setDigits(6);

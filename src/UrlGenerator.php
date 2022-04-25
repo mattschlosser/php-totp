@@ -340,8 +340,8 @@ class UrlGenerator
             $url .= "&algorithm=" . strtoupper($totp->hashAlgorithm());
         }
 
-        if (true === $this->includesPeriod() || (is_null($this->includesPeriod()) && Totp::DefaultInterval !== $totp->interval())) {
-            $url .= "&period={$totp->interval()}";
+        if (true === $this->includesPeriod() || (is_null($this->includesPeriod()) && Totp::DefaultTimeStep !== $totp->timeStep())) {
+            $url .= "&period={$totp->timeStep()}";
         }
 
         return $url;

@@ -23,36 +23,36 @@ namespace Equit\Totp\Exceptions;
 use Throwable;
 
 /**
- * Exception thrown when an interval < 1 is given for a TOTP instance.
+ * Exception thrown when a time step < 1 is given for a TOTP instance.
  */
-class InvalidIntervalException extends TotpException
+class InvalidTimeStepException extends TotpException
 {
     /**
-     * @var int The invalid interval.
+     * @var int The invalid time step.
      */
-    private int $m_interval;
+    private int $m_timeStep;
 
     /**
      * Initialise a new instance of the exception.
      *
-     * @param int $interval The invalid interval.
+     * @param int $timeStep The invalid time step.
      * @param string $message An optional message explaining the error. Defaults to an empty string.
      * @param int $code An optional error code. Defaults to 0.
      * @param \Throwable|null $previous The Throwable that occurred before the exception was thrown. Defaults to null.
      */
-    public function __construct(int $interval, string $message = "", int $code = 0, ?Throwable $previous = null)
+    public function __construct(int $timeStep, string $message = "", int $code = 0, ?Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
-        $this->m_interval = $interval;
+        $this->m_timeStep = $timeStep;
     }
 
     /**
-     * Fetch the invalid interval that was used.
+     * Fetch the invalid time step that was used.
      *
-     * @return int The interval.
+     * @return int The time step.
      */
-    public function getInterval(): int
+    public function getTimeStep(): int
     {
-        return $this->m_interval;
+        return $this->m_timeStep;
     }
 }

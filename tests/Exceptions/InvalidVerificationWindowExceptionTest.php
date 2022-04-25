@@ -40,8 +40,8 @@ class InvalidVerificationWindowExceptionTest extends TestCase
     {
         return [
             "typicalMinus1" => [-1],
-            "typicalIntervalMessageAndCode" => [-1, "-1 is not a valid verification window.", 12,],
-            "typicalIntervalMessageCodeAndPrevious" => [-1, "-1 is not a valid verification window.", 12, new Exception("foo"),],
+            "typicalWindowMessageAndCode" => [-1, "-1 is not a valid verification window.", 12,],
+            "typicalWindowMessageCodeAndPrevious" => [-1, "-1 is not a valid verification window.", 12, new Exception("foo"),],
             "extremeIntMin" => [PHP_INT_MIN,],
             "invalidNullWindow" => [null, "null is not a valid verification window.", 12, new Exception("foo"), TypeError::class],
             "invalidStringWindow" => ["-1", "'-1' is not a valid verification window.", 12, new Exception("foo"), TypeError::class],

@@ -24,7 +24,7 @@ use DateTime;
 use DateTimeZone;
 use Equit\Totp\Exceptions\SecureRandomDataUnavailableException;
 use Equit\Totp\Exceptions\InvalidHashAlgorithmException;
-use Equit\Totp\Exceptions\InvalidIntervalException;
+use Equit\Totp\Exceptions\InvalidTimeStepException;
 use Equit\Totp\Exceptions\InvalidSecretException;
 use Equit\Totp\Exceptions\InvalidTimeException;
 use Equit\Totp\Exceptions\InvalidVerificationWindowException;
@@ -67,9 +67,9 @@ class Totp
     public const DefaultAlgorithm = self::Sha1Algorithm;
 
     /**
-     * The default update interval for passowrds.
+     * The default update time step for passwords.
      */
-    public const DefaultInterval = 30;
+    public const DefaultTimeStep = 30;
 
     /**
      * The default reference time for passwords.
@@ -98,12 +98,12 @@ class Totp
     private string $m_secret;
 
     /**
-     * @var int The interval, in seconds, at which the password changes.
+     * @var int The time step, in seconds, at which the password changes.
      */
-    private int $m_interval;
+    private int $m_timeStep;
 
     /**
-     * @var int The reference time from new password generation intervals are measured.
+     * @var int The reference time from new password generation time steps are measured.
      */
     private int $m_referenceTime;
 
@@ -121,23 +121,23 @@ class Totp
      *
      * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
      * @param Renderer|null $renderer The renderer that produces one-time passwords from HMACs.
-     * @param int $interval The update interval for the passwords. Defaults to 30 seconds.
-     * @param int|DateTime $referenceTime The reference time from which intervals are measured. Defaults to 0.
+     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
+     * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
      * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
      * constants. Defaults to Sha1Algorithm.
      *
-     * @throws InvalidIntervalException if the interval is not a positive integer.
+     * @throws InvalidTimeStepException if the time step is not a positive integer.
      * @throws InvalidSecretException if the provided secret is less than 128 bits in length.
      * @throws InvalidHashAlgorithmException if the provided hash algorithm is not one of the supported algorithms. See
      * the class constants.
      * @throws SecureRandomDataUnavailableException if a randomly-generated secret is required but a
      * source of cryptographically-secure random data is not available.
      */
-    public function __construct(TotpSecret|string $secret = null, Renderer $renderer = null, int $interval = self::DefaultInterval, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm)
+    public function __construct(TotpSecret|string $secret = null, Renderer $renderer = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm)
     {
         $this->setSecret($secret ?? self::randomSecret());
         $this->setRenderer($renderer ?? static::defaultRenderer());
-        $this->setInterval($interval);
+        $this->setTimeStep($timeStep);
         $this->setHashAlgorithm($hashAlgorithm);
         $this->m_referenceTime = ($referenceTime instanceof DateTime ? $referenceTime->getTimestamp() : $referenceTime);
     }
@@ -187,24 +187,24 @@ class Totp
      * This is a convenience factory function for a commonly-used type of TOTP.
      *
      * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
-     * @param int $interval The update interval for the passwords. Defaults to 30 seconds.
-     * @param int|DateTime $referenceTime The reference time from which intervals are measured. Defaults to 0.
+     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
+     * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
      * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
      * constants. Defaults to Sha1Algorithm.
      *
      * @return Totp
      * @throws \Equit\Totp\Exceptions\InvalidHashAlgorithmException If the supplied hashing algorithm is not one
      * supported by TOTP.
-     * @throws \Equit\Totp\Exceptions\InvalidIntervalException if the interval is < 1.
+     * @throws \Equit\Totp\Exceptions\InvalidTimeStepException if the time step is < 1.
      * @throws \Equit\Totp\Exceptions\InvalidSecretException if the provided secret is less than 128 bits in length.
      * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
      */
-    public static function sixDigitTotp(TotpSecret|string $secret = null, int $interval = self::DefaultInterval, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
+    public static function sixDigitTotp(TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
     {
         /** @noinspection PhpUnhandledExceptionInspection */
-        return new Totp(secret: $secret, renderer: new SixDigits(), interval: $interval, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
+        return new Totp(secret: $secret, renderer: new SixDigits(), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
     }
 
     /**
@@ -213,24 +213,24 @@ class Totp
      * This is a convenience factory function for a commonly-used type of TOTP.
      *
      * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
-     * @param int $interval The update interval for the passwords. Defaults to 30 seconds.
-     * @param int|DateTime $referenceTime The reference time from which intervals are measured. Defaults to 0.
+     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
+     * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
      * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
      * constants. Defaults to Sha1Algorithm.
      *
      * @return Totp
      * @throws \Equit\Totp\Exceptions\InvalidHashAlgorithmException If the supplied hashing algorithm is not one
      * supported by TOTP.
-     * @throws \Equit\Totp\Exceptions\InvalidIntervalException if the interval is < 1.
+     * @throws \Equit\Totp\Exceptions\InvalidTimeStepException if the time step is < 1.
      * @throws \Equit\Totp\Exceptions\InvalidSecretException if the provided secret is less than 128 bits in length.
      * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
      */
-    public static function eightDigitTotp(TotpSecret|string $secret = null, int $interval = self::DefaultInterval, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
+    public static function eightDigitTotp(TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
     {
         /** @noinspection PhpUnhandledExceptionInspection */
-        return new Totp(secret: $secret, renderer: new EightDigits(), interval: $interval, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
+        return new Totp(secret: $secret, renderer: new EightDigits(), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
     }
 
     /**
@@ -240,8 +240,8 @@ class Totp
      *
      * @param int $digits The number of digits in generated one-time passwords.
      * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
-     * @param int $interval The update interval for the passwords. Defaults to 30 seconds.
-     * @param int|DateTime $referenceTime The reference time from which intervals are measured. Defaults to 0.
+     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
+     * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
      * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
      * constants. Defaults to Sha1Algorithm.
      *
@@ -249,15 +249,15 @@ class Totp
      * @throws \Equit\Totp\Exceptions\InvalidHashAlgorithmException If the supplied hashing algorithm is not one
      * supported by TOTP.
      * @throws \Equit\Totp\Exceptions\InvalidDigitsException if the number of digits is < 1.
-     * @throws \Equit\Totp\Exceptions\InvalidIntervalException if the interval is < 1.
+     * @throws \Equit\Totp\Exceptions\InvalidTimeStepException if the time step is < 1.
      * @throws \Equit\Totp\Exceptions\InvalidSecretException if the provided secret is less than 128 bits in length.
      * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
      */
-    public static function integerTotp(int $digits, TotpSecret|string $secret = null, int $interval = self::DefaultInterval, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
+    public static function integerTotp(int $digits, TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
     {
-        return new Totp(secret: $secret, renderer: new Integer($digits), interval: $interval, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
+        return new Totp(secret: $secret, renderer: new Integer($digits), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
     }
 
     /**
@@ -370,31 +370,31 @@ class Totp
     }
 
     /**
-     * Fetch the interval at which the one-time password changes, in seconds.
+     * Fetch the size of the time step at which the one-time password changes, in seconds.
      *
-     * @return int The interval.
+     * @return int The time step.
      */
-    public function interval(): int
+    public function timeStep(): int
     {
-        return $this->m_interval;
+        return $this->m_timeStep;
     }
 
     /**
-     * @param int $interval
+     * @param int $timeStep
      *
-     * @throws InvalidIntervalException
+     * @throws InvalidTimeStepException
      */
-    public function setInterval(int $interval): void
+    public function setTimeStep(int $timeStep): void
     {
-        if (1 > $interval) {
-            throw new InvalidIntervalException($interval, "The interval for a TOTP must be >= 1 second.");
+        if (1 > $timeStep) {
+            throw new InvalidTimeStepException($timeStep, "The time step for a TOTP must be >= 1 second.");
         }
 
-        $this->m_interval = $interval;
+        $this->m_timeStep = $timeStep;
     }
 
     /**
-     * Fetch the reference time from which intervals are measured.
+     * Fetch the reference time from which time steps are measured.
      *
      * The reference time is returned as the number of seconds since the Unix epoch.
      *
@@ -406,7 +406,7 @@ class Totp
     }
 
     /**
-     * The reference time from which intervals are measured as a DateTime object.
+     * The reference time from which time steps are measured as a DateTime object.
      *
      * @return \DateTime The reference time.
      */
@@ -416,7 +416,7 @@ class Totp
     }
 
     /**
-     * Set the reference time from which intervals are generated.
+     * Set the reference time from which time steps are generated.
      *
      * The reference time can be set either as an integer number of seconds since the Unix epoch or as a PHP DateTime
      * object. If using a DateTime object, make sure you know what time it represents in UTC since it is the number of
@@ -439,7 +439,7 @@ class Totp
     /**
      * Fetch the counter at a given time.
      *
-     * This method retrieves the number of intervals that have passed between the reference time and the time provided.
+     * This method retrieves the number of time steps that have passed between the reference time and the time provided.
      * This is returned as an integer in the native byte order of the underlying platform. It may be 32-bit or 64-bit.
      * It is important to note that this is not necessarily the set of bytes that will be used for the counter when the
      * HMAC is generated for the TOTP, since the specification mandates that a 64-bit integer in big-endian byte order
@@ -448,7 +448,7 @@ class Totp
      *
      * @param \DateTime|int $time The time at which the counter is sought.
      *
-     * @return int The number of intervals between the base time and the provided time.
+     * @return int The number of time steps between the reference time and the provided time.
      * @throws InvalidTimeException if the requested time is before the reference time.
      */
     public final function counterAt(DateTime|int $time): int
@@ -461,13 +461,13 @@ class Totp
             throw new InvalidTimeException(($time instanceof DateTime ? $time->getTimestamp() : $time), "The time at which the counter was requested is before the reference time.");
         }
 
-        return (int)floor(($time - $this->referenceTimestamp()) / $this->interval());
+        return (int)floor(($time - $this->referenceTimestamp()) / $this->timeStep());
     }
 
     /**
      * Fetch the HOTP counter for the current system time.
      *
-     * This method retrieves the number of intervals that have passed between the reference time and the current time.
+     * This method retrieves the number of time steps that have passed between the reference time and the current time.
      * This is returned as an integer in the native byte order of the underlying platform. It may be 32-bit or 64-bit.
      * It is important to note that this is not necessarily the set of bytes that will be used for the counter when the
      * HMAC is generated for the TOTP, since the specification mandates that a 64-bit integer in big-endian byte order
@@ -481,7 +481,7 @@ class Totp
      * This method is provided as a convenience to use, for example when determining whether a submitted OTP has already
      * been used to authenticate.
      *
-     * @return int The number of intervals between the reference time and the current time.
+     * @return int The number of time steps between the reference time and the current time.
      * @throws InvalidTimeException if the current system time is before the reference time.
      */
     public final function counter(): int
@@ -516,7 +516,7 @@ class Totp
     /**
      * Fetch the raw TOTP HMAC at a given time.
      *
-     * This is the raw byte sequence generated using the secret, reference time and interval.
+     * This is the raw byte sequence generated using the secret, reference time and time step.
      *
      * @param \DateTime|int $time The time at which the hmac is sought.
      *
@@ -531,7 +531,7 @@ class Totp
     /**
      * Fetch the raw TOTP HMAC for the current system time.
      *
-     * This is the raw byte sequence generated using the secret, reference time and interval.
+     * This is the raw byte sequence generated using the secret, reference time and time step.
      *
      * @return string The HMAC at the current system time.
      * @throws InvalidTimeException if the current time is before the reference time.
@@ -568,9 +568,9 @@ class Totp
     /**
      * Verify that a user-supplied input matches the one-time password at a given point in time.
      *
-     * Use the window to accept passwords up to N intervals old. N must be >= 0. If N is 0, only the password at the
+     * Use the window to accept passwords up to N time steps old. N must be >= 0. If N is 0, only the password at the
      * specified time will be accepted; if it is 1, the password at the specified time and the password for the
-     * immediately preceding interval will be considered acceptable; and so on. It is not possible to accept passwords
+     * immediately preceding time step will be considered acceptable; and so on. It is not possible to accept passwords
      * from prior to the reference time - if this is attempted (i.e. the window is too large) an
      * InvalidVerificationWindowException will be thrown.
      *
@@ -581,7 +581,7 @@ class Totp
      *
      * @param string $password The user-supplied password.
      * @param \DateTime|int $time The time at which to verify the user-supplied password matches the TOTP.
-     * @param int $window The window of acceptable passwords, measured in intervals before the specified time.
+     * @param int $window The window of acceptable passwords, measured in time steps before the specified time.
      *
      * @return bool
      * @throws InvalidVerificationWindowException if the window is < 0 or extends before the reference time.
@@ -601,7 +601,7 @@ class Totp
             throw new InvalidTimeException($time, "The time at which to verify the password is before the TOTP's reference time.");
         }
 
-        $threshold = $time - ($window * $this->interval());
+        $threshold = $time - ($window * $this->timeStep());
 
         if ($threshold < $this->referenceTimestamp()) {
             throw new InvalidVerificationWindowException($window, "The verification window would extend before the reference time for the TOTP.", self::ErrWindowViolatesReferenceTime);
@@ -612,7 +612,7 @@ class Totp
                 return true;
             }
 
-            $time -= $this->interval();
+            $time -= $this->timeStep();
         }
 
         return false;
@@ -621,9 +621,9 @@ class Totp
     /**
      * Verify that some user input matches the current one-time password.
      *
-     * Use the window to accept passwords up to N intervals old. N must be >= 0. If N is 0, only the password at the
+     * Use the window to accept passwords up to N time steps old. N must be >= 0. If N is 0, only the password at the
      * current system time will be accepted; if it is 1, the password at the current system time and the password for
-     * the immediately preceding interval will be considered acceptable; and so on. It is not possible to accept
+     * the immediately preceding time step will be considered acceptable; and so on. It is not possible to accept
      * passwords from prior to the reference time - if this is attempted (i.e. the window is too large) an
      * InvalidVerificationWindowException will be thrown.
      *
@@ -633,7 +633,7 @@ class Totp
      * the consuming application's responsibility to ensure that one-time passwords are not re-used.
      *
      * @param string $password The user-supplied password.
-     * @param int $window The window of acceptable passwords, measured in intervals.
+     * @param int $window The window of acceptable passwords, measured in time steps.
      *
      * @return bool true if the password is verified, false if not.
      * @throws InvalidVerificationWindowException if the window is < 0.

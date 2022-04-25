@@ -23,7 +23,7 @@ namespace Equit\Totp\Tests;
 use DateTime;
 use DateTimeZone;
 use Equit\Totp\Exceptions\InvalidHashAlgorithmException;
-use Equit\Totp\Exceptions\InvalidIntervalException;
+use Equit\Totp\Exceptions\InvalidTimeStepException;
 use Equit\Totp\Exceptions\InvalidSecretException;
 use Equit\Totp\Exceptions\InvalidTimeException;
 use Equit\Totp\Exceptions\InvalidVerificationWindowException;
@@ -77,343 +77,343 @@ class TotpTest extends TestCase
 		/** @noinspection PhpUnhandledExceptionInspection The DateTime constructor will not throw in these cases. */
 		return [
 			"rfcTestData-sha1-59" => [
-				"algorithm" => "sha1",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 59,
-				"time" => new DateTime("1970-01-01 00:00:59", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x00\x00\x00\x01",
-				"passwords" => [
-					"8" => "94287082",
+                "algorithm" => "sha1",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 59,
+                "time" => new DateTime("1970-01-01 00:00:59", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x00\x00\x00\x01",
+                "passwords" => [
+                    "8" => "94287082",
 					"7" => "4287082",
 					"6" => "287082",
 				],
 			],
 			"rfcTestData-sha1-1111111109" => [
-				"algorithm" => "sha1",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 1111111109,
-				"time" => new DateTime("2005-03-18 01:58:29", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xEC",
-				"passwords" => [
-					"8" => "07081804",
+                "algorithm" => "sha1",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 1111111109,
+                "time" => new DateTime("2005-03-18 01:58:29", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xEC",
+                "passwords" => [
+                    "8" => "07081804",
 					"7" => "7081804",
 					"6" => "081804",
 				],
 			],
 			"rfcTestData-sha1-1111111111" => [
-				"algorithm" => "sha1",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 1111111111,
-				"time" => new DateTime("2005-03-18 01:58:31", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xED",
-				"passwords" => [
-					"8" => "14050471",
+                "algorithm" => "sha1",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 1111111111,
+                "time" => new DateTime("2005-03-18 01:58:31", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xED",
+                "passwords" => [
+                    "8" => "14050471",
 					"7" => "4050471",
 					"6" => "050471",
 				],
 			],
 			"rfcTestData-sha1-1234567890" => [
-				"algorithm" => "sha1",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 1234567890,
-				"time" => new DateTime("2009-02-13 23:31:30", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x02\x73\xEF\x07",
-				"passwords" => [
-					"8" => "89005924",
+                "algorithm" => "sha1",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 1234567890,
+                "time" => new DateTime("2009-02-13 23:31:30", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x02\x73\xEF\x07",
+                "passwords" => [
+                    "8" => "89005924",
 					"7" => "9005924",
 					"6" => "005924",
 				],
 			],
 			"rfcTestData-sha1-2000000000" => [
-				"algorithm" => "sha1",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 2000000000,
-				"time" => new DateTime("2033-05-18 03:33:20", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x03\xF9\x40\xAA",
-				"passwords" => [
-					"8" => "69279037",
+                "algorithm" => "sha1",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 2000000000,
+                "time" => new DateTime("2033-05-18 03:33:20", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x03\xF9\x40\xAA",
+                "passwords" => [
+                    "8" => "69279037",
 					"7" => "9279037",
 					"6" => "279037",
 				],
 			],
 			"rfcTestData-sha1-20000000000" => [
-				"algorithm" => "sha1",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 20000000000,
-				"time" => new DateTime("2603-10-11 11:33:20", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x27\xBC\x86\xAA",
-				"passwords" => [
-					"8" => "65353130",
+                "algorithm" => "sha1",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 20000000000,
+                "time" => new DateTime("2603-10-11 11:33:20", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x27\xBC\x86\xAA",
+                "passwords" => [
+                    "8" => "65353130",
 					"7" => "5353130",
 					"6" => "353130",
 				],
 			],
 			"rfcTestData-sha256-59" => [
-				"algorithm" => "sha256",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 59,
-				"time" => new DateTime("1970-01-01 00:00:59", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x00\x00\x00\x01",
-				"passwords" => [
-					"8" => "32247374",
+                "algorithm" => "sha256",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 59,
+                "time" => new DateTime("1970-01-01 00:00:59", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x00\x00\x00\x01",
+                "passwords" => [
+                    "8" => "32247374",
 					"7" => "2247374",
 					"6" => "247374",
 				],
 			],
 			"rfcTestData-sha256-1111111109" => [
-				"algorithm" => "sha256",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 1111111109,
-				"time" => new DateTime("2005-03-18 01:58:29", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xEC",
-				"passwords" => [
-					"8" => "34756375",
+                "algorithm" => "sha256",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 1111111109,
+                "time" => new DateTime("2005-03-18 01:58:29", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xEC",
+                "passwords" => [
+                    "8" => "34756375",
 					"7" => "4756375",
 					"6" => "756375",
 				],
 			],
 			"rfcTestData-sha256-1111111111" => [
-				"algorithm" => "sha256",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 1111111111,
-				"time" => new DateTime("2005-03-18 01:58:31", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xED",
-				"passwords" => [
-					"8" => "74584430",
+                "algorithm" => "sha256",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 1111111111,
+                "time" => new DateTime("2005-03-18 01:58:31", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xED",
+                "passwords" => [
+                    "8" => "74584430",
 					"7" => "4584430",
 					"6" => "584430",
 				],
 			],
 			"rfcTestData-sha256-1234567890" => [
-				"algorithm" => "sha256",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 1234567890,
-				"time" => new DateTime("2009-02-13 23:31:30", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x02\x73\xEF\x07",
-				"passwords" => [
-					"8" => "42829826",
+                "algorithm" => "sha256",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 1234567890,
+                "time" => new DateTime("2009-02-13 23:31:30", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x02\x73\xEF\x07",
+                "passwords" => [
+                    "8" => "42829826",
 					"7" => "2829826",
 					"6" => "829826",
 				],
 			],
 			"rfcTestData-sha256-2000000000" => [
-				"algorithm" => "sha256",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 2000000000,
-				"time" => new DateTime("2033-05-18 03:33:20", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x03\xF9\x40\xAA",
-				"passwords" => [
-					"8" => "78428693",
+                "algorithm" => "sha256",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 2000000000,
+                "time" => new DateTime("2033-05-18 03:33:20", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x03\xF9\x40\xAA",
+                "passwords" => [
+                    "8" => "78428693",
 					"7" => "8428693",
 					"6" => "428693",
 				],
 			],
 			"rfcTestData-sha256-20000000000" => [
-				"algorithm" => "sha256",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 20000000000,
-				"time" => new DateTime("2603-10-11 11:33:20", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x27\xBC\x86\xAA",
-				"passwords" => [
-					"8" => "24142410",
+                "algorithm" => "sha256",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 20000000000,
+                "time" => new DateTime("2603-10-11 11:33:20", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x27\xBC\x86\xAA",
+                "passwords" => [
+                    "8" => "24142410",
 					"7" => "4142410",
 					"6" => "142410",
 				],
 			],
 			"rfcTestData-sha512-59" => [
-				"algorithm" => "sha512",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 59,
-				"time" => new DateTime("1970-01-01 00:00:59", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x00\x00\x00\x01",
-				"passwords" => [
-					"8" => "69342147",
+                "algorithm" => "sha512",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 59,
+                "time" => new DateTime("1970-01-01 00:00:59", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x00\x00\x00\x01",
+                "passwords" => [
+                    "8" => "69342147",
 					"7" => "9342147",
 					"6" => "342147",
 				],
 			],
 			"rfcTestData-sha512-1111111109" => [
-				"algorithm" => "sha512",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 1111111109,
-				"time" => new DateTime("2005-03-18 01:58:29", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xEC",
-				"passwords" => [
-					"8" => "63049338",
+                "algorithm" => "sha512",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 1111111109,
+                "time" => new DateTime("2005-03-18 01:58:29", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xEC",
+                "passwords" => [
+                    "8" => "63049338",
 					"7" => "3049338",
 					"6" => "049338",
 				],
 			],
 			"rfcTestData-sha512-1111111111" => [
-				"algorithm" => "sha512",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 1111111111,
-				"time" => new DateTime("2005-03-18 01:58:31", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xED",
-				"passwords" => [
-					"8" => "54380122",
+                "algorithm" => "sha512",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 1111111111,
+                "time" => new DateTime("2005-03-18 01:58:31", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x02\x35\x23\xED",
+                "passwords" => [
+                    "8" => "54380122",
 					"7" => "4380122",
 					"6" => "380122",
 				],
 			],
 			"rfcTestData-sha512-1234567890" => [
-				"algorithm" => "sha512",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 1234567890,
-				"time" => new DateTime("2009-02-13 23:31:30", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x02\x73\xEF\x07",
-				"passwords" => [
-					"8" => "76671578",
+                "algorithm" => "sha512",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 1234567890,
+                "time" => new DateTime("2009-02-13 23:31:30", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x02\x73\xEF\x07",
+                "passwords" => [
+                    "8" => "76671578",
 					"7" => "6671578",
 					"6" => "671578",
 				],
 			],
 			"rfcTestData-sha512-2000000000" => [
-				"algorithm" => "sha512",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 2000000000,
-				"time" => new DateTime("2033-05-18 03:33:20", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x03\xF9\x40\xAA",
-				"passwords" => [
-					"8" => "56464532",
+                "algorithm" => "sha512",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 2000000000,
+                "time" => new DateTime("2033-05-18 03:33:20", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x03\xF9\x40\xAA",
+                "passwords" => [
+                    "8" => "56464532",
 					"7" => "6464532",
 					"6" => "464532",
 				],
 			],
 			"rfcTestData-sha512-20000000000" => [
-				"algorithm" => "sha512",
-				"referenceTimestamp" => 0,
-				"referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-				"interval" => 30,
-				"timestamp" => 20000000000,
-				"time" => new DateTime("2603-10-11 11:33:20", new DateTimeZone("UTC")),
-				"secret" => [
-					"raw" => "12345678901234567890",
-					"base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-					"base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
-				],
-				"counterBytes" => "\x00\x00\x00\x00\x27\xBC\x86\xAA",
-				"passwords" => [
-					"8" => "69481994",
+                "algorithm" => "sha512",
+                "referenceTimestamp" => 0,
+                "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
+                "time-step" => 30,
+                "timestamp" => 20000000000,
+                "time" => new DateTime("2603-10-11 11:33:20", new DateTimeZone("UTC")),
+                "secret" => [
+                    "raw" => "12345678901234567890",
+                    "base32" => "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+                    "base64" => "MTIzNDU2Nzg5MDEyMzQ1Njc4OTA=",
+                ],
+                "counterBytes" => "\x00\x00\x00\x00\x27\xBC\x86\xAA",
+                "passwords" => [
+                    "8" => "69481994",
 					"7" => "9481994",
 					"6" => "481994",
 				],
@@ -516,137 +516,137 @@ class TotpTest extends TestCase
 		];
 	}
 
-	/**
-	 * Helper to provide some test data for testConstructor.
-	 *
-	 * This method yields 100 datasets with random valid intervals then 100 datasets with random invalid intervals.
-	 *
-	 * @return \Generator
-	 * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
-	 */
-	protected function randomIntervalTestDataForTestConstructor(): Generator
-	{
-		// 100 x random valid intervals between 1s and 1h
-		for ($idx = 0; $idx < 100; ++$idx) {
-			$interval = mt_rand(1, 3600);
+    /**
+     * Helper to provide some test data for testConstructor.
+     *
+     * This method yields 100 datasets with random valid time steps then 100 datasets with random invalid time steps.
+     *
+     * @return \Generator
+     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     */
+    protected function randomTimeStepTestDataForTestConstructor(): Generator
+    {
+        // 100 x random valid time steps between 1s and 1h
+        for ($idx = 0; $idx < 100; ++$idx) {
+            $timeStep = mt_rand(1, 3600);
 
-			yield [
-				[random_bytes(16), null, $interval,],
-				[
-					"interval" => $interval,
-				],
-			];
+            yield [
+                [random_bytes(16), null, $timeStep,],
+                [
+                    "timeStep" => $timeStep,
+                ],
+            ];
 		}
 
-		// 100 x random invalid intervals
+        // 100 x random invalid time steps
 		for ($idx = 0; $idx < 100; ++$idx) {
 			yield [
-				[random_bytes(16), null, mt_rand(PHP_INT_MIN, 0),],
-				[],
-				InvalidIntervalException::class,
-			];
+                [random_bytes(16), null, mt_rand(PHP_INT_MIN, 0),],
+                [],
+                InvalidTimeStepException::class,
+            ];
 		}
 	}
 
-	/**
-	 * Helper to provide some test data for testConstructor.
-	 *
-	 * This method provides test data focused on examining the limits of valid Totp intervals.
-	 *
-	 * @return array The test datasets.
-	 * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
-	 */
-	protected function specificIntervalTestDataForTestConstructor(): array
-	{
-		return [
-			"shortestValidInterval" => [
-				[random_bytes(16), null, 1,],
-				[
-					"interval" => 1,
-				],
-			],
+    /**
+     * Helper to provide some test data for testConstructor.
+     *
+     * This method provides test data focused on examining the limits of valid Totp time steps.
+     *
+     * @return array The test datasets.
+     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     */
+    protected function specificTimeStepTestDataForTestConstructor(): array
+    {
+        return [
+            "shortestValidTimeStep" => [
+                [random_bytes(16), null, 1,],
+                [
+                    "timeStep" => 1,
+                ],
+            ],
 
-			"closestInvalidInterval" => [
-				[random_bytes(16), null, 0,],
-				[],
-				InvalidIntervalException::class,
-			],
+            "closestInvalidTimeStep" => [
+                [random_bytes(16), null, 0,],
+                [],
+                InvalidTimeStepException::class,
+            ],
 		];
 	}
 
-	/**
-	 * Helper to provide some test data for testConstructor.
-	 *
-	 * Yields 100 datasets each with a valid secret and interval
-	 *
-	 * @return \Generator
-	 * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
-	 */
-	protected function randomSecretAndIntervalTestDataForTestConstructor(): Generator
-	{
-		// 100 x specified secret and interval
-		for ($idx = 0; $idx < 100; ++$idx) {
-			// random secret of between 16 and 20 bytes
-			$secret = random_bytes(mt_rand(16, 20));
-			// random interval up to 1 hour, on a 10-second boundary
-			$interval = 10 * mt_rand(1, 360);
+    /**
+     * Helper to provide some test data for testConstructor.
+     *
+     * Yields 100 datasets each with a valid secret and time step
+     *
+     * @return \Generator
+     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     */
+    protected function randomSecretAndTimeStepTestDataForTestConstructor(): Generator
+    {
+        // 100 x specified secret and time step
+        for ($idx = 0; $idx < 100; ++$idx) {
+            // random secret of between 16 and 20 bytes
+            $secret = random_bytes(mt_rand(16, 20));
+            // random time step up to 1 hour, on a 10-second boundary
+            $timeStep = 10 * mt_rand(1, 360);
 
-			yield "validSecretAndInterval" . sprintf("%02d", $idx) => [
-				[$secret, null, $interval],
-				[
-					"secret" => $secret,
-					"interval" => $interval,
-				],
-			];
-		}
+            yield "validSecretAndTimeStep" . sprintf("%02d", $idx) => [
+                [$secret, null, $timeStep],
+                [
+                    "secret" => $secret,
+                    "timeStep" => $timeStep,
+                ],
+            ];
+        }
 	}
 
-	/**
-	 * Helper to provide some test data for testConstructor.
-	 *
-	 * Yields 100 datasets each with a valid secret, interval and reference timestamp, then 100 datasets each with a
-	 * valid secret, interval and reference DateTime.
-	 *
-	 * @return \Generator
-	 * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
-	 */
-	protected function randomSecretIntervalAndReferenceTimeTestDataForTestConstructor(): Generator
-	{
-		// 100 x specified secret, interval and reference time as timestamp
+    /**
+     * Helper to provide some test data for testConstructor.
+     *
+     * Yields 100 datasets each with a valid secret, time step and reference timestamp, then 100 datasets each with a
+     * valid secret, time step and reference DateTime.
+     *
+     * @return \Generator
+     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     */
+    protected function randomSecretTimeStepAndReferenceTimeTestDataForTestConstructor(): Generator
+    {
+        // 100 x specified secret, time step and reference time as timestamp
+        for ($idx = 0; $idx < 100; ++$idx) {
+            // random secret of between 16 and 20 bytes
+            $secret = random_bytes(mt_rand(16, 20));
+            // random time step up to 1 hour, on a 10-second boundary
+            $timeStep           = 10 * mt_rand(1, 360);
+            $referenceTimestamp = mt_rand(0, time());
+
+            yield "validSecretTimeStepAndTimestamp" . sprintf("%02d", $idx) => [
+                [$secret, null, $timeStep, $referenceTimestamp],
+                [
+                    "secret" => $secret,
+                    "timeStep" => $timeStep,
+                    "referenceTimestamp" => $referenceTimestamp,
+                ],
+            ];
+        }
+
+        // 100 x specified secret, time step and reference time as DateTime
 		for ($idx = 0; $idx < 100; ++$idx) {
-			// random secret of between 16 and 20 bytes
-			$secret = random_bytes(mt_rand(16, 20));
-			// random interval up to 1 hour, on a 10-second boundary
-			$interval           = 10 * mt_rand(1, 360);
-			$referenceTimestamp = mt_rand(0, time());
+            // random secret of between 16 and 20 bytes
+            $secret = random_bytes(mt_rand(16, 20));
+            // random time step up to 1 hour, on a 10-second boundary
+            $timeStep      = 10 * mt_rand(1, 360);
+            $referenceTime = new DateTime("@" . mt_rand(0, time()));
 
-			yield "validSecretIntervalAndTimestamp" . sprintf("%02d", $idx) => [
-				[$secret, null, $interval, $referenceTimestamp],
-				[
-					"secret" => $secret,
-					"interval" => $interval,
-					"referenceTimestamp" => $referenceTimestamp,
-				],
-			];
-		}
-
-		// 100 x specified secret, interval and reference time as DateTime
-		for ($idx = 0; $idx < 100; ++$idx) {
-			// random secret of between 16 and 20 bytes
-			$secret = random_bytes(mt_rand(16, 20));
-			// random interval up to 1 hour, on a 10-second boundary
-			$interval = 10 * mt_rand(1, 360);
-			$referenceTime = new DateTime("@" . mt_rand(0, time()));
-
-			yield "validSecretIntervalAndDateTime" . sprintf("%02d", $idx) => [
-				[$secret, null, $interval, $referenceTime],
-				[
-					"secret" => $secret,
-					"interval" => $interval,
-					"referenceDateTime" => $referenceTime,
-				],
-			];
-		}
+            yield "validSecretTimeStepAndDateTime" . sprintf("%02d", $idx) => [
+                [$secret, null, $timeStep, $referenceTime],
+                [
+                    "secret" => $secret,
+                    "timeStep" => $timeStep,
+                    "referenceDateTime" => $referenceTime,
+                ],
+            ];
+        }
 	}
 
 	/**
@@ -700,15 +700,15 @@ class TotpTest extends TestCase
 	 * @throws \Exception if random_bytes() is unable to generate cryptographically-secure random data.
 	 */
 	public function dataForTestConstructor(): Generator
-	{
-		yield from $this->randomSecretTestDataForTestConstructor();
-		yield from $this->specificSecretTestDataForTestConstructor();
-		yield from $this->randomIntervalTestDataForTestConstructor();
-		yield from $this->specificIntervalTestDataForTestConstructor();
-		yield from $this->specificReferenceTimeTestDataForTestConstructor();
-		yield from $this->randomSecretAndIntervalTestDataForTestConstructor();
-		yield from $this->randomSecretIntervalAndReferenceTimeTestDataForTestConstructor();
-	}
+    {
+        yield from $this->randomSecretTestDataForTestConstructor();
+        yield from $this->specificSecretTestDataForTestConstructor();
+        yield from $this->randomTimeStepTestDataForTestConstructor();
+        yield from $this->specificTimeStepTestDataForTestConstructor();
+        yield from $this->specificReferenceTimeTestDataForTestConstructor();
+        yield from $this->randomSecretAndTimeStepTestDataForTestConstructor();
+        yield from $this->randomSecretTimeStepAndReferenceTimeTestDataForTestConstructor();
+    }
 
 	/**
 	 * @dataProvider dataForTestConstructor
@@ -789,44 +789,44 @@ class TotpTest extends TestCase
 	{
 		$testData = array_map(function(array $testData): array {
 			return [
-				$testData["secret"]["raw"],
-				$testData["interval"],
-				$testData["referenceTimestamp"],
-				$testData["algorithm"],
-				[
-					"passwordAt" => [
-						"args" => [$testData["timestamp"]],
-						"value" => $testData["passwords"]["6"],
+                $testData["secret"]["raw"],
+                $testData["time-step"],
+                $testData["referenceTimestamp"],
+                $testData["algorithm"],
+                [
+                    "passwordAt" => [
+                        "args" => [$testData["timestamp"]],
+                        "value" => $testData["passwords"]["6"],
+                    ],
+                    "counterBytesAt" => [
+                        "args" => [$testData["timestamp"]],
+                        "value" => $testData["counterBytes"],
 					],
-					"counterBytesAt" => [
-						"args" => [$testData["timestamp"]],
-						"value" => $testData["counterBytes"],
-					],
-				],
-			];
-		}, self::rfcTestData());
+                ],
+            ];
+        }, self::rfcTestData());
 
-		// invalid secrets
-		$testData[] = ["", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
-		$testData[] = ["password-passwo", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
-		$testData[] = [random_bytes(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
-		$testData[] = [random_bytes(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        // invalid secrets
+        $testData[] = ["", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        $testData[] = ["password-passwo", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        $testData[] = [random_bytes(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        $testData[] = [random_bytes(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
 
-		// invalid intervals
-		$testData[] = [random_bytes(20), 0, 0, Totp::Sha1Algorithm, [], InvalidIntervalException::class,];
-		$testData[] = [random_bytes(20), -1, 0, Totp::Sha1Algorithm, [], InvalidIntervalException::class,];
-		$testData[] = [random_bytes(20), -50, 0, Totp::Sha1Algorithm, [], InvalidIntervalException::class,];
-		$testData[] = [random_bytes(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidIntervalException::class,];
+        // invalid time steps
+        $testData[] = [random_bytes(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        $testData[] = [random_bytes(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        $testData[] = [random_bytes(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        $testData[] = [random_bytes(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
 
-		// invalid algorithms
-		$testData[] = [random_bytes(20), 30, 0, "", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,];
+        // invalid algorithms
+        $testData[] = [random_bytes(20), 30, 0, "", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,];
 		$testData[] = [random_bytes(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,];
 		$testData[] = [random_bytes(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,];
 		$testData[] = [random_bytes(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,];
@@ -859,27 +859,27 @@ class TotpTest extends TestCase
 
 		return $testData;	}
 
-	/**
-	 * @dataProvider dataForTestSixDigitTotp
-	 *
-	 * @param string $secret The secret for the Totp.
-	 * @param int $interval The interval for the Totp.
-	 * @param int|\DateTime $referenceTime The reference time for the Totp.
-	 * @param string $hashAlgorithm The hash algorithm for the Totp.
-	 * @param array $expectations An array of expected return values from method calls. Each expectation is keyed with
-	 * the method name, and has a tuple of "args" and "value" as its value. The args element is an array of arguments to
-	 * provide in the method call; the value element is the expected return value.
-	 */
-	public function testSixDigitTotp(string $secret, int $interval = Totp::DefaultInterval, int | DateTime $referenceTime = Totp::DefaultReferenceTime, string $hashAlgorithm = Totp::DefaultAlgorithm, array $expectations = [], string $exceptionClass = null): void
-	{
-		if (isset($exceptionClass)) {
-			$this->expectException($exceptionClass);
-		}
+    /**
+     * @dataProvider dataForTestSixDigitTotp
+     *
+     * @param string $secret The secret for the Totp.
+     * @param int $timeStep The time step for the Totp.
+     * @param int|\DateTime $referenceTime The reference time for the Totp.
+     * @param string $hashAlgorithm The hash algorithm for the Totp.
+     * @param array $expectations An array of expected return values from method calls. Each expectation is keyed with
+     * the method name, and has a tuple of "args" and "value" as its value. The args element is an array of arguments to
+     * provide in the method call; the value element is the expected return value.
+     */
+    public function testSixDigitTotp(string $secret, int $timeStep = Totp::DefaultTimeStep, int|DateTime $referenceTime = Totp::DefaultReferenceTime, string $hashAlgorithm = Totp::DefaultAlgorithm, array $expectations = [], string $exceptionClass = null): void
+    {
+        if (isset($exceptionClass)) {
+            $this->expectException($exceptionClass);
+        }
 
-		$totp = Totp::sixDigitTotp(secret: $secret, interval: $interval, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
-		$this->assertEquals($secret, $totp->secret(), "Secret in Totp object does not match expected secret.");
-		$this->assertEquals($interval, $totp->interval(), "Interval in Totp object does not match expected interval.");
-		$this->assertEquals($hashAlgorithm, $totp->hashAlgorithm(), "Hash algorithm in Totp object does not match expected algorithm.");
+        $totp = Totp::sixDigitTotp(secret: $secret, timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
+        $this->assertEquals($secret, $totp->secret(), "Secret in Totp object does not match expected secret.");
+        $this->assertEquals($timeStep, $totp->timeStep(), "TimeStep in Totp object does not match expected time step.");
+        $this->assertEquals($hashAlgorithm, $totp->hashAlgorithm(), "Hash algorithm in Totp object does not match expected algorithm.");
 
 		if ($referenceTime instanceof DateTime) {
 			$referenceTimestamp = $referenceTime->getTimestamp();
@@ -922,44 +922,44 @@ class TotpTest extends TestCase
 	{
 		$testData = array_map(function(array $testData): array {
 			return [
-				$testData["secret"]["raw"],
-				$testData["interval"],
-				$testData["referenceTimestamp"],
-				$testData["algorithm"],
-				[
-					"passwordAt" => [
-						"args" => [$testData["timestamp"]],
-						"value" => $testData["passwords"]["8"],
+                $testData["secret"]["raw"],
+                $testData["time-step"],
+                $testData["referenceTimestamp"],
+                $testData["algorithm"],
+                [
+                    "passwordAt" => [
+                        "args" => [$testData["timestamp"]],
+                        "value" => $testData["passwords"]["8"],
+                    ],
+                    "counterBytesAt" => [
+                        "args" => [$testData["timestamp"]],
+                        "value" => $testData["counterBytes"],
 					],
-					"counterBytesAt" => [
-						"args" => [$testData["timestamp"]],
-						"value" => $testData["counterBytes"],
-					],
-				],
-			];
-		}, self::rfcTestData());
+                ],
+            ];
+        }, self::rfcTestData());
 
-		// invalid secrets
-		$testData[] = ["", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
-		$testData[] = ["password-passwo", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
-		$testData[] = [random_bytes(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
-		$testData[] = [random_bytes(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        // invalid secrets
+        $testData[] = ["", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        $testData[] = ["password-passwo", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        $testData[] = [random_bytes(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        $testData[] = [random_bytes(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
 
-		// invalid intervals
-		$testData[] = [random_bytes(20), 0, 0, Totp::Sha1Algorithm, [], InvalidIntervalException::class,];
-		$testData[] = [random_bytes(20), -1, 0, Totp::Sha1Algorithm, [], InvalidIntervalException::class,];
-		$testData[] = [random_bytes(20), -50, 0, Totp::Sha1Algorithm, [], InvalidIntervalException::class,];
-		$testData[] = [random_bytes(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidIntervalException::class,];
+        // invalid time steps
+        $testData[] = [random_bytes(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        $testData[] = [random_bytes(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        $testData[] = [random_bytes(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        $testData[] = [random_bytes(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
 
-		// invalid algorithms
-		$testData[] = [random_bytes(20), 30, 0, "", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,];
-		$testData[] = [random_bytes(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,];
+        // invalid algorithms
+        $testData[] = [random_bytes(20), 30, 0, "", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,];
+        $testData[] = [random_bytes(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,];
 		$testData[] = [random_bytes(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,];
 		$testData[] = [random_bytes(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,];
 		$testData[] = [random_bytes(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,];
@@ -993,27 +993,27 @@ class TotpTest extends TestCase
 		return $testData;
 	}
 
-	/**
-	 * @dataProvider dataForTestEightDigitTotp
-	 *
-	 * @param string $secret The secret for the Totp.
-	 * @param int $interval The interval for the Totp.
-	 * @param int|\DateTime $referenceTime The reference time for the Totp.
-	 * @param string $hashAlgorithm The hash algorithm for the Totp.
-	 * @param array $expectations An array of expected return values from method calls. Each expectation is keyed with
-	 * the method name, and has a tuple of "args" and "value" as its value. The args element is an array of arguments to
-	 * provide in the method call; the value element is the expected return value.
-	 */
-	public function testEightDigitTotp(string $secret, int $interval = Totp::DefaultInterval, int | DateTime $referenceTime = Totp::DefaultReferenceTime, string $hashAlgorithm = Totp::DefaultAlgorithm, array $expectations = [], string $exceptionClass = null): void
-	{
-		if (isset($exceptionClass)) {
-			$this->expectException($exceptionClass);
-		}
+    /**
+     * @dataProvider dataForTestEightDigitTotp
+     *
+     * @param string $secret The secret for the Totp.
+     * @param int $timeStep The time step for the Totp.
+     * @param int|\DateTime $referenceTime The reference time for the Totp.
+     * @param string $hashAlgorithm The hash algorithm for the Totp.
+     * @param array $expectations An array of expected return values from method calls. Each expectation is keyed with
+     * the method name, and has a tuple of "args" and "value" as its value. The args element is an array of arguments to
+     * provide in the method call; the value element is the expected return value.
+     */
+    public function testEightDigitTotp(string $secret, int $timeStep = Totp::DefaultTimeStep, int|DateTime $referenceTime = Totp::DefaultReferenceTime, string $hashAlgorithm = Totp::DefaultAlgorithm, array $expectations = [], string $exceptionClass = null): void
+    {
+        if (isset($exceptionClass)) {
+            $this->expectException($exceptionClass);
+        }
 
-		$totp = Totp::eightDigitTotp(secret: $secret, interval: $interval, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
-		$this->assertEquals($secret, $totp->secret(), "Secret in Totp object does not match expected secret.");
-		$this->assertEquals($interval, $totp->interval(), "Interval in Totp object does not match expected interval.");
-		$this->assertEquals($hashAlgorithm, $totp->hashAlgorithm(), "Hash algorithm in Totp object does not match expected algorithm.");
+        $totp = Totp::eightDigitTotp(secret: $secret, timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
+        $this->assertEquals($secret, $totp->secret(), "Secret in Totp object does not match expected secret.");
+        $this->assertEquals($timeStep, $totp->timeStep(), "Time step in Totp object does not match expected time step.");
+        $this->assertEquals($hashAlgorithm, $totp->hashAlgorithm(), "Hash algorithm in Totp object does not match expected algorithm.");
 
 		if ($referenceTime instanceof DateTime) {
 			$referenceTimestamp = $referenceTime->getTimestamp();
@@ -1475,83 +1475,85 @@ class TotpTest extends TestCase
 		$this->assertEquals($expectedDateTime, $actual);
 	}
 
-	/**
-	 * Data provider for testSetInterval()
-	 *
-	 * @return array The test data.
-	 */
-	public function dataForTestSetInterval(): array
-	{
-		return [
-			"typical30" => [30,],
-			"typical60" => [60,],
-			"typical10" => [10,],
-			"typical20" => [20,],
+    /**
+     * Data provider for testSetTimeStep()
+     *
+     * @return array The test data.
+     */
+    public function dataForTestSetTimeStep(): array
+    {
+        return [
+            "typical30" => [30,],
+            "typical60" => [60,],
+            "typical10" => [10,],
+            "typical20" => [20,],
 
-			// these type casts should both result in (int) 0 - PHP type casts just truncate floats
-			"invalidFloat0.99CastInt" => [(int) 0.99,InvalidIntervalException::class],
-			"invalidFloat0.49CastInt" => [(int) 0.49, InvalidIntervalException::class],
-			"invalidFloat0.49" => [0.49, TypeError::class,],
-			"invalidFloat0.51" => [0.51, TypeError::class,],
-			"invalid0" => [0, InvalidIntervalException::class,],
-			"invalidMinus1" => [-1, InvalidIntervalException::class,],
-			"invalidMinus30" => [-30, InvalidIntervalException::class,],
-			"invalidNull" => [null, TypeError::class,],
-			"invalidString" => ["30", TypeError::class,],
-			"invalidObject" => [new class {}, TypeError::class,],
-		];
+            // these type casts should both result in (int) 0 - PHP type casts just truncate floats
+            "invalidFloat0.99CastInt" => [(int)0.99, InvalidTimeStepException::class],
+            "invalidFloat0.49CastInt" => [(int)0.49, InvalidTimeStepException::class],
+            "invalidFloat0.49" => [0.49, TypeError::class,],
+            "invalidFloat0.51" => [0.51, TypeError::class,],
+            "invalid0" => [0, InvalidTimeStepException::class,],
+            "invalidMinus1" => [-1, InvalidTimeStepException::class,],
+            "invalidMinus30" => [-30, InvalidTimeStepException::class,],
+            "invalidNull" => [null, TypeError::class,],
+            "invalidString" => ["30", TypeError::class,],
+            "invalidObject" => [new class
+            {
+            }, TypeError::class,],
+        ];
 	}
 
-	/**
-	 * Test for setInterval() method.
-	 *
-	 * @dataProvider dataForTestSetInterval
-	 *
-	 * @param mixed $interval The interval to set.
-	 * @param class-string|null $exceptionClass The type of exception that is expected, if any.
-	 */
-	public function testSetInterval(mixed $interval, ?string $exceptionClass = null): void
-	{
-		if (isset($exceptionClass)) {
-			$this->expectException($exceptionClass);
-		}
+    /**
+     * Test for setTimeStep() method.
+     *
+     * @dataProvider dataForTestSetTimeStep
+     *
+     * @param mixed $timeStep The time step to set.
+     * @param class-string|null $exceptionClass The type of exception that is expected, if any.
+     */
+    public function testSetTimeStep(mixed $timeStep, ?string $exceptionClass = null): void
+    {
+        if (isset($exceptionClass)) {
+            $this->expectException($exceptionClass);
+        }
 
-		$totp = self::createTotp();
-		$totp->setInterval($interval);
-		$this->assertSame($interval, $totp->interval(), "The interval {$interval} was expected but {$totp->interval()} was reported.");
-	}
+        $totp = self::createTotp();
+        $totp->setTimeStep($timeStep);
+        $this->assertSame($timeStep, $totp->timeStep(), "The time step {$timeStep} was expected but {$totp->timeStep()} was reported.");
+    }
 
-	/**
-	 * Data provider for testInterval()
-	 *
-	 * @return Generator The test data.
-	 */
-	public function dataForTestInterval(): Generator
-	{
-		// test with all valid intervals up to 1 hour
-		for ($interval = 1; $interval <= 3600; ++$interval) {
-			yield [$interval,];
-		}
+    /**
+     * Data provider for testTimeStep()
+     *
+     * @return Generator The test data.
+     */
+    public function dataForTestTimeStep(): Generator
+    {
+        // test with all valid time steps up to 1 hour
+        for ($timeStep = 1; $timeStep <= 3600; ++$timeStep) {
+            yield [$timeStep,];
+        }
 
-		// throw some random valid intervals at it for good measure
-		for ($idx = 0; $idx < 5000; ++$idx) {
-			yield [mt_rand(1, 3600),];
-		}
-	}
+        // throw some random valid time steps at it for good measure
+        for ($idx = 0; $idx < 5000; ++$idx) {
+            yield [mt_rand(1, 3600),];
+        }
+    }
 
-	/**
-	 * Test the interval() method.
-	 *
-	 * @dataProvider dataForTestInterval
-	 *
-	 * @param int $interval The interval to test with.
-	 */
-	public function testInterval(int $interval): void
-	{
-		$totp = self::createTotp();
-		$totp->setInterval($interval);
-		$this->assertSame($interval, $totp->interval(), "The interval {$interval} was expected but {$totp->interval()} was reported.");
-	}
+    /**
+     * Test the timeStep() method.
+     *
+     * @dataProvider dataForTestTimeStep
+     *
+     * @param int $timeStep The timeStep to test with.
+     */
+    public function testTimeStep(int $timeStep): void
+    {
+        $totp = self::createTotp();
+        $totp->setTimeStep($timeStep);
+        $this->assertSame($timeStep, $totp->timeStep(), "The time step {$timeStep} was expected but {$totp->timeStep()} was reported.");
+    }
 
 	/**
 	 * Test data for testSetSecret.
@@ -1716,14 +1718,14 @@ class TotpTest extends TestCase
 		$this->assertSame($renderer, $totp->renderer(), "Unexpected object returned from renderer() method.");
 	}
 
-	/**
-	 * Test data for testCounterAt().
-	 *
-	 * Each dataset consists of the current time at which the counter should be checked and the expected value for the
-	 * counter. In all cases, the TOTP has its reference date set to the Unix epoch and an interval of 30 seconds.
-	 *
-	 * @return \int[][]
-	 */
+    /**
+     * Test data for testCounterAt().
+     *
+     * Each dataset consists of the current time at which the counter should be checked and the expected value for the
+     * counter. In all cases, the TOTP has its reference date set to the Unix epoch and an time step of 30 seconds.
+     *
+     * @return \int[][]
+     */
 	public function dataForTestCounterAt(): array
 	{
 		return [
@@ -1739,11 +1741,11 @@ class TotpTest extends TestCase
 			[119, 1, 60,],
 			[121, 2, 60,],
 
-			// test data for non-default interval
+            // test data for non-default time step
 			[59, 5, null, 10,],
 			[61, 6, null, 10,],
 
-			// test data for non-default interval and non-default reference time
+            // test data for non-default time step and non-default reference time
 			[119, 5, 60, 10,],
 			[121, 6, 60, 10,],
 
@@ -1752,36 +1754,36 @@ class TotpTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataForTestCounterAt
-	 *
-	 * @param int|\DateTime $currentTime The time at which to test the byttes.
-	 * @param int $expectedCounter The expected value for the counter.
-	 * @param int|\DateTime|null $referenceTime The reference time for the test TOTP. Default is null: the default for
-	 * the Totp will be used (the Unix epoch).
-	 * @param int|null $interval The interval for the test TOTP. Default is null: the default for the Totp will be used
-	 * (30 seconds).
+    /**
+     * @dataProvider dataForTestCounterAt
+     *
+     * @param int|\DateTime $currentTime The time at which to test the byttes.
+     * @param int $expectedCounter The expected value for the counter.
+     * @param int|\DateTime|null $referenceTime The reference time for the test TOTP. Default is null: the default for
+     * the Totp will be used (the Unix epoch).
+     * @param int|null $timeStep The time step for the test TOTP. Default is null: the default for the Totp will be used
+     * (30 seconds).
      * @param class-string|null $exceptionClass The class of exception expected to be thrown, if any.
-	 */
-	public function testCounterAt(int | DateTime $currentTime, int $expectedCounter, int | DateTime $referenceTime = null, ?int $interval = null, ?string $exceptionClass = null): void
-	{
+     */
+    public function testCounterAt(int|DateTime $currentTime, int $expectedCounter, int|DateTime $referenceTime = null, ?int $timeStep = null, ?string $exceptionClass = null): void
+    {
         if (isset($exceptionClass)) {
             $this->expectException($exceptionClass);
         }
 
-		$totp = $this->createTotp();
+        $totp = $this->createTotp();
 
-		if (isset($referenceTime)) {
-			$totp->setReferenceTime($referenceTime);
-		}
+        if (isset($referenceTime)) {
+            $totp->setReferenceTime($referenceTime);
+        }
 
-		if (isset($interval)) {
-			$totp->setInterval($interval);
-		}
+        if (isset($timeStep)) {
+            $totp->setTimeStep($timeStep);
+        }
 
-		$actualCounter = $totp->counterAt($currentTime);
-		$this->assertSame($expectedCounter, $actualCounter, "The counter is expected to be {$expectedCounter} but is actually {$actualCounter}.");
-	}
+        $actualCounter = $totp->counterAt($currentTime);
+        $this->assertSame($expectedCounter, $actualCounter, "The counter is expected to be {$expectedCounter} but is actually {$actualCounter}.");
+    }
 
 	/**
 	 * Test data for the counterBytes() method.
@@ -1813,9 +1815,9 @@ class TotpTest extends TestCase
 		// The logic behind this test is this: counter() can't return a pre-known value because it produces a value that
 		// is dependent on an external factor - the current system time. So we use counterAt() as our source of
 		// expectations on the assumption that it provides a correct value. It's safe to do this because we have a test
-		// for counterAt() and that test will tell us if it's not working. In order mitigate against the outside chance
-		// that the system time ticks over to the next TOTP interval between the point in time at which we call time()
-		// and the point in time at which we fetch the actual counter bytes from the Totp object, we ensure that the
+        // for counterAt() and that test will tell us if it's not working. In order mitigate against the outside chance
+        // that the system time ticks over to the next TOTP time step between the point in time at which we call time()
+        // and the point in time at which we fetch the actual counter bytes from the Totp object, we ensure that the
 		// time after retrieving the bytes from the Totp object is the same as the time we're using as our source of
 		// expectation.
 		//
@@ -1852,45 +1854,45 @@ class TotpTest extends TestCase
 			[119, "\x00\x00\x00\x00\x00\x00\x00\x01", 60,],
 			[121, "\x00\x00\x00\x00\x00\x00\x00\x02", 60,],
 
-			// test data for non-default interval time
+            // test data for non-default time step time
 			[59, "\x00\x00\x00\x00\x00\x00\x00\x05", null, 10,],
 			[61, "\x00\x00\x00\x00\x00\x00\x00\x06", null, 10,],
 
-			// test data for non-default interval and non-default reference time
+            // test data for non-default time step and non-default reference time
 			[119, "\x00\x00\x00\x00\x00\x00\x00\x05", 60, 10,],
 			[121, "\x00\x00\x00\x00\x00\x00\x00\x06", 60, 10,],
 		];
 	}
 
-	/**
-	 * @dataProvider dataForTestCounterBytesAt
-	 *
-	 * @param int|\DateTime $currentTime The time at which to test the byttes.
-	 * @param string $expectedBytes The expected bytes for the counter. Must be of length 8.
-	 * @param int|\DateTime|null $referenceTime The reference time for the test TOTP. Default is null: the default for
-	 * the Totp will be used (the Unix epoch).
-	 * @param int|null $interval The interval for the test TOTP. Default is null: the default for the Totp will be used
-	 * (30 seconds).
-	 */
-	public function testCounterBytesAt(int | DateTime $currentTime, string $expectedBytes, int | DateTime $referenceTime = null, ?int $interval = null): void
-	{
-		$totp = $this->createTotp();
+    /**
+     * @dataProvider dataForTestCounterBytesAt
+     *
+     * @param int|\DateTime $currentTime The time at which to test the byttes.
+     * @param string $expectedBytes The expected bytes for the counter. Must be of length 8.
+     * @param int|\DateTime|null $referenceTime The reference time for the test TOTP. Default is null: the default for
+     * the Totp will be used (the Unix epoch).
+     * @param int|null $timeStep The time step for the test TOTP. Default is null: the default for the Totp will be used
+     * (30 seconds).
+     */
+    public function testCounterBytesAt(int|DateTime $currentTime, string $expectedBytes, int|DateTime $referenceTime = null, ?int $timeStep = null): void
+    {
+        $totp = $this->createTotp();
 
-		if (isset($referenceTime)) {
-			$totp->setReferenceTime($referenceTime);
-		}
+        if (isset($referenceTime)) {
+            $totp->setReferenceTime($referenceTime);
+        }
 
-		if (isset($interval)) {
-			$totp->setInterval($interval);
-		}
+        if (isset($timeStep)) {
+            $totp->setTimeStep($timeStep);
+        }
 
-		$counterBytesAt = new ReflectionMethod($totp, "counterBytesAt");
-		$counterBytesAt->setAccessible(true);
-		$counterBytesAt = $counterBytesAt->getClosure($totp);
+        $counterBytesAt = new ReflectionMethod($totp, "counterBytesAt");
+        $counterBytesAt->setAccessible(true);
+        $counterBytesAt = $counterBytesAt->getClosure($totp);
 
-		$actualBytes = $counterBytesAt($currentTime);
-		$this->assertSame($expectedBytes, $actualBytes, "The counter is expected to be " . self::hexOf($expectedBytes) . " but is actually " . self::hexOf($actualBytes) . ".");
-	}
+        $actualBytes = $counterBytesAt($currentTime);
+        $this->assertSame($expectedBytes, $actualBytes, "The counter is expected to be " . self::hexOf($expectedBytes) . " but is actually " . self::hexOf($actualBytes) . ".");
+    }
 
 	/**
 	 * Test data for the counterBytes() method.
@@ -1922,9 +1924,9 @@ class TotpTest extends TestCase
 		// The logic behind this test is this: counterBytes() can't return a pre-known value because it produces a
 		// 64-bit value that is dependent on an external factor - the current system time. So we use counterBytesAt() as
 		// our source of expectations on the assumption that it provides a correct value. It's safe to do this because
-		// we have a test for counterBytesAt() and that test will tell us if it's not working. In order mitigate against
-		// the outside chance that the system time ticks over to the next TOTP interval between the point in time at
-		// which we call time() and the point in time at which we fetch the actual counter bytes from the Totp object,
+        // we have a test for counterBytesAt() and that test will tell us if it's not working. In order mitigate against
+        // the outside chance that the system time ticks over to the next TOTP time step between the point in time at
+        // which we call time() and the point in time at which we fetch the actual counter bytes from the Totp object,
 		// we ensure that the time after retrieving the bytes from the Totp object is the same as the time we're using
 		// as our source of expectation.
 		//
@@ -1994,9 +1996,9 @@ class TotpTest extends TestCase
 		// The logic behind this test is this: currentPassword() can't return a pre-known value because it produces a
 		// password dependent on an external factor - the current system time. So we use passwordAt() as our source of
 		// expectations on the assumption that it provides a correct value. It's safe to do this because we have a test
-		// for passwordAt() and that test will tell us if it's not working. In order mitigate against the outside chance
-		// that the system time ticks over to the next TOTP interval between the point in time at which we call
-		// time() and the point in time at which we fetch the actual password from the Totp object, we ensure that
+        // for passwordAt() and that test will tell us if it's not working. In order mitigate against the outside chance
+        // that the system time ticks over to the next TOTP time step between the point in time at which we call
+        // time() and the point in time at which we fetch the actual password from the Totp object, we ensure that
 		// the time after retrieving the password from the Totp object is the same as the time we're using as our
 		// source of expectation.
 		//
@@ -2055,17 +2057,17 @@ class TotpTest extends TestCase
         if (isset($exceptionClass)) {
             $this->expectException($exceptionClass);
         }
-        
-		$renderer = new Integer(8);
-		$totp = new Totp(secret: $secret, renderer: $renderer, interval: 30, referenceTime: $referenceTime);
-		$totp->setHashAlgorithm($algorithm);
+
+        $renderer = new Integer(8);
+        $totp     = new Totp(secret: $secret, renderer: $renderer, timeStep: 30, referenceTime: $referenceTime);
+        $totp->setHashAlgorithm($algorithm);
 		$this->assertSame(
 			$password,
 			$totp->passwordAt($currentTime),
-			"Unexpected 6-digit password at " .
-			($currentTime instanceof DateTime ? $currentTime : new DateTime("@{$currentTime}"))->format("Y-m-d H:i:s") .
-			" with secret '" . self::hexOf($secret) . "', algorithm {$totp->hashAlgorithm()}, reference time " .
-			$totp->referenceDateTime()->format("Y-m-d H:i:s") . ", interval {$totp->interval()}"
+            "Unexpected 6-digit password at " .
+            ($currentTime instanceof DateTime ? $currentTime : new DateTime("@{$currentTime}"))->format("Y-m-d H:i:s") .
+            " with secret '" . self::hexOf($secret) . "', algorithm {$totp->hashAlgorithm()}, reference time " .
+            $totp->referenceDateTime()->format("Y-m-d H:i:s") . ", time step {$totp->timeStep()}"
 		);
 
 		$renderer->setDigits(7);
@@ -2073,10 +2075,10 @@ class TotpTest extends TestCase
 		$this->assertSame(
 			substr($password, 1),
 			$totp->passwordAt($currentTime),
-			"Unexpected 7-digit password at " .
-			($currentTime instanceof DateTime ? $currentTime : new DateTime("@{$currentTime}"))->format("Y-m-d H:i:s") .
-			" with secret '" . self::hexOf($secret) . "', algorithm {$totp->hashAlgorithm()}, reference time " .
-			$totp->referenceDateTime()->format("Y-m-d H:i:s") . ", interval {$totp->interval()}"
+            "Unexpected 7-digit password at " .
+            ($currentTime instanceof DateTime ? $currentTime : new DateTime("@{$currentTime}"))->format("Y-m-d H:i:s") .
+            " with secret '" . self::hexOf($secret) . "', algorithm {$totp->hashAlgorithm()}, reference time " .
+            $totp->referenceDateTime()->format("Y-m-d H:i:s") . ", time step {$totp->timeStep()}"
 		);
 
 		$renderer->setDigits(6);
@@ -2084,10 +2086,10 @@ class TotpTest extends TestCase
 		$this->assertSame(
 			substr($password, 2),
 			$totp->passwordAt($currentTime),
-			"Unexpected 8-digit password at " .
-			($currentTime instanceof DateTime ? $currentTime : new DateTime("@{$currentTime}"))->format("Y-m-d H:i:s") .
-			" with secret '" . self::hexOf($secret) . "', algorithm {$totp->hashAlgorithm()}, reference time " .
-			$totp->referenceDateTime()->format("Y-m-d H:i:s") . ", interval {$totp->interval()}"
+            "Unexpected 8-digit password at " .
+            ($currentTime instanceof DateTime ? $currentTime : new DateTime("@{$currentTime}"))->format("Y-m-d H:i:s") .
+            " with secret '" . self::hexOf($secret) . "', algorithm {$totp->hashAlgorithm()}, reference time " .
+            $totp->referenceDateTime()->format("Y-m-d H:i:s") . ", time step {$totp->timeStep()}"
 		);
 	}
 
@@ -2127,9 +2129,9 @@ class TotpTest extends TestCase
 		// The logic behind this test is this: verify() can't return a pre-known value because it is dependent on an
 		// external factor - the current system time. So we fetch the current password, which we know should pass
 		// verification, and verify that on the assumption that currentPassword() provides the correct value. It's
-		// safe to do this because we have a test for currentPassword() and that test will tell us if it's not working.
-		// In order mitigate against the outside chance that the system time ticks over to the next TOTP interval
-		// between the point in time at which we call time() and the point in time at which we do the verification, we
+        // safe to do this because we have a test for currentPassword() and that test will tell us if it's not working.
+        // In order mitigate against the outside chance that the system time ticks over to the next TOTP time step
+        // between the point in time at which we call time() and the point in time at which we do the verification, we
 		// ensure that the time after doing the verification is the same as the time before it, ensuring that we've
 		// called verify at the same second as we fetched the password. We also change one digit of the password and
 		// test with that as well, to ensure we have both positive and negative tests for verify().
@@ -2165,23 +2167,23 @@ class TotpTest extends TestCase
 		// transforms the RFC data into the structure required for this test
 		$extractData = function(array $testData) use (&$digits, &$window): array {
 			return [
-				[
-					"secret" => $testData["secret"]["raw"],
-					"digits" => $digits,
-					"referenceTime" => $testData["referenceTimestamp"],
-					"interval" => $testData["interval"],
-					"hashAlgorithm" => $testData["algorithm"],
-				],
-				// add intervals to the "current" time to ensure that the password at the oldest interval within the
-				// window is the one that is expected to match the password
-				$testData["timestamp"] + ($window * $testData["interval"]),
-				$window,
-				$testData["passwords"]["{$digits}"],
-				true,
-			];
+                [
+                    "secret" => $testData["secret"]["raw"],
+                    "digits" => $digits,
+                    "referenceTime" => $testData["referenceTimestamp"],
+                    "time-step" => $testData["time-step"],
+                    "hashAlgorithm" => $testData["algorithm"],
+                ],
+                // add time steps to the "current" time to ensure that the password at the oldest time step within the
+                // window is the one that is expected to match the password
+                $testData["timestamp"] + ($window * $testData["time-step"]),
+                $window,
+                $testData["passwords"]["{$digits}"],
+                true,
+            ];
 		};
 
-        // test the RFC data with windows of 0, 1 and 2 intervals
+        // test the RFC data with windows of 0, 1 and 2 time steps
         $rfcData = self::rfcTestData();
 
         for ($window = 0; $window < 3; ++$window) {
@@ -2193,147 +2195,147 @@ class TotpTest extends TestCase
 		}
 
         yield from [
-            "emptyPassword6digitsSha1" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
-            "emptyPassword6digitsSha256" => [["secret" => random_bytes(32), "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
-            "emptyPassword6digitsSha512" => [["secret" => random_bytes(64), "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
+            "emptyPassword6digitsSha1" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
+            "emptyPassword6digitsSha256" => [["secret" => random_bytes(32), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
+            "emptyPassword6digitsSha512" => [["secret" => random_bytes(64), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
 
-            "emptyPassword7digitsSha1" => [["secret" => random_bytes(20), "digits" => 7, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
-            "emptyPassword7digitsSha256" => [["secret" => random_bytes(32), "digits" => 7, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
-            "emptyPassword7digitsSha512" => [["secret" => random_bytes(64), "digits" => 7, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
+            "emptyPassword7digitsSha1" => [["secret" => random_bytes(20), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
+            "emptyPassword7digitsSha256" => [["secret" => random_bytes(32), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
+            "emptyPassword7digitsSha512" => [["secret" => random_bytes(64), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
 
-            "emptyPassword8digitsSha1" => [["secret" => random_bytes(20), "digits" => 8, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
-            "emptyPassword8digitsSha256" => [["secret" => random_bytes(32), "digits" => 8, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
-            "emptyPassword8digitsSha512" => [["secret" => random_bytes(64), "digits" => 8, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
+            "emptyPassword8digitsSha1" => [["secret" => random_bytes(20), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
+            "emptyPassword8digitsSha256" => [["secret" => random_bytes(32), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
+            "emptyPassword8digitsSha512" => [["secret" => random_bytes(64), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
 
-            "alphaPassword6digitsSha1" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEF", false,],
-            "alphaPassword6digitsSha256" => [["secret" => random_bytes(32), "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEF", false,],
-            "alphaPassword6digitsSha512" => [["secret" => random_bytes(64), "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEF", false,],
+            "alphaPassword6digitsSha1" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEF", false,],
+            "alphaPassword6digitsSha256" => [["secret" => random_bytes(32), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEF", false,],
+            "alphaPassword6digitsSha512" => [["secret" => random_bytes(64), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEF", false,],
 
-            "alphaPassword7digitsSha1" => [["secret" => random_bytes(20), "digits" => 7, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEFG", false,],
-            "alphaPassword7digitsSha256" => [["secret" => random_bytes(32), "digits" => 7, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEFG", false,],
-            "alphaPassword7digitsSha512" => [["secret" => random_bytes(64), "digits" => 7, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEFG", false,],
+            "alphaPassword7digitsSha1" => [["secret" => random_bytes(20), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEFG", false,],
+            "alphaPassword7digitsSha256" => [["secret" => random_bytes(32), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEFG", false,],
+            "alphaPassword7digitsSha512" => [["secret" => random_bytes(64), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEFG", false,],
 
-            "alphaPassword8digitsSha1" => [["secret" => random_bytes(20), "digits" => 8, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEFGH", false,],
-            "alphaPassword8digitsSha256" => [["secret" => random_bytes(32), "digits" => 8, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEFGH", false,],
-            "alphaPassword8digitsSha512" => [["secret" => random_bytes(64), "digits" => 8, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEFGH", false,],
+            "alphaPassword8digitsSha1" => [["secret" => random_bytes(20), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEFGH", false,],
+            "alphaPassword8digitsSha256" => [["secret" => random_bytes(32), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEFGH", false,],
+            "alphaPassword8digitsSha512" => [["secret" => random_bytes(64), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEFGH", false,],
 
             // RFC data with one digit in the password changed by 1
-            "numericPassword6digitsSha1Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "287081", false,],
-            "numericPassword6digitsSha256Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "247375", false,],
-            "numericPassword6digitsSha512Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "342146", false,],
+            "numericPassword6digitsSha1Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "287081", false,],
+            "numericPassword6digitsSha256Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "247375", false,],
+            "numericPassword6digitsSha512Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "342146", false,],
 
-            "numericPassword6digitsSha1Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "287072", false,],
-            "numericPassword6digitsSha256Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "247364", false,],
-            "numericPassword6digitsSha512Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "342137", false,],
+            "numericPassword6digitsSha1Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "287072", false,],
+            "numericPassword6digitsSha256Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "247364", false,],
+            "numericPassword6digitsSha512Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "342137", false,],
 
-            "numericPassword6digitsSha1Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "287182", false,],
-            "numericPassword6digitsSha256Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "247474", false,],
-            "numericPassword6digitsSha512Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "342247", false,],
+            "numericPassword6digitsSha1Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "287182", false,],
+            "numericPassword6digitsSha256Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "247474", false,],
+            "numericPassword6digitsSha512Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "342247", false,],
 
-            "numericPassword6digitsSha1Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "288082", false,],
-            "numericPassword6digitsSha256Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "248374", false,],
-            "numericPassword6digitsSha512Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "343147", false,],
+            "numericPassword6digitsSha1Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "288082", false,],
+            "numericPassword6digitsSha256Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "248374", false,],
+            "numericPassword6digitsSha512Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "343147", false,],
 
-            "numericPassword6digitsSha1Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "277082", false,],
-            "numericPassword6digitsSha256Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "237374", false,],
-            "numericPassword6digitsSha512Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "332147", false,],
+            "numericPassword6digitsSha1Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "277082", false,],
+            "numericPassword6digitsSha256Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "237374", false,],
+            "numericPassword6digitsSha512Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "332147", false,],
 
-            "numericPassword6digitsSha1Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "187082", false,],
-            "numericPassword6digitsSha256Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "147374", false,],
-            "numericPassword6digitsSha512Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "242147", false,],
+            "numericPassword6digitsSha1Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "187082", false,],
+            "numericPassword6digitsSha256Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "147374", false,],
+            "numericPassword6digitsSha512Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "242147", false,],
 
-            "numericPassword7digitsSha1Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4287083", false,],
-            "numericPassword7digitsSha256Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2247375", false,],
-            "numericPassword7digitsSha512Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9342146", false,],
+            "numericPassword7digitsSha1Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4287083", false,],
+            "numericPassword7digitsSha256Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2247375", false,],
+            "numericPassword7digitsSha512Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9342146", false,],
 
-            "numericPassword7digitsSha1Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4287092", false,],
-            "numericPassword7digitsSha256Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2247384", false,],
-            "numericPassword7digitsSha512Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9342157", false,],
+            "numericPassword7digitsSha1Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4287092", false,],
+            "numericPassword7digitsSha256Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2247384", false,],
+            "numericPassword7digitsSha512Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9342157", false,],
 
-            "numericPassword7digitsSha1Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4287182", false,],
-            "numericPassword7digitsSha256Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2247274", false,],
-            "numericPassword7digitsSha512Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9342047", false,],
+            "numericPassword7digitsSha1Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4287182", false,],
+            "numericPassword7digitsSha256Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2247274", false,],
+            "numericPassword7digitsSha512Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9342047", false,],
 
-            "numericPassword7digitsSha1Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4288082", false,],
-            "numericPassword7digitsSha256Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2248374", false,],
-            "numericPassword7digitsSha512Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9343147", false,],
+            "numericPassword7digitsSha1Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4288082", false,],
+            "numericPassword7digitsSha256Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2248374", false,],
+            "numericPassword7digitsSha512Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9343147", false,],
 
-            "numericPassword7digitsSha1Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4297082", false,],
-            "numericPassword7digitsSha256Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2257374", false,],
-            "numericPassword7digitsSha512Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9352147", false,],
+            "numericPassword7digitsSha1Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4297082", false,],
+            "numericPassword7digitsSha256Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2257374", false,],
+            "numericPassword7digitsSha512Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9352147", false,],
 
-            "numericPassword7digitsSha1Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4187082", false,],
-            "numericPassword7digitsSha256Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2147374", false,],
-            "numericPassword7digitsSha512Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9242147", false,],
+            "numericPassword7digitsSha1Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "4187082", false,],
+            "numericPassword7digitsSha256Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "2147374", false,],
+            "numericPassword7digitsSha512Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "9242147", false,],
 
-            "numericPassword7digitsSha1Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "3287082", false,],
-            "numericPassword7digitsSha256Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "1247374", false,],
-            "numericPassword7digitsSha512Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "8342147", false,],
+            "numericPassword7digitsSha1Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "3287082", false,],
+            "numericPassword7digitsSha256Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "1247374", false,],
+            "numericPassword7digitsSha512Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "8342147", false,],
 
-            "numericPassword8digitsSha1Digit8Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94287083", false,],
-            "numericPassword8digitsSha256Digit8Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32247375", false,],
-            "numericPassword8digitsSha512Digit8Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69342148", false,],
+            "numericPassword8digitsSha1Digit8Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94287083", false,],
+            "numericPassword8digitsSha256Digit8Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32247375", false,],
+            "numericPassword8digitsSha512Digit8Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69342148", false,],
 
-            "numericPassword8digitsSha1Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94287092", false,],
-            "numericPassword8digitsSha256Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32247384", false,],
-            "numericPassword8digitsSha512Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69342157", false,],
+            "numericPassword8digitsSha1Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94287092", false,],
+            "numericPassword8digitsSha256Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32247384", false,],
+            "numericPassword8digitsSha512Digit7Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69342157", false,],
 
-            "numericPassword8digitsSha1Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94287182", false,],
-            "numericPassword8digitsSha256Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32247474", false,],
-            "numericPassword8digitsSha512Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69342247", false,],
+            "numericPassword8digitsSha1Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94287182", false,],
+            "numericPassword8digitsSha256Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32247474", false,],
+            "numericPassword8digitsSha512Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69342247", false,],
 
-            "numericPassword8digitsSha1Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94286082", false,],
-            "numericPassword8digitsSha256Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32246374", false,],
-            "numericPassword8digitsSha512Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69343147", false,],
+            "numericPassword8digitsSha1Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94286082", false,],
+            "numericPassword8digitsSha256Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32246374", false,],
+            "numericPassword8digitsSha512Digit5Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69343147", false,],
 
-            "numericPassword8digitsSha1Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94297082", false,],
-            "numericPassword8digitsSha256Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32257374", false,],
-            "numericPassword8digitsSha512Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69352147", false,],
+            "numericPassword8digitsSha1Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94297082", false,],
+            "numericPassword8digitsSha256Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32257374", false,],
+            "numericPassword8digitsSha512Digit4Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69352147", false,],
 
-            "numericPassword8digitsSha1Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94387082", false,],
-            "numericPassword8digitsSha256Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32347374", false,],
-            "numericPassword8digitsSha512Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69242147", false,],
+            "numericPassword8digitsSha1Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "94387082", false,],
+            "numericPassword8digitsSha256Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "32347374", false,],
+            "numericPassword8digitsSha512Digit3Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "69242147", false,],
 
-            "numericPassword8digitsSha1Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "95287082", false,],
-            "numericPassword8digitsSha256Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "31247374", false,],
-            "numericPassword8digitsSha512Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "68342147", false,],
+            "numericPassword8digitsSha1Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "95287082", false,],
+            "numericPassword8digitsSha256Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "31247374", false,],
+            "numericPassword8digitsSha512Digit2Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "68342147", false,],
 
-            "numericPassword8digitsSha1Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "2287082", false,],
-            "numericPassword8digitsSha256Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "0247374", false,],
-            "numericPassword8digitsSha512Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "7342147", false,],
+            "numericPassword8digitsSha1Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "2287082", false,],
+            "numericPassword8digitsSha256Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "0247374", false,],
+            "numericPassword8digitsSha512Digit1Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "7342147", false,],
 
             // time specified as DateTime
-            "currentTimeAsDateTime01" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], new DateTime("@59", new DateTimeZone("UTC")), 0, "287082", true,],
-            "currentTimeAsDateTime02" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], new DateTime("@59", new DateTimeZone("UTC")), 0, "287072", false,],
+            "currentTimeAsDateTime01" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], new DateTime("@59", new DateTimeZone("UTC")), 0, "287082", true,],
+            "currentTimeAsDateTime02" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], new DateTime("@59", new DateTimeZone("UTC")), 0, "287072", false,],
 
             // invalid window
-            "invalidWindowMinus1" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, -1, "", false, InvalidVerificationWindowException::class,],
-            "invalidWindowBeyondReferenceTime" => [["secret" => random_bytes(32), "digits" => 6, "referenceTime" => 0, "interval" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 2, "", false, InvalidVerificationWindowException::class,],
+            "invalidWindowMinus1" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, -1, "", false, InvalidVerificationWindowException::class,],
+            "invalidWindowBeyondReferenceTime" => [["secret" => random_bytes(32), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 2, "", false, InvalidVerificationWindowException::class,],
 
             // invalid "current" time
-            "invalidTime" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 240, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false, InvalidTimeException::class,],
-            "marginallyInvalidTime" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 240, "interval" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 239, 0, "", false, InvalidTimeException::class,],
+            "invalidTime" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 240, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false, InvalidTimeException::class,],
+            "marginallyInvalidTime" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 240, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 239, 0, "", false, InvalidTimeException::class,],
         ];
 	}
 
-	/**
-	 * @dataProvider dataForTestVerifyAt
-	 *
-	 * @param array $totpSpec The values to use to initialise the Totp object.
-	 * @param int|\DateTime $currentTime The timestamp at which to check verification.
-	 * @param int $window The verification window, expressed in intervals.
-	 * @param string $userPassword The password to verify.
-	 * @param bool $expectedVerification Whether Totp::verifyAt() should verify the password at the time.
-	 * @param class-string|null $exceptionClass The class name of an exception expected to be thrown, if any.
-	 */
+    /**
+     * @dataProvider dataForTestVerifyAt
+     *
+     * @param array $totpSpec The values to use to initialise the Totp object.
+     * @param int|\DateTime $currentTime The timestamp at which to check verification.
+     * @param int $window The verification window, expressed in time steps.
+     * @param string $userPassword The password to verify.
+     * @param bool $expectedVerification Whether Totp::verifyAt() should verify the password at the time.
+     * @param class-string|null $exceptionClass The class name of an exception expected to be thrown, if any.
+     */
 	public function testVerifyAt(array $totpSpec, int | DateTime $currentTime, int $window, string $userPassword, bool $expectedVerification, string $exceptionClass = null): void
 	{
 		if (isset($exceptionClass)) {
 			$this->expectException($exceptionClass);
 		}
 
-		$totp = Totp::integerTotp(digits: $totpSpec["digits"], secret: $totpSpec["secret"], interval: $totpSpec["interval"], referenceTime: $totpSpec["referenceTime"], hashAlgorithm: $totpSpec["hashAlgorithm"]);
-		$this->assertEquals($expectedVerification, $totp->verifyAt(password: $userPassword, time: $currentTime, window: $window), "Verification not as expected.");
+        $totp = Totp::integerTotp(digits: $totpSpec["digits"], secret: $totpSpec["secret"], timeStep: $totpSpec["time-step"], referenceTime: $totpSpec["referenceTime"], hashAlgorithm: $totpSpec["hashAlgorithm"]);
+        $this->assertEquals($expectedVerification, $totp->verifyAt(password: $userPassword, time: $currentTime, window: $window), "Verification not as expected.");
 	}
 
 	/**
