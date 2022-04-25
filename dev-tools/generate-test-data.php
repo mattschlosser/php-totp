@@ -79,9 +79,9 @@ OPTIONS
       If this is not specified a random time between the Unix epoch and 20 years before the current system time will be
        chosen for each TOTP output.
       
-  --interval INTERVAL
-      Set the interval to use when generating test TOTP data. INTERVAL is the number of seconds. It must be at least 1.
-      If this is not specified, a random interval between 1 and 3660 (1 day) will be generated for each TOTP output. 
+  -ltime-step TIME-STEP
+      Set the time step to use when generating test TOTP data. TIME-STEP is the number of seconds. It must be at least
+      1. If this is not specified, a random time step between 1 and 3660 (1 day) will be generated for each TOTP output. 
       
   --algorithm ALGORITHM
       Set the hash algorithm to use when generating test TOTP data. ALGORITHM is the algorithm to use. It must be one
@@ -179,13 +179,13 @@ function randomNow(int $referenceTimestamp, int $maxYear = null): int
 }
 
 /**
- * Generate a random interval for a TOTP.
+ * Generate a random time step for a TOTP.
  *
- * The generated interval will be a multiple of 10 seconds between 10 and 3660 (one hour), inclusive.
+ * The generated time step will be a multiple of 10 seconds between 10 and 3660 (one hour), inclusive.
  *
- * @return int The interval.
+ * @return int The time step.
  */
-function randomInterval(): int
+function randomTimeStep(): int
 {
     return 10 * mt_rand(1, 360);
 }
@@ -309,18 +309,18 @@ for ($idx = 1; $idx < $argc; ++$idx) {
             $opts["algorithm"] = $argv[$idx];
             break;
 
-        case "--interval":
+        case "--time-step":
             ++$idx;
 
             if (!isset($argv[$idx])) {
-                die("--interval requires the interval to be specified as the next argument. See ${argv[0]} --help for details.");
+                die("--time-step requires the time step to be specified as the next argument. See ${argv[0]} --help for details.");
             }
 
             if (!filter_var($argv[$idx], FILTER_VALIDATE_INT, ["options" => ["min_range" => 1,],])) {
-                die("The interval must be at least 1 second. See ${argv[0]} --help for details.");
+                die("The time step must be at least 1 second. See ${argv[0]} --help for details.");
             }
 
-            $opts["interval"] = intval($argv[$idx]);
+            $opts["time-step"] = intval($argv[$idx]);
             break;
 
         case "-32":
@@ -362,12 +362,12 @@ for ($idx = 0; $idx < $opts["times"]; ++$idx) {
     $secret             = $opts["secret"] ?? Base32::encode(random_bytes(20));
     $algorithm          = $opts["algorithm"] ?? randomAlgorithm();
     $referenceTimestamp = $opts["referenceTimestamp"] ?? randomReferenceTimestamp();
-    $interval           = $opts["interval"] ?? randomInterval();
+    $timeStep           = $opts["time-step"] ?? randomTimeStep();
     $digits             = $opts["digits"] ?? randomDigits();
     $nowTimestamp       = $opts["now"] ?? randomNow($referenceTimestamp, 2299);
     $referenceTime      = new DateTime("@{$referenceTimestamp}", new DateTimeZone("UTC"));
     $nowTime            = new DateTime("@{$nowTimestamp}", new DateTimeZone("UTC"));
-    $oathToolOutput     = explode("\n", trim(`oathtool -b -v --totp={$algorithm} -d {$digits} --now "{$nowTime->format("Y-m-d H:i:s")} UTC" -s {$interval}s -S "{$referenceTime->format("Y-m-d H:i:s")} UTC" "{$secret}"`));
+    $oathToolOutput     = explode("\n", trim(`oathtool -b -v --totp={$algorithm} -d {$digits} --now "{$nowTime->format("Y-m-d H:i:s")} UTC" -s {$timeStep}s -S "{$referenceTime->format("Y-m-d H:i:s")} UTC" "{$secret}"`));
     $password           = array_pop($oathToolOutput);
 
     foreach ($oathToolOutput as $line) {
@@ -389,7 +389,7 @@ for ($idx = 0; $idx < $opts["times"]; ++$idx) {
     echo "         \"timestamp\" => {$referenceTimestamp},\n";
     echo "         \"datetime\" => new DateTime(\"@{$referenceTimestamp}\", new DateTimeZone(\"UTC\")),\n";
     echo "      ],\n";
-    echo "      \"interval\" => {$interval},\n";
+    echo "      \"time step\" => {$timeStep},\n";
     echo "      \"currentTime\" => [\n";
     echo "         // {$nowTime->format("Y-m-d H:i:s")} UTC\n";
     echo "         \"timestamp\" => {$nowTimestamp},\n";

@@ -410,7 +410,7 @@ class UrlGeneratorTest extends TestCase
                 ],
                 [
                     "secret" => "password-password",
-                    "interval" => 20,
+                    "time-step" => 20,
                 ],
                 "otpauth://totp/ford-prefect/?secret=OBQXG43XN5ZGILLQMFZXG53POJSA====&period=20",
             ],
@@ -420,7 +420,7 @@ class UrlGeneratorTest extends TestCase
                 ],
                 [
                     "secret" => "password-password",
-                    "interval" => 20,
+                    "time-step" => 20,
                 ],
                 "otpauth://totp/ford-prefect/?secret=OBQXG43XN5ZGILLQMFZXG53POJSA====&period=20",
             ],
@@ -531,7 +531,7 @@ class UrlGeneratorTest extends TestCase
         }
 
         if (isset($totpConfig["renderer"])) {
-            $totp = new Totp(secret: $totpConfig["secret"], interval: $totpConfig["interval"] ?? Totp::DefaultInterval, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? Totp::DefaultAlgorithm);
+            $totp = new Totp(secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? Totp::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? Totp::DefaultAlgorithm);
 
             if (is_string($totpConfig["renderer"])) {
                 $totp->setRenderer(new $totpConfig["renderer"]());
@@ -543,7 +543,7 @@ class UrlGeneratorTest extends TestCase
                 throw new InvalidArgumentException("The renderer provided in the TOTP config is not valid.");
             }
         } else {
-            $totp = Totp::integerTotp(digits: $totpConfig["digits"] ?? 6, secret: $totpConfig["secret"], interval: $totpConfig["interval"] ?? Totp::DefaultInterval, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? Totp::DefaultAlgorithm);
+            $totp = Totp::integerTotp(digits: $totpConfig["digits"] ?? 6, secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? Totp::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? Totp::DefaultAlgorithm);
         }
 
         if ($urlConfig["withDigits"] ?? false) {

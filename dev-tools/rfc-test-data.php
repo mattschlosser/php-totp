@@ -22,7 +22,7 @@ declare(strict_types=1);
  * Use the oathtool utility (https://www.nongnu.org/oath-toolkit/oathtool.1.html) to generate PHP test data for the
  * RFC 6238 test data (see page 15 of the RFC).
  *
- * The test data in the RFC all use the same secret, reference time (0) and interval (30).
+ * The test data in the RFC all use the same secret, reference time (0) and time step (30).
  *
  * The oathtool command is expected to be in your path. If it is not, this script will fail.
  */
@@ -77,7 +77,7 @@ foreach (["sha1", "sha256", "sha512"] as $algorithm) {
       "algorithm" => "${algorithm}",
       "referenceTimestamp" => 0,
       "referenceTime" => new DateTime("1970-01-01 00:00:00", new DateTimeZone("UTC")),
-      "interval" => 30,
+      "time-step" => 30,
       "timestamp" => {$timestamp},
       "time" => new DateTime("{$time->format("Y-m-d H:i:s")}", new DateTimeZone("UTC")),
       "secret" => [
