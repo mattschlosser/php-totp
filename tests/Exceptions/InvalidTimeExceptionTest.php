@@ -82,7 +82,7 @@ class InvalidTimeExceptionTest extends TestCase
         /** @noinspection PhpUnhandledExceptionInspection DateTime constructor should not throw with timestamp argument. */
         $time = new DateTime("@{$timestamp}", new DateTimeZone("UTC"));
 
-        $this->assertEquals($time, $exception->getDateTime(), "DateTime retrieved from exception was not as expected.");
+        $this->assertEquals($time, $exception->getTime(), "DateTime retrieved from exception was not as expected.");
         $this->assertEquals($timestamp, $exception->getTimestamp(), "Timestamp retrieved from exception was not as expected.");
         $this->assertEquals($message, $exception->getMessage(), "Message retrieved from exception was not as expected.");
         $this->assertEquals($code, $exception->getCode(), "Error code retrieved from exception was not as expected.");
@@ -156,6 +156,6 @@ class InvalidTimeExceptionTest extends TestCase
     public function testGetDateTime(int $timestamp, DateTime $expectedTime): void
     {
         $exception = new InvalidTimeException($timestamp);
-        $this->assertEquals($expectedTime, $exception->getDateTime(), "Invalid DateTime retrieved from exception was not as expected.");
+        $this->assertEquals($expectedTime, $exception->getTime(), "Invalid DateTime retrieved from exception was not as expected.");
     }
 }

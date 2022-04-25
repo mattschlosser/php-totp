@@ -44,8 +44,8 @@ class Steam implements Renderer
 	 */
 	public function render(string $hmac): string
 	{
-        $passwordValue = self::extractIntFromHmac($hmac);
-		$password = "";
+        $passwordValue = self::extractIntegerFromHmac($hmac);
+        $password      = "";
 
         // algorithm ported from PIP package steam-totp (https://pypi.org/project/steam-totp/)
 		for ($i = 0; $i < self::CharacterCount; ++$i) {

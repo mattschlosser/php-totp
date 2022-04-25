@@ -68,7 +68,7 @@ class Base64
      *
      * @param string $rawData The raw data to encode.
      */
-    public function setRaw(string $rawData)
+    public function setRaw(string $rawData): void
     {
         $this->m_rawData     = $rawData;
         $this->m_encodedData = null;
@@ -83,7 +83,7 @@ class Base64
      *
      * @throws InvalidBase64DataException
      */
-    public function setEncoded(string $base64)
+    public function setEncoded(string $base64): void
     {
         // note base64_decode() is too tolerant of invalid data so we roll our own validation instead of relying on
         // false being returned from base64_decode()
@@ -110,7 +110,7 @@ class Base64
                 throw new InvalidBase64DataException($base64, "Base64 data must be padded with either 0, 1 or 2 '=' characters.");
         }
 
-        // ensure all non-padding characters are from the Base32 dictionary
+        // ensure all non-padding characters are from the Base64 dictionary
         $validLength = strspn($base64, self::Dictionary, 0, $length);
 
         if ($length !== $validLength) {
@@ -183,7 +183,7 @@ class Base64
      *
      * This is called when the raw content is requested and the internal cache of the raw content is out of sync.
      */
-    protected function decodeBase64Data()
+    protected function decodeBase64Data(): void
     {
         $this->m_rawData = base64_decode($this->m_encodedData);
     }
@@ -194,7 +194,7 @@ class Base64
      * This is called when the encoded content is requested and the internal cache of the encoded content is out of
      * sync.
      */
-    protected function encodeRawData()
+    protected function encodeRawData(): void
     {
         $this->m_encodedData = base64_encode($this->m_rawData);
     }

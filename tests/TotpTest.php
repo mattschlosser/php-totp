@@ -664,7 +664,7 @@ class TotpTest extends TestCase
                 [
                     "secret" => $secret,
                     "timeStep" => $timeStep,
-                    "referenceDateTime" => $referenceTime,
+                    "referenceTime" => $referenceTime,
                 ],
             ];
         }
@@ -900,7 +900,7 @@ class TotpTest extends TestCase
      * @param string|null $exceptionClass
      *
      * @noinspection PhpDocMissingThrowsInspection Totp::sixDigits() should only throw expected test exceptions.
-     * DateTime constructor and Totp::currentPassword() should not throw with test data.
+     * DateTime constructor and Totp::password() should not throw with test data.
      */
     public function testSixDigits(string $secret, int $timeStep = Totp::DefaultTimeStep, int|DateTime $referenceTime = Totp::DefaultReferenceTime, string $hashAlgorithm = Totp::DefaultAlgorithm, array $expectations = [], string $exceptionClass = null): void
     {
@@ -925,11 +925,11 @@ class TotpTest extends TestCase
         $this->assertInstanceOf(SixDigits::class, $totp->renderer(), "The Totp does not have the expected renderer type.");
         /** @noinspection PhpPossiblePolymorphicInvocationInspection Guaranteed to be an instance of IntegerRenderer */
         $this->assertEquals(6, $totp->renderer()->digits(), "The Totp renderer does not use the expected number of digits.");
-        $this->assertEquals($referenceTime, $totp->referenceDateTime(), "Reference DateTime in Totp object does not match expected DateTime.");
+        $this->assertEquals($referenceTime, $totp->referenceTime(), "Reference DateTime in Totp object does not match expected DateTime.");
         $this->assertEquals($referenceTimestamp, $totp->referenceTimestamp(), "Reference timestamp in Totp object does not match expected timestamp.");
 
-        /** @noinspection PhpUnhandledExceptionInspection currentPassword should not throw with test data. */
-        $password = $totp->currentPassword();
+        /** @noinspection PhpUnhandledExceptionInspection password should not throw with test data. */
+        $password = $totp->password();
         $this->assertEquals(6, strlen($password), "Password from Totp object is not 6 digits.");
         $this->assertStringContainsOnly("0123456789", $password, "Password contains some invalid content.");
 
@@ -1041,7 +1041,7 @@ class TotpTest extends TestCase
      * provide in the method call; the value element is the expected return value.
      *
      * @noinspection PhpDocMissingThrowsInspection Totp::eightDigits() should only throw expected test exceptions.
-     * DateTime constructor and Totp::currentPassword() should not throw with test data.
+     * DateTime constructor and Totp::password() should not throw with test data.
      */
     public function testEightDigits(string $secret, int $timeStep = Totp::DefaultTimeStep, int|DateTime $referenceTime = Totp::DefaultReferenceTime, string $hashAlgorithm = Totp::DefaultAlgorithm, array $expectations = [], string $exceptionClass = null): void
     {
@@ -1066,11 +1066,11 @@ class TotpTest extends TestCase
         $this->assertInstanceOf(EightDigits::class, $totp->renderer(), "The Totp does not have the expected renderer type.");
         /** @noinspection PhpPossiblePolymorphicInvocationInspection Guaranteed to be an instance of IntegerRenderer */
         $this->assertEquals(8, $totp->renderer()->digits(), "The Totp renderer does not use the expected number of digits.");
-        $this->assertEquals($referenceTime, $totp->referenceDateTime(), "Reference DateTime in Totp object does not match expected DateTime.");
+        $this->assertEquals($referenceTime, $totp->referenceTime(), "Reference DateTime in Totp object does not match expected DateTime.");
         $this->assertEquals($referenceTimestamp, $totp->referenceTimestamp(), "Reference timestamp in Totp object does not match expected timestamp.");
 
-        /** @noinspection PhpUnhandledExceptionInspection currentPassword() should not throw with test data. */
-        $password = $totp->currentPassword();
+        /** @noinspection PhpUnhandledExceptionInspection password() should not throw with test data. */
+        $password = $totp->password();
         $this->assertEquals(8, strlen($password), "Password from Totp object is not 8 digits.");
         $this->assertStringContainsOnly("0123456789", $password, "Password contains some invalid content.");
 
@@ -1307,7 +1307,7 @@ class TotpTest extends TestCase
      * provide in the method call; the value element is the expected return value.
      *
      * @noinspection PhpDocMissingThrowsInspection Totp::integer() should only throw expected test exceptions. DateTime
-     * constructor and Totp::currentPassword() should not throw with test data.
+     * constructor and Totp::password() should not throw with test data.
      */
     public function testInteger(mixed $digits, string $secret, int $timeStep = Totp::DefaultTimeStep, int|DateTime $referenceTime = Totp::DefaultReferenceTime, string $hashAlgorithm = Totp::DefaultAlgorithm, array $expectations = [], string $exceptionClass = null): void
     {
@@ -1332,11 +1332,11 @@ class TotpTest extends TestCase
         $this->assertInstanceOf(Integer::class, $totp->renderer(), "The Totp does not have the expected renderer type.");
         /** @noinspection PhpPossiblePolymorphicInvocationInspection Guaranteed to be an instance of IntegerRenderer */
         $this->assertEquals($digits, $totp->renderer()->digits(), "The Totp renderer does not use the expected number of digits.");
-        $this->assertEquals($referenceTime, $totp->referenceDateTime(), "Reference DateTime in Totp object does not match expected DateTime.");
+        $this->assertEquals($referenceTime, $totp->referenceTime(), "Reference DateTime in Totp object does not match expected DateTime.");
         $this->assertEquals($referenceTimestamp, $totp->referenceTimestamp(), "Reference timestamp in Totp object does not match expected timestamp.");
 
-        /** @noinspection PhpUnhandledExceptionInspection currentPassword() should not throw with test data. */
-        $password = $totp->currentPassword();
+        /** @noinspection PhpUnhandledExceptionInspection password() should not throw with test data. */
+        $password = $totp->password();
         $this->assertEquals($digits, strlen($password), "Password from Totp object is not {$digits} digits.");
         $this->assertStringContainsOnly("0123456789", $password, "Password contains some invalid content.");
 
@@ -1687,11 +1687,9 @@ class TotpTest extends TestCase
 
         if (is_int($time)) {
             $this->assertSame($time, $totp->referenceTimestamp());
-        } else {
-            if ($time instanceof DateTime) {
-                $this->assertInstanceOf(DateTime::class, $totp->referenceDateTime(), "referenceDateTime() failed to return a DateTime object with input DateTime '" . $time->format("Y-m-d H:i:s") . "'");
-                $this->assertEquals($time, $totp->referenceDateTime());
-            }
+        } else if ($time instanceof DateTime) {
+            $this->assertInstanceOf(DateTime::class, $totp->referenceTime(), "referenceTime() failed to return a DateTime object with input DateTime '" . $time->format("Y-m-d H:i:s") . "'");
+            $this->assertEquals($time, $totp->referenceTime());
         }
     }
 
@@ -1755,12 +1753,12 @@ class TotpTest extends TestCase
     }
 
     /**
-     * Date provider for testReferenceDateTime().
+     * Date provider for testReferenceTime().
      *
      * @return array The test data.
      * @noinspection PhpDocMissingThrowsInspection DateTime constructor shouldn't throw with test data.
      */
-    public function dataForTestReferenceDateTime(): array
+    public function dataForTestReferenceTime(): array
     {
         $now = time();
 
@@ -1795,12 +1793,12 @@ class TotpTest extends TestCase
     }
 
     /**
-     * @dataProvider dataForTestReferenceDateTime
+     * @dataProvider dataForTestReferenceTime
      *
      * @param int|\DateTime $time The time to set in the Totp as the reference.
-     * @param DateTime|null $expectedDateTime What referenceDateTime() is expected to return.
+     * @param DateTime|null $expectedDateTime What referenceTime() is expected to return.
      */
-    public function testReferenceDateTime(int|DateTime $time, ?DateTime $expectedDateTime = null): void
+    public function testReferenceTime(int|DateTime $time, ?DateTime $expectedDateTime = null): void
     {
         if (!isset($expectedDateTime)) {
             if (!($time instanceof DateTime)) {
@@ -1812,7 +1810,7 @@ class TotpTest extends TestCase
 
         $totp = self::createTotp();
         $totp->setReferenceTime($time);
-        $actual = $totp->referenceDateTime();
+        $actual = $totp->referenceTime();
         $this->assertInstanceOf(DateTime::class, $actual);
         $this->assertEquals($expectedDateTime, $actual);
     }
@@ -2336,12 +2334,12 @@ class TotpTest extends TestCase
     }
 
     /**
-     * Test data for the currentPassword() method.
+     * Test data for the password() method.
      *
      * @return array The test data.
      * @noinspection PhpDocMissingThrowsInspection DateTime constructor shouldn't throw with test data.
      */
-    public function dataForTestCurrentHmac(): array
+    public function dataForTestHmac(): array
     {
         /** @noinspection PhpUnhandledExceptionInspection DateTime constructor shouldn't throw with test data. */
         return [
@@ -2367,21 +2365,21 @@ class TotpTest extends TestCase
     }
 
     /**
-     * Test for Totp::currentHmac().
+     * Test for Totp::hmac().
      *
-     * @dataProvider dataForTestCurrentHmac
+     * @dataProvider dataForTestHmac
      *
      * @param string|null $secret The TOTP secret. If null, a random secret will be chosen.
      * @param int $digits The number of digits for the password. Defaults to 6.
      * @param string $algorithm The hash algorithm to use. Defaults to Totp::Sha1Algorithm.
      * @param int|\DateTime $referenceTime The reference time for the TOTP. Defaults to 0, the Unix epoch.
      *
-     * @noinspection PhpDocMissingThrowsInspection Totp constructor, currentHmac() and hmacAt() should not throw with
+     * @noinspection PhpDocMissingThrowsInspection Totp constructor, hmac() and hmacAt() should not throw with
      * test data.
      */
-    public function testCurrentHmac(string $secret = null, int $digits = 6, string $algorithm = Totp::Sha1Algorithm, int|DateTime $referenceTime = 0): void
+    public function testHmac(string $secret = null, int $digits = 6, string $algorithm = Totp::Sha1Algorithm, int|DateTime $referenceTime = 0): void
     {
-        // The logic behind this test is this: currentPassword() can't return a pre-known value because it produces a
+        // The logic behind this test is this: password() can't return a pre-known value because it produces a
         // password dependent on an external factor - the current system time. So we use passwordAt() as our source of
         // expectations on the assumption that it provides a correct value. It's safe to do this because we have a test
         // for passwordAt() and that test will tell us if it's not working. In order mitigate against the outside chance
@@ -2390,7 +2388,7 @@ class TotpTest extends TestCase
         // the time after retrieving the password from the Totp object is the same as the time we're using as our
         // source of expectation.
         //
-        // Note that while debugging, if you put a breakpoint on the call to Totp::currentPassword() you are more likely
+        // Note that while debugging, if you put a breakpoint on the call to Totp::password() you are more likely
         // to trigger a repeat of the loop
         /** @noinspection PhpUnhandledExceptionInspection Totp constructor should not throw with test data. */
         $totp = new Totp(secret: $secret, renderer: new Integer($digits), referenceTime: $referenceTime, hashAlgorithm: $algorithm);
@@ -2398,8 +2396,8 @@ class TotpTest extends TestCase
         // unless you've set a breakpoint we should traverse this loop no more than twice
         do {
             $time = time();
-            /** @noinspection PhpUnhandledExceptionInspection currentHmac() should not throw with test data. */
-            $actual = $totp->currentHmac();
+            /** @noinspection PhpUnhandledExceptionInspection hmac() should not throw with test data. */
+            $actual = $totp->hmac();
             $repeat = (time() !== $time);
         } while ($repeat);
 
@@ -2462,17 +2460,17 @@ class TotpTest extends TestCase
             "Unexpected HMAC at " .
             ($currentTime instanceof DateTime ? $currentTime : new DateTime("@{$currentTime}"))->format("Y-m-d H:i:s") .
             " with secret '" . self::hexOf($secret) . "', algorithm {$totp->hashAlgorithm()}, reference time " .
-            $totp->referenceDateTime()->format("Y-m-d H:i:s") . ", time step {$totp->timeStep()}"
+            $totp->referenceTime()->format("Y-m-d H:i:s") . ", time step {$totp->timeStep()}"
         );
     }
 
     /**
-     * Test data for the currentPassword() method.
+     * Test data for the password() method.
      *
      * @return array The test data.
      * @noinspection PhpDocMissingThrowsInspection DateTime constructor shouldn't throw with test data.
      */
-    public function dataForTestCurrentPassword(): array
+    public function dataForTestPassword(): array
     {
         /** @noinspection PhpUnhandledExceptionInspection DateTime constructor shouldn't throw with test data. */
         return [
@@ -2498,7 +2496,7 @@ class TotpTest extends TestCase
     }
 
     /**
-     * @dataProvider dataForTestCurrentPassword
+     * @dataProvider dataForTestPassword
      *
      * @param string|null $secret The TOTP secret. If null, a random secret will be chosen.
      * @param int $digits The number of digits for the password. Defaults to 6.
@@ -2506,11 +2504,11 @@ class TotpTest extends TestCase
      * @param int|\DateTime $referenceTime The reference time for the TOTP. Defaults to 0, the Unix epoch.
      *
      * @noinspection PhpDocMissingThrowsInspection Totp constructor and Integer renderer constructor should not throw
-     * with test data. Totp::currentPassword() and Totp::passwordAt() should not throw with test data.
+     * with test data. Totp::password() and Totp::passwordAt() should not throw with test data.
      */
-    public function testCurrentPassword(string $secret = null, int $digits = 6, string $algorithm = Totp::Sha1Algorithm, int|DateTime $referenceTime = 0): void
+    public function testPassword(string $secret = null, int $digits = 6, string $algorithm = Totp::Sha1Algorithm, int|DateTime $referenceTime = 0): void
     {
-        // The logic behind this test is this: currentPassword() can't return a pre-known value because it produces a
+        // The logic behind this test is this: password() can't return a pre-known value because it produces a
         // password dependent on an external factor - the current system time. So we use passwordAt() as our source of
         // expectations on the assumption that it provides a correct value. It's safe to do this because we have a test
         // for passwordAt() and that test will tell us if it's not working. In order mitigate against the outside chance
@@ -2519,7 +2517,7 @@ class TotpTest extends TestCase
         // the time after retrieving the password from the Totp object is the same as the time we're using as our
         // source of expectation.
         //
-        // Note that while debugging, if you put a breakpoint on the call to Totp::currentPassword() you are more likely
+        // Note that while debugging, if you put a breakpoint on the call to Totp::password() you are more likely
         // to trigger a repeat of the loop
         /** @noinspection PhpUnhandledExceptionInspection Totp constructor and Integer renderer constructor should not
          * throw with test data.
@@ -2529,8 +2527,8 @@ class TotpTest extends TestCase
         // unless you've set a breakpoint we should traverse this loop no more than twice
         do {
             $time = time();
-            /** @noinspection PhpUnhandledExceptionInspection currentPassword() should not throw with test data. */
-            $actual = $totp->currentPassword();
+            /** @noinspection PhpUnhandledExceptionInspection password() should not throw with test data. */
+            $actual = $totp->password();
             $repeat = (time() !== $time);
         } while ($repeat);
 
@@ -2600,7 +2598,7 @@ class TotpTest extends TestCase
                 "Unexpected {$digits}-digit password at " .
                 ($currentTime instanceof DateTime ? $currentTime : new DateTime("@{$currentTime}"))->format("Y-m-d H:i:s") .
                 " with secret '" . self::hexOf($secret) . "', algorithm {$totp->hashAlgorithm()}, reference time " .
-                $totp->referenceDateTime()->format("Y-m-d H:i:s") . ", time step {$totp->timeStep()}"
+                $totp->referenceTime()->format("Y-m-d H:i:s") . ", time step {$totp->timeStep()}"
             );
 
             $password = substr($password, 1);
@@ -2639,14 +2637,14 @@ class TotpTest extends TestCase
      * @param int|\DateTime $referenceTime The reference time for the TOTP. Defaults to 0, the Unix epoch.
      *
      * @noinspection PhpDocMissingThrowsInspection Totp constructor, Integer renderer constructor,
-     * Totp::currentPassword() and Totp::verify() shouldn't throw with test data.
+     * Totp::password() and Totp::verify() shouldn't throw with test data.
      */
     public function testVerify(string $secret = null, int $digits = 6, string $algorithm = Totp::Sha1Algorithm, int|DateTime $referenceTime = 0): void
     {
         // The logic behind this test is this: verify() can't return a pre-known value because it is dependent on an
         // external factor - the current system time. So we fetch the current password, which we know should pass
-        // verification, and verify that on the assumption that currentPassword() provides the correct value. It's
-        // safe to do this because we have a test for currentPassword() and that test will tell us if it's not working.
+        // verification, and verify that on the assumption that password() provides the correct value. It's
+        // safe to do this because we have a test for password() and that test will tell us if it's not working.
         // In order mitigate against the outside chance that the system time ticks over to the next TOTP time step
         // between the point in time at which we call time() and the point in time at which we do the verification, we
         // ensure that the time after doing the verification is the same as the time before it, ensuring that we've
@@ -2664,7 +2662,7 @@ class TotpTest extends TestCase
         do {
             $time = time();
             /** @noinspection PhpUnhandledExceptionInspection Shouldn't throw with test data. */
-            $correctPassword = $totp->currentPassword();
+            $correctPassword = $totp->password();
             // change one digit of the correct password by one, making it incorrect
             $incorrectPassword    = $correctPassword;
             $incorrectPassword[3] = "" . ((intval($incorrectPassword[3]) + 1) % 10);

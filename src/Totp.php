@@ -135,7 +135,7 @@ class Totp
      */
     public function __construct(TotpSecret|string $secret = null, Renderer $renderer = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm)
     {
-        $this->setSecret($secret ?? self::randomSecret());
+        $this->setSecret($secret ?? static::randomSecret());
         $this->setRenderer($renderer ?? static::defaultRenderer());
         $this->setTimeStep($timeStep);
         $this->setHashAlgorithm($hashAlgorithm);
@@ -289,19 +289,19 @@ class Totp
     }
 
     /**
-     * Set the algorithm to use when generating HMACs.
+     * Set the hash algorithm to use when generating HMACs.
      *
-     * The algorithm must be one of SHA1, SHA256 or SHA512. Use the class constants for these to avoid errors.
+     * The hash algorithm must be one of SHA1, SHA256 or SHA512. Use the class constants for these to avoid errors.
      *
-     * @param string $algorithm The algorithm.
+     * @param string $hashAlgorithm The hash algorithm.
      *
-     * @throws InvalidHashAlgorithmException if the algorithm provided is not valid.
+     * @throws InvalidHashAlgorithmException if the hash algorithm provided is not valid.
      */
-    public function setHashAlgorithm(string $algorithm): void
+    public function setHashAlgorithm(string $hashAlgorithm): void
     {
-        $this->m_hashAlgorithm = match ($algorithm) {
-            self::Sha1Algorithm, self::Sha256Algorithm, self::Sha512Algorithm => $algorithm,
-            default => throw new InvalidHashAlgorithmException($algorithm, "The hash algorithm must be one of " . self::Sha1Algorithm . ", " . self::Sha256Algorithm . " or " . self::Sha512Algorithm . "."),
+        $this->m_hashAlgorithm = match ($hashAlgorithm) {
+            self::Sha1Algorithm, self::Sha256Algorithm, self::Sha512Algorithm => $hashAlgorithm,
+            default => throw new InvalidHashAlgorithmException($hashAlgorithm, "The hash algorithm must be one of " . self::Sha1Algorithm . ", " . self::Sha256Algorithm . " or " . self::Sha512Algorithm . "."),
         };
     }
 
@@ -417,10 +417,12 @@ class Totp
      * The reference time from which time steps are measured as a DateTime object.
      *
      * @return \DateTime The reference time.
+     * @noinspection PhpDocMissingThrowsInspection DateTime constructor doesn't throw with Unix timestamp.
      */
-    public function referenceDateTime(): DateTime
+    public function referenceTime(): DateTime
     {
-        return DateTime::createFromFormat("U", "{$this->m_referenceTime}", new DateTimeZone("UTC"));
+        /** @noinspection PhpUnhandledExceptionInspection DateTime constructor doesn't throw with Unix timestamp. */
+        return new DateTime("@{$this->m_referenceTime}", new DateTimeZone("UTC"));
     }
 
     /**
@@ -544,7 +546,7 @@ class Totp
      * @return string The HMAC at the current system time.
      * @throws InvalidTimeException if the current time is before the reference time.
      */
-    public final function currentHmac(): string
+    public final function hmac(): string
     {
         return $this->hmacAt(self::currentTime());
     }
@@ -568,7 +570,7 @@ class Totp
      * @return string The current TOTP password.
      * @throws InvalidTimeException if the current time is before the reference time.
      */
-    public final function currentPassword(): string
+    public final function password(): string
     {
         return $this->passwordAt(self::currentTime());
     }

@@ -41,7 +41,7 @@ trait ExtractsStandard31BitInteger
      *
      * @return int The extracted int.
      */
-    protected static function extractIntFromHmac(string $hmac): int
+    protected static function extractIntegerFromHmac(string $hmac): int
     {
         $offset = ord($hmac[strlen($hmac) - 1]) & 0xf;
 

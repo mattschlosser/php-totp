@@ -31,6 +31,8 @@ use Equit\Totp\Exceptions\InvalidDigitsException;
  */
 class Integer implements IntegerRenderer
 {
+    use RendersStandardIntegerPasswords;
+
     /**
      * The minimum number of digits, as per RFC 6238.
      */
@@ -40,8 +42,6 @@ class Integer implements IntegerRenderer
      * The default number of digits.
      */
     public const DefaultDigits = 6;
-
-    use RendersStandardIntegerPasswords;
 
     /**
      * @var int The number of digits.

@@ -34,7 +34,7 @@ use Equit\Totp\Renderers\IntegerRenderer;
  *
  *     otpauth://totp/[{issuer}:]{user}/?secret={secret}[&digits={digits}][&algorithm={algorithm}][&period={period}]
  *
- * The {issuer} (setIssuer(), issuer()) is optional; the {user} (setUser(), user()) is mandatory. By default the
+ * The {issuer} (setIssuer(), issuer()) is optional; the {user} (setUser(), user()) is mandatory. By default, the
  * generator will generate the URL parameters for digits, algorithm and period if those properties of the provided Totp
  * instance are non-default (e.g. if the algorithm is SHA1 the algorithm won't be part of the URL, but if it's SHA256 it
  * will). You can force or suppress individual parameters by passing `true` or `false` respectively to
@@ -43,8 +43,8 @@ use Equit\Totp\Renderers\IntegerRenderer;
  *
  * ## Static/fluent interface
  *
- * Each of these methods can be called statically to create a UrlGenerator. You can also chain them to fluently
- * construct a UrlGenerator with the required feature set. For example:
+ * Each of these methods can be called statically to create a UrlGenerator. You can also chain them to construct a
+ * UrlGenerator fluently with the required feature set. For example:
  *
  *     $generator = UrlGenerator::for("darren")->from("Equit")->withDigits();
  *
@@ -54,7 +54,7 @@ use Equit\Totp\Renderers\IntegerRenderer;
  *
  * are both valid, and will produce UrlGenerators with the same features.
  *
- * @method static self for(string $user) Initialise a generator for a given user.
+ * @method static self for (string $user) Initialise a generator for a given user.
  * @method static self from(string|null $issuer) Initialise a generator from a given issuer.
  * @method static self withPeriod() Initialise a generator that includes the period parameter in URLs it generates.
  * @method static self withPeriodIfCustomised() Initialise a generator that includes the period parameter in URLs it
@@ -332,6 +332,8 @@ class UrlGenerator
             $url .= "&issuer=" . urlencode($this->issuer());
         }
 
+        /** @noinspection PhpPossiblePolymorphicInvocationInspection digits() is only called after checking we have on
+         * instance of IntegerRenderer */
         if (true === $this->includesDigits() || (is_null($this->includesDigits()) && $totp->renderer() instanceof IntegerRenderer && Integer::DefaultDigits !== $totp->renderer()->digits())) {
             $url .= "&digits={$totp->renderer()->digits()}";
         }
@@ -445,6 +447,7 @@ class UrlGenerator
      * @param array $args The arguments provided in the call.
      *
      * @return $this
+     * @throws \Equit\Totp\Exceptions\UrlGenerator\InvalidUserException if for() is called with an empty user.
      */
     public function __call(string $method, array $args): self
     {
@@ -516,6 +519,7 @@ class UrlGenerator
      * @param array $args The arguments provided in the call.
      *
      * @return static
+     * @throws \Equit\Totp\Exceptions\UrlGenerator\InvalidUserException if for() is called with an empty user.
      */
     public static function __callStatic(string $method, array $args): static
     {

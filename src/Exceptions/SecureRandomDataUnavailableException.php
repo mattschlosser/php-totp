@@ -20,6 +20,9 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Exceptions;
 
+/**
+ * Exception thrown when the Totp class is unable to generate cryptographically-secure random secrets.
+ */
 class SecureRandomDataUnavailableException extends TotpException
 {
 }
