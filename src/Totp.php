@@ -168,8 +168,8 @@ class Totp
      * it is always 64 bytes (512 bits) in length so that it is sufficiently strong for all the supported algorithms.
      *
      * @return string The random secret.
-     * @throws SecureRandomDataUnavailableException if random_bytes() is unable to generate
-     * cryptographically secure random data.
+     * @throws SecureRandomDataUnavailableException if a known source of cryptographically secure random data is
+     * not available.
      */
     public static function randomSecret(): string
     {
@@ -177,6 +177,14 @@ class Totp
             return random_bytes(64);
         }
         catch (Exception $e) {
+            if (function_exists("openssl_random_pseudo_bytes")) {
+                $secret = openssl_random_pseudo_bytes(64, $isStrong);
+
+                if (false !== $secret && $isStrong) {
+                    return $secret;
+                }
+            }
+
             throw new SecureRandomDataUnavailableException($e->getMessage(), $e->getCode(), $e);
         }
     }
