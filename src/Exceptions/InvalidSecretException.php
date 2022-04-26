@@ -27,6 +27,9 @@ use Throwable;
  */
 class InvalidSecretException extends TotpException
 {
+    /**
+     * @var string The invalid secret.
+     */
     private string $m_secret;
 
     /**

@@ -23,7 +23,7 @@ namespace Equit\Totp\Exceptions;
 use Exception;
 
 /**
- * Base class for all exceptions related to TOTP instances.
+ * Base class for all exceptions related to Totp instances.
  */
 class TotpException extends Exception
 {

@@ -42,11 +42,9 @@ use Equit\Totp\Exceptions\InvalidSecretException;
 final class TotpSecret
 {
     /**
-     * @var string|null The raw bytes of the secret.
-     *
-     * Will be null if the secret was initialised as Base32 or Base64 and raw() has yet to be called.
+     * @var string The raw bytes of the secret.
      */
-    private ?string $m_raw;
+    private string $m_raw;
 
     /**
      * @var string|null The Base32 encoding of the secret.

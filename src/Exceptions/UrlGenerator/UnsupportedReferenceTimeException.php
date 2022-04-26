@@ -44,24 +44,21 @@ class UnsupportedReferenceTimeException extends UrlGeneratorException
     /**
      * Initialise a new exception instance.
      *
-     * @param int | DateTime $time The unsupported timestamp.
+     * @param DateTime | int $time The unsupported timestamp.
      * @param string $message An optional message explaining why it's unsupported. Defaults to an empty string.
      * @param int $code An optional error code. Defaults to 0.
      * @param Throwable|null $previous An optional previous Throwable that was thrown. Defaults to null.
      *
      * @noinspection PhpDocMissingThrowsInspection DateTime constructor guaranteed not to throw here.
      */
-    public function __construct(int|DateTime $time, string $message = "", int $code = 0, ?Throwable $previous = null)
+    public function __construct(DateTime|int $time, string $message = "", int $code = 0, ?Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
 
         if ($time instanceof DateTime) {
-            $this->m_time      = $time;
-            $this->m_timestamp = $time->getTimestamp();
+            $this->m_time = $time;
         } else {
             $this->m_timestamp = $time;
-            /** @noinspection PhpUnhandledExceptionInspection DateTime constructor will not throw here */
-            $this->m_time = new DateTime("@{$time}", new DateTimeZone("UTC"));
         }
     }
 
@@ -72,6 +69,10 @@ class UnsupportedReferenceTimeException extends UrlGeneratorException
      */
     public function getTimestamp(): int
     {
+        if (!isset($this->m_timestamp)) {
+            $this->m_timestamp = $this->m_time->getTimestamp();
+        }
+
         return $this->m_timestamp;
     }
 
@@ -79,9 +80,15 @@ class UnsupportedReferenceTimeException extends UrlGeneratorException
      * Fetch the unsupported time.
      *
      * @return DateTime The time.
+     * @noinspection PhpDocMissingThrowsInspection DateTime constructor won't throw with timestamp argument.
      */
     public function getTime(): DateTime
     {
+        if (!isset($this->m_time)) {
+            /** @noinspection PhpUnhandledExceptionInspection DateTime constructor won't throw with timestamp argument. */
+            $this->m_time = new DateTime("@{$this->m_timestamp}", new DateTimeZone("UTC"));
+        }
+
         return $this->m_time;
     }
 }

@@ -73,7 +73,7 @@ class Base32
      *
      * @param string $data The raw data to encode.
      */
-    public function setRaw(string $data)
+    public function setRaw(string $data): void
     {
         $this->m_rawData     = $data;
         $this->m_encodedData = null;
@@ -88,7 +88,7 @@ class Base32
      *
      * @throws InvalidBase32DataException
      */
-    public function setEncoded(string $base32)
+    public function setEncoded(string $base32): void
     {
         $length = strlen($base32);
 
@@ -186,7 +186,7 @@ class Base32
      *
      * This is called when the raw content is requested and the internal cache of the raw content is out of sync.
      */
-    protected function decodeBase32Data()
+    protected function decodeBase32Data(): void
     {
         $byteSequence    = strtoupper($this->m_encodedData);
         $this->m_rawData = "";
@@ -245,7 +245,7 @@ class Base32
      * This is called when the encoded content is requested and the internal cache of the encoded content is out of
      * sync.
      */
-    protected function encodeRawData()
+    protected function encodeRawData(): void
     {
         $this->m_encodedData = "";
         $len                 = strlen($this->m_rawData);

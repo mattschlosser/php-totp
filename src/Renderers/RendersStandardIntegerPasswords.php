@@ -55,7 +55,7 @@ trait RendersStandardIntegerPasswords
     public function render(string $hmac): string
     {
         assert(5 < $this->digits(), "Invalid digit count in Renderer subclass " . get_class($this));
-        $password = self::extractIntFromHmac($hmac) % (10 ** $this->digits());
+        $password = self::extractIntegerFromHmac($hmac) % (10 ** $this->digits());
         return str_pad("{$password}", $this->digits(), "0", STR_PAD_LEFT);
     }
 }

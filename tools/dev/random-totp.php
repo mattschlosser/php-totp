@@ -73,8 +73,8 @@ $counterBytesAt = $counterBytesAt->getClosure($totp);
 echo "Secret         : " . toPhpHexString($totp->secret()) . "\n";
 echo "Secret (B32)   : {$totp->base32Secret()}\n";
 echo "Secret (B64)   : {$totp->base64Secret()}\n";
-echo "Reference Time : {$totp->referenceTimestamp()} {$totp->referenceDateTime()->format("Y-m-d H:i:s T")}\n";
-echo "Time step       : {$totp->timeStep()}\n";
+echo "Reference Time : {$totp->referenceTimestamp()} {$totp->referenceTime()->format("Y-m-d H:i:s T")}\n";
+echo "Time step      : {$totp->timeStep()}\n";
 echo "Current Time   : {$currentTime} " . (new DateTime("@{$currentTime}"))->format("Y-m-d H:i:s T") . "\n\n";
 
 // OTP details at current time

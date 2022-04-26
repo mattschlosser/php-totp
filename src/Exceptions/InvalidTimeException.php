@@ -30,22 +30,32 @@ use Throwable;
 class InvalidTimeException extends TotpException
 {
     /**
-     * @var int The time that is not valid.
+     * @var int The time that is not valid as a Unix timestamp.
      */
     private int $m_timestamp;
 
     /**
-     * @param int $timestamp The invalid timestamp.
+     * @var DateTime The invalid time as a DateTime object.
+     */
+    private DateTime $m_time;
+
+    /**
+     * @param DateTime | int $time The invalid timestamp.
      * @param string $message An optional message describing the problem with the timestamp. Defaults to an empty
      * string.
      * @param int $code An optional error code. Defaults to 0.
      * @param \Throwable|null $previous An optional previous Throwable that was thrown immediately before this. Defaults
      * to null.
      */
-    public function __construct(int $timestamp, string $message = "", int $code = 0, ?Throwable $previous = null)
+    public function __construct(DateTime|int $time, string $message = "", int $code = 0, ?Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
-        $this->m_timestamp = $timestamp;
+
+        if ($time instanceof DateTime) {
+            $this->m_time = $time;
+        } else {
+            $this->m_timestamp = $time;
+        }
     }
 
     /**
@@ -55,6 +65,10 @@ class InvalidTimeException extends TotpException
      */
     public function getTimestamp(): int
     {
+        if (!isset($this->m_timestamp)) {
+            $this->m_timestamp = $this->m_time->getTimestamp();
+        }
+
         return $this->m_timestamp;
     }
 
@@ -62,9 +76,15 @@ class InvalidTimeException extends TotpException
      * Fetch the erroneous DateTime.
      *
      * @return DateTime The DateTime.
+     * @noinspection PhpDocMissingThrowsInspection DateTime constructor won't throw with timestamp argument.
      */
-    public function getDateTime(): DateTime
+    public function getTime(): DateTime
     {
-        return DateTime::createFromFormat("U", "{$this->m_timestamp}", new DateTimeZone("UTC"));
+        if (!isset($this->m_time)) {
+            /** @noinspection PhpUnhandledExceptionInspection DateTime constructor won't throw with timestamp argument. */
+            $this->m_time = new DateTime("@{$this->m_timestamp}", new DateTimeZone("UTC"));
+        }
+
+        return $this->m_time;
     }
 }

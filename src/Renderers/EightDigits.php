@@ -22,6 +22,10 @@ namespace Equit\Totp\Renderers;
 
 /**
  * Render a TOTP of eight decimal digits.
+ *
+ * The standard procedure, described in RFC 6238, is used to extract a 31-bit integer from the HOTP HMAC, the lease-
+ * significant 8 digits of which are used as the password. The password is padded to the left with 0s if it has fewer
+ * than 8 digits.
  */
 class EightDigits implements IntegerRenderer
 {

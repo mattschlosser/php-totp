@@ -32,13 +32,13 @@ use Throwable;
 class UnsupportedRendererException extends UrlGeneratorException
 {
     /**
-     * @var Renderer The invalid renderer.
+     * @var Renderer The unsupported renderer.
      */
     private Renderer $m_renderer;
 
     /**
-     * @param \Equit\Totp\Renderers\Renderer $renderer The invalid renderer.
-     * @param string $message An optional description of why it's invalid. Defaults to an empty string.
+     * @param \Equit\Totp\Renderers\Renderer $renderer The unsupported renderer.
+     * @param string $message An optional description of why it's unsuported. Defaults to an empty string.
      * @param int $code An optional error code. Defaults to 0.
      * @param Throwable|null $previous An optional previous Throwable. Defaults to null.
      */
@@ -49,9 +49,9 @@ class UnsupportedRendererException extends UrlGeneratorException
     }
 
     /**
-     * Fetch the invalid renderer.
+     * Fetch the unsupported renderer.
      *
-     * @return \Equit\Totp\Renderers\Renderer The invalid renderer.
+     * @return \Equit\Totp\Renderers\Renderer The unsupported renderer.
      */
     public function getRenderer(): Renderer
     {
@@ -59,7 +59,7 @@ class UnsupportedRendererException extends UrlGeneratorException
     }
 
     /**
-     * Convenience method to get the class name of the invalid renderer.
+     * Convenience method to get the class name of the unsupported renderer.
      *
      * @return string The renderer class name.
      */
