@@ -37,17 +37,26 @@ class InvalidTimeExceptionTest extends TestCase
      * Test data for InvalidTimeException constructor.
      *
      * @return array The test data.
+     * @noinspection PhpDocMissingThrowsInspection DateTime constructor shouldn't throw with test data.
      */
     public function dataForTestConstructor(): array
     {
+        /** @noinspection PhpUnhandledExceptionInspection DateTime constructor shouldn't throw with test data. */
         return [
             "typicalTimestamp0" => [0,],
             "typicalTimestamp60" => [60,],
             "typicalTimestampNow" => [time(),],
+            "typicalDateTime0" => [new DateTime("@0", new DateTimeZone("UTC")),],
+            "typicalDateTime60" => [new DateTime("@60", new DateTimeZone("UTC")),],
+            "typicalDateTimeNow" => [new DateTime("@" . time(), new DateTimeZone("UTC")),],
             "typicalTimestampAndMessage" => [0, "0 is not a valid time.",],
             "typicalTimestampMessageAndCode" => [0, "0 is not a valid time.", 12,],
             "typicalTimestampMessageCodeAndPrevious" => [0, "0 is not a valid time.", 12, new Exception("foo"),],
+            "typicalTimeAndMessage" => [new DateTime("@0", new DateTimeZone("UTC")), "Unix epoch is not a valid time.",],
+            "typicalTimeMessageAndCode" => [new DateTime("@0", new DateTimeZone("UTC")), "Unix epoch is not a valid time.", 12,],
+            "typicalTimeMessageCodeAndPrevious" => [new DateTime("@0", new DateTimeZone("UTC")), "Unix epoch is not a valid time.", 12, new Exception("foo"),],
             "extremeIntMin" => [PHP_INT_MIN,],
+            "extremeMaxDateTime" => [new DateTime("9999-12-31 23:59:59", new DateTimeZone("UTC")),],
             "invalidNullTime" => [null, "null is not a valid time.", 12, new Exception("foo"), TypeError::class],
             "invalidStringTime" => ["1970-01-01 00:00:00", "'1970-01-01 00:00:00' is not a valid time.", 12, new Exception("foo"), TypeError::class],
             "invalidStringableTime" => [self::createStringable("1970-01-01 00:00:00"), "'1970-01-01 00:00:00' is not a valid time.", 12, new Exception("foo"), TypeError::class],
@@ -64,7 +73,7 @@ class InvalidTimeExceptionTest extends TestCase
      *
      * @dataProvider dataForTestConstructor
      *
-     * @param mixed $timestamp The invalid time for the test exception.
+     * @param mixed $time The invalid time for the test exception.
      * @param mixed $message The message for the test exception. Defaults to an empty string.
      * @param mixed $code The error code for the test exception. Defaults to 0.
      * @param mixed|null $previous The previous throwable for the test exception. Defaults to null.
@@ -72,15 +81,21 @@ class InvalidTimeExceptionTest extends TestCase
      *
      * @noinspection PhpDocMissingThrowsInspection DateTime constructor should not throw with timestamp argument.
      */
-    public function testConstructor(mixed $timestamp, mixed $message = "", mixed $code = 0, mixed $previous = null, string $exceptionClass = null): void
+    public function testConstructor(mixed $time, mixed $message = "", mixed $code = 0, mixed $previous = null, string $exceptionClass = null): void
     {
         if (isset($exceptionClass)) {
             $this->expectException($exceptionClass);
         }
 
-        $exception = new InvalidTimeException($timestamp, $message, $code, $previous);
-        /** @noinspection PhpUnhandledExceptionInspection DateTime constructor should not throw with timestamp argument. */
-        $time = new DateTime("@{$timestamp}", new DateTimeZone("UTC"));
+        $exception = new InvalidTimeException($time, $message, $code, $previous);
+
+        if ($time instanceof DateTime) {
+            $timestamp = $time->getTimestamp();
+        } else {
+            $timestamp = $time;
+            /** @noinspection PhpUnhandledExceptionInspection DateTime constructor should not throw with timestamp argument. */
+            $time = new DateTime("@{$time}", new DateTimeZone("UTC"));
+        }
 
         $this->assertEquals($time, $exception->getTime(), "DateTime retrieved from exception was not as expected.");
         $this->assertEquals($timestamp, $exception->getTimestamp(), "Timestamp retrieved from exception was not as expected.");
