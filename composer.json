@@ -34,5 +34,8 @@
   },
   "scripts": {
     "test": "phpunit --configuration tests/phpunit.xml --coverage-text --testsuite \"Equit Totp Full Test Suite\""
-  }
+  },
+  "bin": [
+    "tools/totp.php"
+  ]
 }

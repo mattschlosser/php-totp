@@ -27,10 +27,14 @@ declare(strict_types=1);
  * The oathtool command is expected to be in your path. If it is not, this script will fail.
  */
 
+namespace Equit\Totp\Tools\Dev\RfcTestData;
+
+require_once(__DIR__ . "/../bootstrap.php");
+
+use DateTime;
+use DateTimeZone;
 use Equit\Totp\Base32;
 use Equit\Totp\Base64;
-
-require_once("bootstrap.php");
 
 /**
  * Show the usage/help message.

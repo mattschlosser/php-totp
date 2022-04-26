@@ -24,7 +24,11 @@ declare(strict_types=1);
  * The string literal is output without surrounding "".
  */
 
-require_once("bootstrap.php");
+namespace Equit\Totp\Tools\Dev\RandomBinaryString;
+
+require_once(__DIR__ . "/../bootstrap.php");
+
+use function Equit\Totp\Tools\toPhpHexString;
 
 /**
  * Show the help/usage message.

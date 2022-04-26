@@ -22,9 +22,14 @@ declare(strict_types=1);
  * Create a Totp with random data and output all its details.
  */
 
-require_once("bootstrap.php");
+namespace Equit\Totp\Tools\Dev\RandomBinaryString;
 
+require_once(__DIR__ . "/../bootstrap.php");
+
+use DateTime;
 use Equit\Totp\Totp;
+use ReflectionMethod;
+use function Equit\Totp\Tools\toPhpHexString;
 
 /**
  * Show the usage/help message.

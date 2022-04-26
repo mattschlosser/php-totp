@@ -18,6 +18,8 @@
 
 declare(strict_types=1);
 
+namespace Equit\Totp\Tools;
+
 /**
  * Convert a binary string to a PHP source string literal.
  *

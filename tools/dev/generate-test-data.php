@@ -24,10 +24,17 @@ declare(strict_types=1);
  * Use oathtool (https://www.nongnu.org/oath-toolkit/oathtool.1.html) to generate test data for php-totp unit tests.
  * This most likely requires a unix-like platform
  */
-require_once(__DIR__ . "/../vendor/autoload.php");
 
+namespace Equit\Totp\Tools\Dev\GenerateTestData;
+
+require_once(__DIR__ . "/../bootstrap.php");
+
+use DateTime;
+use DateTimeZone;
 use Equit\Totp\Base32;
 use Equit\Totp\Base64;
+use Exception;
+use function Equit\Totp\Tools\toPhpHexString;
 
 /**
  * Show the usage/help message.
@@ -202,18 +209,6 @@ function randomDigits(): int
     return chooseOne([6, 7, 8,]);
 }
 
-/**
- * Convert a binary string to a PHP string literal for use in PHP source code.
- *
- * @param string $str The string to convert.
- *
- * @return string The PHP source string literal for the proviced binary string.
- */
-function phpHexStringLiteral(string $str): string
-{
-    return "\\x" . implode("\\x", str_split(bin2hex($str), 2));
-}
-
 $opts = [
     "secret-type" => "base32",
     "times" => 1,
@@ -380,7 +375,7 @@ for ($idx = 0; $idx < $opts["times"]; ++$idx) {
     echo "   \"randomDataset" . sprintf("%0{$timesDigits}d", $idx + 1) . "\" => [\n";
     echo "      \"algorithm\" => \"" . strtolower($algorithm) . "\"\n";
     echo "      \"secret\" => [\n";
-    echo "         \"raw\" => \"" . phpHexStringLiteral(Base32::decode($secret)) . "\"\n";
+    echo "         \"raw\" => \"" . toPhpHexString(Base32::decode($secret)) . "\"\n";
     echo "         \"base32\" => \"{$secret}\"\n";
     echo "         \"base64\" => \"" . Base64::encode(Base32::decode($secret)) . "\"\n";
     echo "      ],\n";
@@ -397,7 +392,7 @@ for ($idx = 0; $idx < $opts["times"]; ++$idx) {
     echo "      ],\n";
     echo "      \"digits\" => {$digits},\n";
     echo "      \"counter\" => [\n";
-    echo "         \"bytes\" => \"" . phpHexStringLiteral($counterBytes) . "\",\n";
+    echo "         \"bytes\" => \"" . toPhpHexString($counterBytes) . "\",\n";
     echo "         \"value\" => {$counterValue},\n";
     echo "      ],\n";
     echo "      \"password\" => \"{$password}\",\n";
