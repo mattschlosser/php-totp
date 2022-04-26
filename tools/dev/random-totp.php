@@ -55,7 +55,7 @@ if (isset($argv[1]) && "--help" === $argv[1]) {
     exit(1);
 }
 
-$totp = Totp::integerTotp(
+$totp = Totp::integer(
     digits: 6,
     secret: Totp::randomSecret(),
     timeStep: 10 * mt_rand(1, 6),                                  // random time-step, 10, 20, 30 40, 50 or 60 seconds

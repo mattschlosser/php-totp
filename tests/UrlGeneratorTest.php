@@ -543,7 +543,7 @@ class UrlGeneratorTest extends TestCase
                 throw new InvalidArgumentException("The renderer provided in the TOTP config is not valid.");
             }
         } else {
-            $totp = Totp::integerTotp(digits: $totpConfig["digits"] ?? 6, secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? Totp::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? Totp::DefaultAlgorithm);
+            $totp = Totp::integer(digits: $totpConfig["digits"] ?? 6, secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? Totp::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? Totp::DefaultAlgorithm);
         }
 
         if ($urlConfig["withDigits"] ?? false) {

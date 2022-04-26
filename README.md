@@ -49,10 +49,11 @@ foreach (get_users() as $user) {
 ````
 
 ### Authenticating
+
 ````php
 // get hold of your user object in whatever way you normally do it
 $user = get_user();
-$totp = Equit\Totp\Totp::sixDigitTotp(secret: $user->totpSecret());
+$totp = Equit\Totp\Totp::sixDigits(secret: $user->totpSecret());
 
 if ($totp->verify(password: $_POST["totp"], window: 1)) {
     // user is authenticated
