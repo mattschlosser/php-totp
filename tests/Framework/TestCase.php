@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Tests\Framework;
 
+use Equit\Totp\Tests\Framework\Constraints\AllCharactersHaveChanged;
 use Equit\Totp\Tests\Framework\Constraints\EquivalentOtpAuthUrl;
 use Equit\Totp\Tests\Framework\Constraints\StringContainsOnly;
 use PHPUnit\Framework\TestCase as BaseTestCase;
@@ -67,6 +68,19 @@ class TestCase extends BaseTestCase
     public static function assertStringContainsOnly(string $allowableCharacters, string $actualString, string $message = ""): void
     {
         static::assertThat($actualString, new StringContainsOnly($allowableCharacters), $message);
+    }
+
+    /**
+     * Assert that a string's characters have all changed from a given previous content.
+     *
+     * @param string $before The content of the string before it underwent the process that is required to have changed
+     * all the characters.
+     * @param string $after The content of the string after the process.
+     * @param string $message Optional message for use when the assertion fails.
+     */
+    public static function assertAllCharactersHaveChanged(string $before, string $after, string $message = ""): void
+    {
+        static::assertThat($after, new AllCharactersHaveChanged($before), $message);
     }
 
     /**
