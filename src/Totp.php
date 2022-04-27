@@ -150,14 +150,28 @@ class Totp
     public function __destruct()
     {
         // NOTE the secret is guaranteed to be at least 16 bytes long
-        for ($idx = strlen($this->m_secret) - 1; $idx >= 0; --$idx) {
+        self::shred($this->m_secret);
+    }
+
+    /**
+     * Overwrite a string with random bytes.
+     *
+     * This is intended to be used to shred secrets contained in strings so that the secret is only available in memory
+     * in its unencrypted form for as long as is necessary. The Totp destructor uses this method to shred its internal
+     * store of the unencrypted secret.
+     *
+     * @param string $str A reference to the string to shred.
+     */
+    public static final function shred(string &$str): void
+    {
+        for ($idx = strlen($str) - 1; $idx >= 0; --$idx) {
             // this loop ensures we don't accidentally overwrite the secret's memory with the same bytes - the chances
-            // are infinitesimal anyway - at most 1 in 256^16 - but this guarantees it
+            // are infinitesimal anyway for valid secrets - at most 1 in 256^16 - but this guarantees it
             do {
                 $char = chr(rand(0, 255));
-            } while ($char === $this->m_secret[$idx]);
+            } while ($char === $str[$idx]);
 
-            $this->m_secret[$idx] = $char;
+            $str[$idx] = $char;
         }
     }
 

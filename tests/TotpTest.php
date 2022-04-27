@@ -807,6 +807,63 @@ class TotpTest extends TestCase
     }
 
     /**
+     * Test data for Totp::shred()
+     *
+     * @return \Generator
+     * @throws \Exception if random_bytes() is unable to generate cryptographically-secure random data.
+     */
+    public function dataForTestShred(): Generator
+    {
+        yield from [
+            "typical" => ["foobarfizzbuzz",],
+            "typicalWhitespace" => ["        ",],
+            "typicalNulls" => ["\0\0\0\0\0\0\0\0",],
+            "extremeEmpty" => ["",],
+            "extremeVeryLong" => [str_repeat("foobarfizzbuzz", 10000),],
+            "invalidNull" => [null, TypeError::class,],
+            "invalidInt" => [12345, TypeError::class,],
+            "invalidFloat" => [12345.6789, TypeError::class,],
+            "invalidTrue" => [true, TypeError::class,],
+            "invalidFalse" => [false, TypeError::class,],
+            "invalidStringable" => [self::createStringable("foobarfizzbuzz"), TypeError::class,],
+            "invalidArray" => [["foobarfizzbuzz",], TypeError::class,],
+            "invalidObject" => [new class
+            {
+            }, TypeError::class,],
+        ];
+
+        // 1000 random binary strings
+        for ($idx = 0; $idx < 1000; ++$idx) {
+            $len = mt_rand(0, 100);
+            $key = sprintf("%s%02d", "randomString", $idx);
+
+            if (0 === $len) {
+                yield $key => ["",];
+            } else {
+                yield $key => [random_bytes($len),];
+            }
+        }
+    }
+
+    /**
+     * @dataProvider dataForTestShred
+     *
+     * @param mixed $str The string to test with.
+     * @param string|null $expectedException The class name of the Throwable that is expected, if any.
+     */
+    public function testShred(mixed $str, ?string $expectedException = null): void
+    {
+        if (isset($expectedException)) {
+            $this->expectException($expectedException);
+        }
+
+        $before = $str;
+        Totp::shred($str);
+        $this->assertIsString($str, "Shredding the string changed its type.");
+        $this->assertAllCharactersHaveChanged($before, $str, "Not all the characters in the string were changed by Totp::shred().");
+    }
+
+    /**
      * Test data for testSixDigits().
      *
      * @return Generator The RFC test data mapped to the correct structure for the test arguments.
