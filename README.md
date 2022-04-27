@@ -6,23 +6,81 @@
 
 Time-based One Time Password Generator for PHP
 
-Add two-factor authentication to your app using TOTP and enable your users to use
-commonly-available authenticator apps like Google Authenticator to secure their
-logins.
+Add two-factor authentication to your app using TOTP and enable your users to use commonly-available authenticator apps
+like Google Authenticator to secure their logins.
 
 ## Quick start
 
-1. Generate a secure, random secret for your user and have them import it into their
-   authenticator
-2. When a user logs in, ask them for their current TOTP
-3. Instantiate an `Equit\Totp\Totp` and tell it the user's secret
-4. Pass the user's input to `Totp::verify()` - if it returns `true`, the user is authenticated.
+1. Generate a secure, random secret for your user: `Totp::randomSecret()`
+2. Send a one-time notification to the user for them to import into their authenticator
+   app: `UrlGenerator::for($user->username)->urlFor(new Totp($user->secret))`
+3. When a user logs in, ask them for their current TOTP and verify it: `(new Totp($user->secret))->verify($inputOtp)`
 
-## Examples
+## Preparing to support TOTP
 
-### Provisioning a user
+Before provisioning any user you need to decide on your TOTP configuration. The default TOTP configuration will usually
+suffice, which means unless you have good reason to choose a non-default configuration, you can skip this section.
 
-Provision a user with TOTP and send them a notification with a URL they can import into their authenticator app.
+If you decide to use a non-default configuration, you need to choose four things:
+
+1. The hashing algorithm
+2. The reference timestamp
+3. The size of the time step
+4. The number of digits in your OTPs
+
+TOTP supports three hashing algorithms - SHA1, SHA256 and SHA512. The strongest is SHA512, while the default specified
+in the RFC is SHA1 (for compatibility with HOTP). Once you have chosen your algorithm you cannot easily change - the
+different algorithms produce different OTPs so you cannot just switch out SHA1 for SHA512 and expect your users' OTPs to
+continue to work. So choose wisely. The most secure choice is SHA512 since it is able to make use of stronger secrets;
+however, at the time of writing Google Authenticator (for example) only supports SHA1.
+
+TOTP works by calculating a counter value that is the number of time steps of a given size that have elapsed since a
+given point in time. By default, the point in time is 00:00:00 01/01/1970 (AKA the Unix epoch), which is 0 when
+represented as a Unix timestamp. The time step default is 30 seconds. Unless you have a good reason to deviate from
+them, the default reference time and time step are reasonable choices. If you do choose to customise the time step, bear
+in mind that very small intervals will make it harder for users since they'll have less time available to enter the
+correct OTP. Similarly, making the interval too large can also make it difficult for users since they may have to wait
+for a time step to expire to log in again (each OTP must only be used to authenticate once, so if a user logs in then
+immediately logs out, with a time step of 10 minutes, say, the user won't be able to log in againt for another 9 minutes
+or so).
+
+The number of digits in your OTPs defaults to 6, but can range from 6 to 9 inclusive. There's technically no reason why
+larger numbers of digits can't be used, but owing to the internal mechanism by which the password is generated there is
+nothing to gain since the number from which it is derived has at most 9 digits, so any more digits will just result in
+padding with 0s to the left.
+
+Note that there are schemes available for generating OTPs that are not just 6-9 numeric digits - see the Steam renderer,
+for example, which produces 4-character passcodes compatible with the Steam authenticator. In most cases, however,
+you'll probably want to stick with 6-9 digit OTPs.
+
+## Provisioning users
+
+There are three steps involved in provisioning a user with TOTP:
+
+1. Generate, encrypt and store a secret for the user.
+2. Send them a notification with a URL, secret and/or QR code they can import into their authenticator app.
+3. Verify successful provisioning by asking them for their current OTP.
+
+### Generating secrets
+
+You can generate your own secrets, but the Totp class provides a method that will generate a random secret for you that
+is guaranteed to be cryptographically secure and strong enough to make the most of all the hashing algorithms supported
+by the TOTP specification.
+
+Once you have generated the secret you must store it securely. Never store it unencrypted, and make sure you have a
+strong key for your encryption. Use different keys for your various environments, and make sure you refresh your key
+often.
+
+```php
+// this example assumes you are using Laravel's Crypt facade to perform encryption in your app. (Note that you can also
+// set the totpSecret field to be automatically encrypted and decrypted in your Eloquent model class.)
+$user->totpSecret = Crypt::encrypt(Totp::randomSecret());
+$user->save();
+```
+
+The Totp class can take care of generating the secret for you. When an instance is created without a specified secret,
+it automatically generates a secure random one. It always generates secrets of 512 bits in length so that the secrets
+are suitable for all the supported hash algorithms.
 
 ````php
 // get hold of your user object in whatever way you normally do it
