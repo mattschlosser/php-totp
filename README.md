@@ -166,8 +166,8 @@ app; if it returns `true` the user has provided a valid OTP and can be authentic
 
 The TOTP specification mandates that each generated OTP must be used only once to successfully authenticate. That is,
 once an OTP has been used to successfully authenticate, that OTP may not be used again. This is one reason why it's
-important to keep your time steps relatively short - if it's too long users may be effectively locked out for a short
-period of time.
+important to keep your time steps relatively short - if it's too long users may be effectively locked out for a period
+of time.
 
 One way to ensure each OTP is used only once is to record the TOTP counter value after each successful authentication.
 The counter is an incrementing integer value that indicates how many time steps have passed since the reference time for
@@ -237,7 +237,7 @@ are targeting for your users support the algorithm you are intending to use befo
 The `Totp` class provides constants representing all supported hashing algorithms, and you are strongly encouraged to
 use these to avoid exceptions in your app. Using the constants protects your code against changes to the underlying
 values that are used to represent the algorithms, and will provide you with a pain-free upgrade path for your app
-if/when the code is updated to use PHP8.1 enumerations for hash algorithms.
+if/when _php-totp_ is updated to use a PHP8.1 enumeration for specifying hash algorithms.
 
 To use SHA256 create all your `Totp` instances like this:
 
