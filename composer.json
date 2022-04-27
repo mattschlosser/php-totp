@@ -1,6 +1,7 @@
 {
   "name": "equit/totp",
   "description": "TOTP generator for PHP",
+  "readme": "README.md",
   "keywords": [
     "authentication",
     "totp",

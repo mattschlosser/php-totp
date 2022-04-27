@@ -16,7 +16,51 @@ like Google Authenticator to secure their logins.
    app: `UrlGenerator::for($user->username)->urlFor(new Totp($user->secret))`
 3. When a user logs in, ask them for their current TOTP and verify it: `(new Totp($user->secret))->verify($inputOtp)`
 
-## Preparing to support TOTP
+## Details
+
+The following sections use fictional functions, classes and methods to fill in the gaps for functionality that is
+outside the scope of the php-totp library. For example, where the documentation references the `encrypt()` function it
+is referring to whatever mechanism your app uses to encrypt data, not an actual `encrypt()` function. The examples also
+assume a standard TOTP setup as described in [RFC 6238](https://www.ietf.org/rfc/rfc6238.txt) - that is, a reference
+time of 00:00:00 on 01/01/1970, a time step of 30 seconds and the SHA1 producing 6-digit passwords. Possibilities for
+customising the TOTP setup are described later.
+
+### Provisioning Users
+
+There are three steps involved in provisioning a user with TOTP:
+
+1. Generate, encrypt and store a secret for the user.
+2. Send them a notification with a URL, secret and/or QR code they can import into their authenticator app.
+3. Verify successful provisioning by asking them for their current OTP.
+
+### Generating secrets
+
+You can generate your own secrets, but the `Totp` class provides a method that will generate a random secret for you
+that is guaranteed to be cryptographically secure and strong enough to make the most of all the hashing algorithms
+supported by the TOTP specification. This method is also used when instantiating `Totp` objects without providing an
+explicit secret.
+
+Once you have generated the secret you must store it securely. Never store it unencrypted, and make sure you have a
+strong key for your encryption. Use different keys for your various environments, and make sure you refresh your key
+often.
+
+```php
+$user->totpSecret = encrypt(Totp::randomSecret());
+$user->save();
+```
+
+Often, Base32 encoding is used with TOTP secrets, particularly when adding a new service to an authenticator app. If you
+need your secret in Base32, `php-totp` provides a codec class to help with the conversion:
+
+```php
+$user->totpSecret = encrypt(Base32::encode(Totp::randomSecret()));
+$user->save();
+```
+
+Sometimes Base64 is also used. PHP provides Base64 encoding and decoding as standard, but for consistency php-totp also
+provides a Base64 codec class that operates identically to the Base32 class, except it works with Base64.
+
+## Custom TOTP configurations
 
 Before provisioning any user you need to decide on your TOTP configuration. The default TOTP configuration will usually
 suffice, which means unless you have good reason to choose a non-default configuration, you can skip this section.
