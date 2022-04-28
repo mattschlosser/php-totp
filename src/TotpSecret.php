@@ -51,14 +51,14 @@ final class TotpSecret
      *
      * Will be null if the secret was initialised as raw or Base64 and base32() has yet to be called.
      */
-    private ?string $m_base32;
+    private ?string $m_base32 = null;
 
     /**
      * @var string|null The Base64 encoding of the secret.
      *
      * Will be null if the secret was initialised as Base32 or raw and base64() has yet to be called.
      */
-    private ?string $m_base64;
+    private ?string $m_base64 = null;
 
     /**
      * @param string $secret The raw secret.
@@ -72,6 +72,22 @@ final class TotpSecret
         }
 
         $this->m_raw = $secret;
+    }
+
+    /**
+     * Shred the secrets before deallocation.
+     */
+    public function __destruct()
+    {
+        Totp::shred($this->m_raw);
+
+        if ($this->m_base32) {
+            Totp::shred($this->m_base32);
+        }
+
+        if ($this->m_base64) {
+            Totp::shred($this->m_base64);
+        }
     }
 
     /**
