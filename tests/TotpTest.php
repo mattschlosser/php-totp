@@ -803,7 +803,7 @@ class TotpTest extends TestCase
         $secretProperty = new ReflectionProperty($totp, "m_secret");
         $secretProperty->setAccessible(true);
         $totp->__destruct();
-        $this->assertNotEquals($secret, $secretProperty->getValue($totp), "The secret was not overwritten with random data.");
+        $this->assertAllCharactersHaveChanged($secret, $secretProperty->getValue($totp), "The secret was not overwritten with random data.");
     }
 
     /**
