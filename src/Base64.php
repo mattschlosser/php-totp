@@ -32,6 +32,11 @@ use Equit\Totp\Exceptions\InvalidBase64DataException;
 class Base64
 {
     /**
+     * Import the trait that securely erases all string properties on destruction.
+     */
+    use SecurelyErasesProperties;
+
+    /**
      * The base64 dictionary.
      */
     protected const Dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

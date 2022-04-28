@@ -45,6 +45,11 @@ use Exception;
 class Totp
 {
     /**
+     * Import the trait that securely erases all string properties on destruction.
+     */
+    use SecurelyErasesProperties;
+
+    /**
      * Use this to specify that the SHA1 algorithm should be used to generate HMACs.
      */
     public const Sha1Algorithm = "sha1";
@@ -140,17 +145,6 @@ class Totp
         $this->setTimeStep($timeStep);
         $this->setHashAlgorithm($hashAlgorithm);
         $this->m_referenceTime = ($referenceTime instanceof DateTime ? $referenceTime->getTimestamp() : $referenceTime);
-    }
-
-    /**
-     * Destroy the instance.
-     *
-     * The memory occupied by the unencrypted secret is overwritten with random data.
-     */
-    public function __destruct()
-    {
-        // NOTE the secret is guaranteed to be at least 16 bytes long
-        self::shred($this->m_secret);
     }
 
     /**
