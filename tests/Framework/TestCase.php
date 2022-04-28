@@ -59,6 +59,78 @@ class TestCase extends BaseTestCase
     }
 
     /**
+     * Generate a random binary string.
+     *
+     * A string of random bytes is generated of a given length. If no length is provided, a random length between 0 and
+     * 200 is used. This means an empty string could be generated. The random string is not guaranteed to be
+     * cryptographically secure.
+     *
+     * @param int|null $length The length of the string required.
+     *
+     * @return string A random binary string.
+     */
+    protected static function randomBinaryString(?int $length = null): string
+    {
+        if (!isset($length)) {
+            $length = mt_rand(0, 200);
+        }
+
+        $str = "";
+
+        for ($idx = 0; $idx < $length; ++$idx) {
+            $str .= chr(mt_rand(0, 255));
+        }
+
+        return $str;
+    }
+
+    /**
+     * Generate a random cryptographically-secure secret.
+     *
+     * A string of random bytes is generated of a given length. The length must be a valid TOTP secret length - that is,
+     * between 16 and 64 bytes. If no length is provided, a random length between 16 and 64 is used. The random string
+     * is guaranteed to be generated from cryptographically secure random data.
+     *
+     * @param int|null $length The length of the string required.
+     *
+     * @return string A random secret.
+     * @throws \Exception if random_bytes() is not able to generate cryptographically-secure random data.
+     */
+    protected static function randomValidSecret(?int $length = null): string
+    {
+        if (!isset($length)) {
+            $length = mt_rand(16, 64);
+        }
+
+        return random_bytes($length);
+    }
+
+    /**
+     * Generate a random cryptographically-secure secret.
+     *
+     * A string of random bytes is generated of a given length. The length must be an invalid TOTP secret length - that
+     * is, between 0 and 15 bytes. If no length is provided, a random length between 0 and 15 is used. The random string
+     * is guaranteed to be generated from cryptographically secure random data.
+     *
+     * @param int|null $length The length of the string required. It must be between 0 and 15 inclusive.
+     *
+     * @return string A random invalid secret.
+     * @throws \Exception if random_bytes() is not able to generate cryptographically-secure random data.
+     */
+    protected static function randomInvalidSecret(?int $length = null): string
+    {
+        if (!isset($length)) {
+            $length = mt_rand(0, 15);
+        }
+
+        if (0 === $length) {
+            return "";
+        }
+
+        return random_bytes($length);
+    }
+
+    /**
      * Assert that a string contains only characters that are present in another string.
      *
      * @param string $allowableCharacters The string containing the allowable characters.

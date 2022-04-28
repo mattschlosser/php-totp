@@ -32,16 +32,6 @@ use TypeError;
 class InvalidSecretExceptionTest extends TestCase
 {
     /**
-     * Generate a random string that is guaranteed not to be a valid Totp secret.
-     *
-     * @return string The generated invalid secret.
-     */
-    private static function randomInvalidSecret(): string
-    {
-        return random_bytes(mt_rand(1, 15));
-    }
-
-    /**
      * Test data for InvalidSecretException constructor.
      *
      * @return array The test data.

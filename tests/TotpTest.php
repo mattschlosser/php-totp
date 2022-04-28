@@ -490,15 +490,15 @@ class TotpTest extends TestCase
      * This method provides 100 datasets each with a random valid secret.
      *
      * @return Generator.
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     protected function randomSecretTestDataForTestConstructor(): Generator
     {
         // 100 x random secrets
         for ($idx = 0; $idx < 100; ++$idx) {
-            $secret = random_bytes(20);
+            $secret = self::randomValidSecret();
 
-            yield "randomValidSecret" . sprintf("%02d", $idx) => [
+            yield sprintf("%s%02d", "randomValidSecret", $idx) => [
                 [$secret,],
                 [
                     "secret" => $secret,
@@ -513,7 +513,8 @@ class TotpTest extends TestCase
      * This method provides test data focused on examining the limits of valid Totp secrets.
      *
      * @return array The test datasets.
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if randomValidSecret() or randomInvalidSecret() are unable to provide cryptographically-
+     * secure data.
      */
     protected function specificSecretTestDataForTestConstructor(): array
     {
@@ -524,12 +525,12 @@ class TotpTest extends TestCase
                 InvalidSecretException::class,
             ],
             "invalidMarginallyShortSecret" => [
-                [random_bytes(15),],
+                [self::randomInvalidSecret(15),],
                 [],
                 InvalidSecretException::class,
             ],
             "shortestValidSecret" => [
-                [$secret = random_bytes(16),],
+                [$secret = self::randomValidSecret(16),],
                 [
                     "secret" => $secret,
                 ],
@@ -543,7 +544,7 @@ class TotpTest extends TestCase
      * This method yields 100 datasets with random valid time steps then 100 datasets with random invalid time steps.
      *
      * @return \Generator
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     protected function randomTimeStepTestDataForTestConstructor(): Generator
     {
@@ -552,7 +553,7 @@ class TotpTest extends TestCase
             $timeStep = mt_rand(1, 3600);
 
             yield [
-                [random_bytes(16), null, $timeStep,],
+                [self::randomValidSecret(16), null, $timeStep,],
                 [
                     "timeStep" => $timeStep,
                 ],
@@ -562,7 +563,7 @@ class TotpTest extends TestCase
         // 100 x random invalid time steps
         for ($idx = 0; $idx < 100; ++$idx) {
             yield [
-                [random_bytes(16), null, mt_rand(PHP_INT_MIN, 0),],
+                [self::randomValidSecret(16), null, mt_rand(PHP_INT_MIN, 0),],
                 [],
                 InvalidTimeStepException::class,
             ];
@@ -575,20 +576,20 @@ class TotpTest extends TestCase
      * This method provides test data focused on examining the limits of valid Totp time steps.
      *
      * @return array The test datasets.
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     protected function specificTimeStepTestDataForTestConstructor(): array
     {
         return [
             "shortestValidTimeStep" => [
-                [random_bytes(16), null, 1,],
+                [self::randomValidSecret(16), null, 1,],
                 [
                     "timeStep" => 1,
                 ],
             ],
 
             "closestInvalidTimeStep" => [
-                [random_bytes(16), null, 0,],
+                [self::randomValidSecret(16), null, 0,],
                 [],
                 InvalidTimeStepException::class,
             ],
@@ -601,14 +602,14 @@ class TotpTest extends TestCase
      * Yields 100 datasets each with a valid secret and time step
      *
      * @return \Generator
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     protected function randomSecretAndTimeStepTestDataForTestConstructor(): Generator
     {
         // 100 x specified secret and time step
         for ($idx = 0; $idx < 100; ++$idx) {
-            // random secret of between 16 and 20 bytes
-            $secret = random_bytes(mt_rand(16, 20));
+            // random secret
+            $secret = self::randomValidSecret();
             // random time step up to 1 hour, on a 10-second boundary
             $timeStep = 10 * mt_rand(1, 360);
 
@@ -629,14 +630,14 @@ class TotpTest extends TestCase
      * valid secret, time step and reference DateTime.
      *
      * @return \Generator
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     protected function randomSecretTimeStepAndReferenceTimeTestDataForTestConstructor(): Generator
     {
         // 100 x specified secret, time step and reference time as timestamp
         for ($idx = 0; $idx < 100; ++$idx) {
-            // random secret of between 16 and 20 bytes
-            $secret = random_bytes(mt_rand(16, 20));
+            // random secret
+            $secret = self::randomValidSecret();
             // random time step up to 1 hour, on a 10-second boundary
             $timeStep           = 10 * mt_rand(1, 360);
             $referenceTimestamp = mt_rand(0, time());
@@ -653,8 +654,8 @@ class TotpTest extends TestCase
 
         // 100 x specified secret, time step and reference time as DateTime
         for ($idx = 0; $idx < 100; ++$idx) {
-            // random secret of between 16 and 20 bytes
-            $secret = random_bytes(mt_rand(16, 20));
+            // random secret
+            $secret = self::randomValidSecret();
             // random time step up to 1 hour, on a 10-second boundary
             $timeStep      = 10 * mt_rand(1, 360);
             $referenceTime = new DateTime("@" . mt_rand(0, time()));
@@ -676,40 +677,40 @@ class TotpTest extends TestCase
      * Provides datasets to test specific scenarios for the reference time provided to the constructor.
      *
      * @return array
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     protected function specificReferenceTimeTestDataForTestConstructor(): array
     {
         return [
             "nullReferenceTime" => [
-                [random_bytes(20), null, 30, null,],
+                [self::randomValidSecret(20), null, 30, null,],
                 [],
                 TypeError::class,
             ],
             "stringReferenceTimeNow" => [
-                [random_bytes(20), null, 30, "now",],
+                [self::randomValidSecret(20), null, 30, "now",],
                 [],
                 TypeError::class,
             ],
             "stringReferenceTimeInt" => [
-                [random_bytes(20), null, 30, "0",],
+                [self::randomValidSecret(20), null, 30, "0",],
                 [],
                 TypeError::class,
             ],
             "stringReferenceTimeDateString" => [
-                [random_bytes(20), null, 30, "1970-01-01 00:00:00",],
+                [self::randomValidSecret(20), null, 30, "1970-01-01 00:00:00",],
                 [],
                 TypeError::class,
             ],
             "objectReferenceTime" => [
-                [random_bytes(20), null, 30, new class
+                [self::randomValidSecret(20), null, 30, new class
                 {
                 },],
                 [],
                 TypeError::class,
             ],
             "arrayReferenceTime" => [
-                [random_bytes(20), null, 30, [0],],
+                [self::randomValidSecret(20), null, 30, [0],],
                 [],
                 TypeError::class,
             ],
@@ -720,7 +721,7 @@ class TotpTest extends TestCase
      * Data provider for the constructor test.
      *
      * @return \Generator
-     * @throws \Exception if random_bytes() is unable to generate cryptographically-secure random data.
+     * @throws \Exception if self::randomValidSecret() is unable to generate cryptographically-secure random data.
      */
     public function dataForTestConstructor(): Generator
     {
@@ -770,7 +771,7 @@ class TotpTest extends TestCase
      * Test data for testDestructor().
      *
      * @return \Generator
-     * @throws \Exception if random_bytes() is unable to generate cryptographically-secure random data.
+     * @throws \Exception if self::randomValidSecret() is unable to generate cryptographically-secure random data.
      */
     public function dataForTestDestructor(): Generator
     {
@@ -780,7 +781,7 @@ class TotpTest extends TestCase
 
         // yield 100 random valid secrets
         for ($idx = 0; $idx < 100; ++$idx) {
-            yield [random_bytes(mt_rand(16, 20)),];
+            yield [self::randomValidSecret(),];
         }
     }
 
@@ -807,67 +808,10 @@ class TotpTest extends TestCase
     }
 
     /**
-     * Test data for Totp::shred()
-     *
-     * @return \Generator
-     * @throws \Exception if random_bytes() is unable to generate cryptographically-secure random data.
-     */
-    public function dataForTestShred(): Generator
-    {
-        yield from [
-            "typical" => ["foobarfizzbuzz",],
-            "typicalWhitespace" => ["        ",],
-            "typicalNulls" => ["\0\0\0\0\0\0\0\0",],
-            "extremeEmpty" => ["",],
-            "extremeVeryLong" => [str_repeat("foobarfizzbuzz", 10000),],
-            "invalidNull" => [null, TypeError::class,],
-            "invalidInt" => [12345, TypeError::class,],
-            "invalidFloat" => [12345.6789, TypeError::class,],
-            "invalidTrue" => [true, TypeError::class,],
-            "invalidFalse" => [false, TypeError::class,],
-            "invalidStringable" => [self::createStringable("foobarfizzbuzz"), TypeError::class,],
-            "invalidArray" => [["foobarfizzbuzz",], TypeError::class,],
-            "invalidObject" => [new class
-            {
-            }, TypeError::class,],
-        ];
-
-        // 1000 random binary strings
-        for ($idx = 0; $idx < 1000; ++$idx) {
-            $len = mt_rand(0, 100);
-            $key = sprintf("%s%02d", "randomString", $idx);
-
-            if (0 === $len) {
-                yield $key => ["",];
-            } else {
-                yield $key => [random_bytes($len),];
-            }
-        }
-    }
-
-    /**
-     * @dataProvider dataForTestShred
-     *
-     * @param mixed $str The string to test with.
-     * @param string|null $expectedException The class name of the Throwable that is expected, if any.
-     */
-    public function testShred(mixed $str, ?string $expectedException = null): void
-    {
-        if (isset($expectedException)) {
-            $this->expectException($expectedException);
-        }
-
-        $before = $str;
-        Totp::shred($str);
-        $this->assertIsString($str, "Shredding the string changed its type.");
-        $this->assertAllCharactersHaveChanged($before, $str, "Not all the characters in the string were changed by Totp::shred().");
-    }
-
-    /**
      * Test data for testSixDigits().
      *
      * @return Generator The RFC test data mapped to the correct structure for the test arguments.
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     public function dataForTestSixDigits(): Generator
     {
@@ -893,44 +837,44 @@ class TotpTest extends TestCase
         // invalid secrets
         yield ["", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
         yield ["password-passwo", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
-        yield [random_bytes(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
-        yield [random_bytes(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        yield [self::randomInvalidSecret(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        yield [self::randomInvalidSecret(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
 
         // invalid time steps
-        yield [random_bytes(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
-        yield [random_bytes(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
-        yield [random_bytes(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
-        yield [random_bytes(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        yield [self::randomValidSecret(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        yield [self::randomValidSecret(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        yield [self::randomValidSecret(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        yield [self::randomValidSecret(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
 
         // invalid algorithms
-        yield [random_bytes(20), 30, 0, "", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,];
 
         // 100 random valid combinations
         for ($idx = 0; $idx < 100; ++$idx) {
             yield [
-                random_bytes(64),
+                self::randomValidSecret(64),
                 10 * mt_rand(1, 360),
                 mt_rand(0, time() - (20 * 365 * 24 * 60 * 60)),
                 match (mt_rand(0, 2)) {
@@ -1009,7 +953,7 @@ class TotpTest extends TestCase
      * Test data for testEightDigits().
      *
      * @return Generator The RFC test data mapped to the correct arrangement for the test arguments.
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     public function dataForTestEightDigits(): Generator
     {
@@ -1035,44 +979,44 @@ class TotpTest extends TestCase
         // invalid secrets
         yield ["", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
         yield ["password-passwo", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
-        yield [random_bytes(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
-        yield [random_bytes(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        yield [self::randomInvalidSecret(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
+        yield [self::randomInvalidSecret(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,];
 
         // invalid time steps
-        yield [random_bytes(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
-        yield [random_bytes(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
-        yield [random_bytes(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
-        yield [random_bytes(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        yield [self::randomValidSecret(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        yield [self::randomValidSecret(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        yield [self::randomValidSecret(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
+        yield [self::randomValidSecret(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,];
 
         // invalid algorithms
-        yield [random_bytes(20), 30, 0, "", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,];
-        yield [random_bytes(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,];
+        yield [self::randomValidSecret(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,];
 
         // 100 random valid combinations
         for ($idx = 0; $idx < 100; ++$idx) {
             yield [
-                random_bytes(64),
+                self::randomValidSecret(64),
                 10 * mt_rand(1, 360),
                 mt_rand(0, time() - (20 * 365 * 24 * 60 * 60)),
                 match (mt_rand(0, 2)) {
@@ -1153,7 +1097,7 @@ class TotpTest extends TestCase
      * data to test specific scenarios, plus 100 random valid datasets.
      *
      * @return Generator The test data.
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     public function dataForTestInteger(): Generator
     {
@@ -1194,7 +1138,7 @@ class TotpTest extends TestCase
             [self::createStringable("6"), "", 30, 0, Totp::Sha1Algorithm, [], TypeError::class,],
             [6.115, "", 30, 0, Totp::Sha1Algorithm, [], TypeError::class,],
             [[6], "", 30, 0, Totp::Sha1Algorithm, [], TypeError::class,],
-            [(object)["digits" => 6,], random_bytes(15), 30, 0, Totp::Sha1Algorithm, [], TypeError::class,],
+            [(object)["digits" => 6,], self::randomInvalidSecret(15), 30, 0, Totp::Sha1Algorithm, [], TypeError::class,],
         ];
 
         // invalid secrets
@@ -1207,137 +1151,137 @@ class TotpTest extends TestCase
             [7, "password-passwo", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
             [8, "password-passwo", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
             [9, "password-passwo", 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
-            [6, random_bytes(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
-            [7, random_bytes(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
-            [8, random_bytes(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
-            [9, random_bytes(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
-            [6, random_bytes(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
-            [7, random_bytes(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
-            [8, random_bytes(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
-            [9, random_bytes(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
+            [6, self::randomInvalidSecret(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
+            [7, self::randomInvalidSecret(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
+            [8, self::randomInvalidSecret(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
+            [9, self::randomInvalidSecret(1), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
+            [6, self::randomInvalidSecret(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
+            [7, self::randomInvalidSecret(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
+            [8, self::randomInvalidSecret(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
+            [9, self::randomInvalidSecret(15), 30, 0, Totp::Sha1Algorithm, [], InvalidSecretException::class,],
         ];
 
         // invalid time steps
         yield from [
-            [6, random_bytes(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [7, random_bytes(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [8, random_bytes(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [9, random_bytes(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [6, random_bytes(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [7, random_bytes(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [8, random_bytes(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [9, random_bytes(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [6, random_bytes(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [7, random_bytes(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [8, random_bytes(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [9, random_bytes(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [6, random_bytes(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [7, random_bytes(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [8, random_bytes(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
-            [9, random_bytes(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [6, self::randomValidSecret(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [7, self::randomValidSecret(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [8, self::randomValidSecret(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [9, self::randomValidSecret(20), 0, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [6, self::randomValidSecret(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [7, self::randomValidSecret(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [8, self::randomValidSecret(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [9, self::randomValidSecret(20), -1, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [6, self::randomValidSecret(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [7, self::randomValidSecret(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [8, self::randomValidSecret(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [9, self::randomValidSecret(20), -50, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [6, self::randomValidSecret(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [7, self::randomValidSecret(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [8, self::randomValidSecret(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
+            [9, self::randomValidSecret(20), PHP_INT_MIN, 0, Totp::Sha1Algorithm, [], InvalidTimeStepException::class,],
         ];
 
         // invalid algorithms
         yield from [
-            [6, random_bytes(20), 30, 0, "", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,],
-            [6, random_bytes(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,],
-            [7, random_bytes(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,],
-            [8, random_bytes(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,],
-            [9, random_bytes(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "foobar", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "md5", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "SHA1", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "Sha1", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "sHa1", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "sHA1", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "shA1", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "SHa1", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "SHA256", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "Sha256", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "sHa256", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "shA256", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "SHa256", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "sHA256", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "ShA256", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "SHA512", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "Sha512", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "sHa512", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "shA512", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "SHa512", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "sHA512", [], InvalidHashAlgorithmException::class,],
+            [6, self::randomValidSecret(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,],
+            [7, self::randomValidSecret(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,],
+            [8, self::randomValidSecret(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,],
+            [9, self::randomValidSecret(20), 30, 0, "ShA512", [], InvalidHashAlgorithmException::class,],
         ];
 
         // 100 random valid combinations
         for ($idx = 0; $idx < 100; ++$idx) {
             yield [
                 mt_rand(6, 9),
-                random_bytes(64),
+                self::randomValidSecret(64),
                 10 * mt_rand(1, 360),
                 mt_rand(0, time() - (20 * 365 * 24 * 60 * 60)),
                 match (mt_rand(0, 2)) {
@@ -1962,23 +1906,22 @@ class TotpTest extends TestCase
      * Test data for testSetSecret.
      *
      * @return \Generator
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     public function dataForTestSetSecret(): Generator
     {
         // 100 datasets with random valid secrets
         for ($idx = 0; $idx < 100; ++$idx) {
-            yield "validSecret" . sprintf("%02d", $idx) => [random_bytes(mt_rand(16, 20)),];
+            yield "validSecret" . sprintf("%02d", $idx) => [self::randomValidSecret(),];
         }
 
         // 100 datasets with random invalid secrets
         for ($idx = 0; $idx < 100; ++$idx) {
-            $len = mt_rand(0, 15);
-            yield "invalidSecret" . sprintf("%02d", $idx) => [(0 == $len ? "" : random_bytes($len)), InvalidSecretException::class,];
+            yield "invalidSecret" . sprintf("%02d", $idx) => [self::randomInvalidSecret(), InvalidSecretException::class,];
         }
 
         // tests for specific scenarios
-        yield "marginallyInvalidSecret" => [random_bytes(15), InvalidSecretException::class,];
+        yield "marginallyInvalidSecret" => [self::randomInvalidSecret(15), InvalidSecretException::class,];
         yield "emptySecret" => ["", InvalidSecretException::class,];
         yield "nullSecret" => [null, TypeError::class,];
         yield "intSecret" => [1234567890123456, TypeError::class,];    // NOTE requires 64-bit int type
@@ -1997,7 +1940,7 @@ class TotpTest extends TestCase
      * @param mixed $secret The secret to set.
      * @param string|null $exceptionClass The class name of the expected exception, if any.
      *
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @noinspection PhpDocMissingThrowsInspection setSecret() should only throw expected test exception.
      */
     public function testSetSecret(mixed $secret, ?string $exceptionClass = null): void
     {
@@ -2006,6 +1949,7 @@ class TotpTest extends TestCase
         }
 
         $totp = self::createTotp();
+        /** @noinspection PhpUnhandledExceptionInspection Should only throw expected test exceptions. */
         $totp->setSecret($secret);
         $this->assertSame($secret, $totp->secret(), "Secret was not as expected.");
     }
@@ -2014,13 +1958,13 @@ class TotpTest extends TestCase
      * Test data for testSecret.
      *
      * @return \Generator
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     public function dataForTestSecret(): Generator
     {
         // 100 datasets with random valid secrets
         for ($idx = 0; $idx < 100; ++$idx) {
-            yield "secret" . sprintf("%02d", $idx) => [random_bytes(mt_rand(16, 20)),];
+            yield "secret" . sprintf("%02d", $idx) => [self::randomValidSecret(),];
         }
     }
 
@@ -2029,11 +1973,12 @@ class TotpTest extends TestCase
      *
      * @param string $secret
      *
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @noinspection PhpDocMissingThrowsInspection setSecret() shouldn't throw with test data.
      */
     public function testSecret(string $secret): void
     {
         $totp = self::createTotp();
+        /** @noinspection PhpUnhandledExceptionInspection Shouldn't throw with test data. */
         $totp->setSecret($secret);
         $this->assertSame($secret, $totp->secret(), "The secret returned from Totp::secret() is not as expected.");
     }
@@ -2467,7 +2412,7 @@ class TotpTest extends TestCase
      * Test data for testHmacAt().
      *
      * @return Generator The test data.
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     public function dataForTestHmacAt(): Generator
     {
@@ -2480,9 +2425,9 @@ class TotpTest extends TestCase
         );
 
         // test for times before TOTP reference time
-        yield [random_bytes(20), 120, 1, "", Totp::Sha1Algorithm, InvalidTimeException::class,];
-        yield [random_bytes(32), 120, 1, "", Totp::Sha256Algorithm, InvalidTimeException::class,];
-        yield [random_bytes(64), 120, 1, "", Totp::Sha512Algorithm, InvalidTimeException::class,];
+        yield [self::randomValidSecret(20), 120, 1, "", Totp::Sha1Algorithm, InvalidTimeException::class,];
+        yield [self::randomValidSecret(32), 120, 1, "", Totp::Sha256Algorithm, InvalidTimeException::class,];
+        yield [self::randomValidSecret(64), 120, 1, "", Totp::Sha512Algorithm, InvalidTimeException::class,];
     }
 
     /**
@@ -2598,7 +2543,7 @@ class TotpTest extends TestCase
      * Test data for testPasswordAt().
      *
      * @return Generator The test data.
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     public function dataForTestPasswordAt(): Generator
     {
@@ -2611,9 +2556,9 @@ class TotpTest extends TestCase
         );
 
         // test for times before TOTP reference time
-        yield [random_bytes(20), 120, 1, "", Totp::Sha1Algorithm, InvalidTimeException::class,];
-        yield [random_bytes(32), 120, 1, "", Totp::Sha256Algorithm, InvalidTimeException::class,];
-        yield [random_bytes(64), 120, 1, "", Totp::Sha512Algorithm, InvalidTimeException::class,];
+        yield [self::randomValidSecret(20), 120, 1, "", Totp::Sha1Algorithm, InvalidTimeException::class,];
+        yield [self::randomValidSecret(32), 120, 1, "", Totp::Sha256Algorithm, InvalidTimeException::class,];
+        yield [self::randomValidSecret(64), 120, 1, "", Totp::Sha512Algorithm, InvalidTimeException::class,];
     }
 
     /**
@@ -2666,14 +2611,14 @@ class TotpTest extends TestCase
      * Test data for testVerify()
      *
      * @return \Generator
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     public function dataForTestVerify(): Generator
     {
         // yield 100 random valid configurations for a Totp
         for ($idx = 0; $idx < 100; ++$idx) {
             yield "randomConfiguration" . sprintf("%02d", $idx) => [
-                random_bytes(64),
+                self::randomValidSecret(64),
                 mt_rand(6, 8),
                 match (mt_rand(0, 2)) {
                     0 => Totp::Sha1Algorithm,
@@ -2738,7 +2683,7 @@ class TotpTest extends TestCase
      * Test data for testVerifyAt().
      *
      * @return Generator The test data.
-     * @throws \Exception if random_bytes() is not able to provide cryptographically-secure data.
+     * @throws \Exception if self::randomValidSecret() is not able to provide cryptographically-secure data.
      */
     public function dataForTestVerifyAt(): Generator
     {
@@ -2773,29 +2718,29 @@ class TotpTest extends TestCase
         }
 
         yield from [
-            "emptyPassword6digitsSha1" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
-            "emptyPassword6digitsSha256" => [["secret" => random_bytes(32), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
-            "emptyPassword6digitsSha512" => [["secret" => random_bytes(64), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
+            "emptyPassword6digitsSha1" => [["secret" => self::randomValidSecret(20), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
+            "emptyPassword6digitsSha256" => [["secret" => self::randomValidSecret(32), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
+            "emptyPassword6digitsSha512" => [["secret" => self::randomValidSecret(64), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
 
-            "emptyPassword7digitsSha1" => [["secret" => random_bytes(20), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
-            "emptyPassword7digitsSha256" => [["secret" => random_bytes(32), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
-            "emptyPassword7digitsSha512" => [["secret" => random_bytes(64), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
+            "emptyPassword7digitsSha1" => [["secret" => self::randomValidSecret(20), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
+            "emptyPassword7digitsSha256" => [["secret" => self::randomValidSecret(32), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
+            "emptyPassword7digitsSha512" => [["secret" => self::randomValidSecret(64), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
 
-            "emptyPassword8digitsSha1" => [["secret" => random_bytes(20), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
-            "emptyPassword8digitsSha256" => [["secret" => random_bytes(32), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
-            "emptyPassword8digitsSha512" => [["secret" => random_bytes(64), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
+            "emptyPassword8digitsSha1" => [["secret" => self::randomValidSecret(20), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false,],
+            "emptyPassword8digitsSha256" => [["secret" => self::randomValidSecret(32), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "", false,],
+            "emptyPassword8digitsSha512" => [["secret" => self::randomValidSecret(64), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "", false,],
 
-            "alphaPassword6digitsSha1" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEF", false,],
-            "alphaPassword6digitsSha256" => [["secret" => random_bytes(32), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEF", false,],
-            "alphaPassword6digitsSha512" => [["secret" => random_bytes(64), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEF", false,],
+            "alphaPassword6digitsSha1" => [["secret" => self::randomValidSecret(20), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEF", false,],
+            "alphaPassword6digitsSha256" => [["secret" => self::randomValidSecret(32), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEF", false,],
+            "alphaPassword6digitsSha512" => [["secret" => self::randomValidSecret(64), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEF", false,],
 
-            "alphaPassword7digitsSha1" => [["secret" => random_bytes(20), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEFG", false,],
-            "alphaPassword7digitsSha256" => [["secret" => random_bytes(32), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEFG", false,],
-            "alphaPassword7digitsSha512" => [["secret" => random_bytes(64), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEFG", false,],
+            "alphaPassword7digitsSha1" => [["secret" => self::randomValidSecret(20), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEFG", false,],
+            "alphaPassword7digitsSha256" => [["secret" => self::randomValidSecret(32), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEFG", false,],
+            "alphaPassword7digitsSha512" => [["secret" => self::randomValidSecret(64), "digits" => 7, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEFG", false,],
 
-            "alphaPassword8digitsSha1" => [["secret" => random_bytes(20), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEFGH", false,],
-            "alphaPassword8digitsSha256" => [["secret" => random_bytes(32), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEFGH", false,],
-            "alphaPassword8digitsSha512" => [["secret" => random_bytes(64), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEFGH", false,],
+            "alphaPassword8digitsSha1" => [["secret" => self::randomValidSecret(20), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "ABCDEFGH", false,],
+            "alphaPassword8digitsSha256" => [["secret" => self::randomValidSecret(32), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 0, "ABCDEFGH", false,],
+            "alphaPassword8digitsSha512" => [["secret" => self::randomValidSecret(64), "digits" => 8, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha512Algorithm,], 59, 0, "ABCDEFGH", false,],
 
             // RFC data with one digit in the password changed by 1
             "numericPassword6digitsSha1Digit6Wrong" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "287081", false,],
@@ -2887,12 +2832,12 @@ class TotpTest extends TestCase
             "currentTimeAsDateTime02" => [["secret" => "12345678901234567890", "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], new DateTime("@59", new DateTimeZone("UTC")), 0, "287072", false,],
 
             // invalid window
-            "invalidWindowMinus1" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, -1, "", false, InvalidVerificationWindowException::class,],
-            "invalidWindowBeyondReferenceTime" => [["secret" => random_bytes(32), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 2, "", false, InvalidVerificationWindowException::class,],
+            "invalidWindowMinus1" => [["secret" => self::randomValidSecret(20), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, -1, "", false, InvalidVerificationWindowException::class,],
+            "invalidWindowBeyondReferenceTime" => [["secret" => self::randomValidSecret(32), "digits" => 6, "referenceTime" => 0, "time-step" => 30, "hashAlgorithm" => Totp::Sha256Algorithm,], 59, 2, "", false, InvalidVerificationWindowException::class,],
 
             // invalid "current" time
-            "invalidTime" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 240, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false, InvalidTimeException::class,],
-            "marginallyInvalidTime" => [["secret" => random_bytes(20), "digits" => 6, "referenceTime" => 240, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 239, 0, "", false, InvalidTimeException::class,],
+            "invalidTime" => [["secret" => self::randomValidSecret(20), "digits" => 6, "referenceTime" => 240, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 59, 0, "", false, InvalidTimeException::class,],
+            "marginallyInvalidTime" => [["secret" => self::randomValidSecret(20), "digits" => 6, "referenceTime" => 240, "time-step" => 30, "hashAlgorithm" => Totp::Sha1Algorithm,], 239, 0, "", false, InvalidTimeException::class,],
         ];
     }
 

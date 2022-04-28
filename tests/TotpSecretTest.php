@@ -48,7 +48,7 @@ class TotpSecretTest extends TestCase
 
         // yield 100 random valid secrets
         for ($idx = 0; $idx < 100; ++$idx) {
-            yield [random_bytes(mt_rand(16, 20)),];
+            yield [self::randomValidSecret(),];
         }
     }
 
@@ -59,11 +59,12 @@ class TotpSecretTest extends TestCase
      *
      * @param string $secret The raw secret to use to initialise the TotpSecret object.
      *
-     * @noinspection PhpDocMissingThrowsInspection TotpSecret constructor won't throw, secret is guaranteed by the data
-     * provider to be valid. ReflectionProperty won't throw because we know the property exists.
+     * @noinspection PhpDocMissingThrowsInspection TotpSecret::fromRaw() shouldn't throw with test data.
+     * ReflectionProperty won't throw because we know the property exists.
      */
     public function testDestructor(string $secret): void
     {
+        /** @noinspection PhpUnhandledExceptionInspection TotpSecret::fromRaw() shouldn't throw with test data. */
         $totpSecret = TotpSecret::fromRaw($secret);
         $base32     = $totpSecret->base32();
         $base64     = $totpSecret->base64();
@@ -271,8 +272,7 @@ class TotpSecretTest extends TestCase
 		];
 
 		for ($idx = 0; $idx < 100; ++$idx) {
-			$bytes = mt_rand(16, 64);
-			yield [random_bytes($bytes),];
+            yield [self::randomValidSecret(),];
 		}
 	}
 	

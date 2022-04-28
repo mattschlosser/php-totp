@@ -42,6 +42,11 @@ use Equit\Totp\Exceptions\InvalidSecretException;
 final class TotpSecret
 {
     /**
+     * Import the trait that securely erases all string properties on destruction.
+     */
+    use SecurelyErasesProperties;
+
+    /**
      * @var string The raw bytes of the secret.
      */
     private string $m_raw;
@@ -72,22 +77,6 @@ final class TotpSecret
         }
 
         $this->m_raw = $secret;
-    }
-
-    /**
-     * Shred the secrets before deallocation.
-     */
-    public function __destruct()
-    {
-        Totp::shred($this->m_raw);
-
-        if ($this->m_base32) {
-            Totp::shred($this->m_base32);
-        }
-
-        if ($this->m_base64) {
-            Totp::shred($this->m_base64);
-        }
     }
 
     /**

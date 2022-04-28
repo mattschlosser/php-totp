@@ -37,6 +37,11 @@ use Equit\Totp\Exceptions\InvalidBase32DataException;
 class Base32
 {
     /**
+     * Import the trait that securely erases all string properties on destruction.
+     */
+    use SecurelyErasesProperties;
+
+    /**
      * The base32 dictionary.
      */
     protected const Dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";

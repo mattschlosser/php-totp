@@ -24,16 +24,18 @@ use Equit\Totp\Base64;
 use Equit\Totp\Exceptions\InvalidBase64DataException;
 use Equit\Totp\Tests\Framework\TestCase;
 use Error;
+use Generator;
+use ReflectionProperty;
 
 /**
  * Test case for the Base64 codec.
  */
 class Base64Test extends TestCase
 {
-	/**
-	 * Data provider for testConstructor()
-	 *
-	 * @return array
+    /**
+     * Data provider for testConstructor()
+     *
+     * @return array
 	 */
 	public function dataForTestConstructor(): array
 	{
@@ -56,26 +58,80 @@ class Base64Test extends TestCase
 	 */
 	public function testConstructor(mixed $plainData, ?string $exceptionClass = null)
 	{
-		if (isset($exceptionClass)) {
-			$this->expectException($exceptionClass);
-		}
+        if (isset($exceptionClass)) {
+            $this->expectException($exceptionClass);
+        }
 
-		$actual = new Base64($plainData);
+        $actual = new Base64($plainData);
 
-		if (!isset($exceptionClass)) {
-			$this->assertSame($plainData, $actual->raw());
-		}
-	}
+        if (!isset($exceptionClass)) {
+            $this->assertSame($plainData, $actual->raw());
+        }
+    }
 
-	/**
-	 * Data provider for testSetPlain()
-	 *
-	 * @return array
-	 */
-	public function dataForTestSetRaw(): array
-	{
-		return $this->dataForTestConstructor();
-	}
+    /**
+     * Test data for testDestructor().
+     *
+     * @return \Generator
+     * @throws \Exception if random_bytes() is unable to generate cryptographically-secure random data.
+     */
+    public function dataForTestDestructor(): Generator
+    {
+        yield "typicalAsciiRaw" => ["password-password"];
+        yield "nullBytes16Raw" => ["\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"];
+        yield "nullBytes20Raw" => ["\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"];
+        yield "nullBytes40Raw" => [str_repeat("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 2)];
+        yield "nullBytes60Raw" => [str_repeat("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 3)];
+        yield "nullBytes80Raw" => [str_repeat("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 4)];
+        yield "nullBytes100Raw" => [str_repeat("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 5)];
+        yield "nullBytes120Raw" => [str_repeat("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 6)];
+        yield "nullBytes140Raw" => [str_repeat("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 7)];
+        yield "nullBytes160Raw" => [str_repeat("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 8)];
+        yield "nullBytes180Raw" => [str_repeat("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 9)];
+        yield "nullBytes200Raw" => [str_repeat("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 10)];
+
+        // yield 100 random valid secrets
+        for ($idx = 0; $idx < 100; ++$idx) {
+            yield [self::randomBinaryString(),];
+        }
+    }
+
+    /**
+     * Test the Totp destructor.
+     *
+     * @dataProvider dataForTestDestructor
+     *
+     * @param string $rawData The raw data to use to initialise the Base64 codec.
+     *
+     * @noinspection PhpDocMissingThrowsInspection ReflectionProperty won't throw because we know the properties exist.
+     */
+    public function testDestructor(string $rawData): void
+    {
+        $base64     = new Base64($rawData);
+        $base64Data = $base64->encoded();
+
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $rawProperty = new ReflectionProperty($base64, "m_rawData");
+        $rawProperty->setAccessible(true);
+
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $encodedProperty = new ReflectionProperty($base64, "m_encodedData");
+        $encodedProperty->setAccessible(true);
+
+        $base64->__destruct();
+        $this->assertAllCharactersHaveChanged($rawData, $rawProperty->getValue($base64), "The raw data was not overwritten with random data.");
+        $this->assertAllCharactersHaveChanged($base64Data, $encodedProperty->getValue($base64), "The base64 data was not overwritten with random data.");
+    }
+
+    /**
+     * Data provider for testSetPlain()
+     *
+     * @return array
+     */
+    public function dataForTestSetRaw(): array
+    {
+        return $this->dataForTestConstructor();
+    }
 
 	/**
 	 * Test setting plain data for a Base64 codec.
