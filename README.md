@@ -5,7 +5,7 @@
 Time-based One Time Password Generator for PHP.
 
 Add two-factor authentication to your app using RFC 6238-compliant TOTP, compatible with commonly-available
-authenticator apps such as Google Authenticator, KeePassXC, Microsoft Authenticator and so on.
+authenticator apps such as Google Authenticator, KeePassXC, Microsoft Authenticator and more.
 
 ## Quick start
 
@@ -15,7 +15,7 @@ authenticator apps such as Google Authenticator, KeePassXC, Microsoft Authentica
     $user->totpSecret = Totp::randomSecret()
     ```
 
-2. Send a one-time notification to the user for them to import into their authenticator app:
+2. Notify the user of the details of their TOTP for them to import into their authenticator app:
 
     ```php
     UrlGenerator::for($user->username)->urlFor(new Totp($user->totpSecret))
@@ -26,6 +26,25 @@ authenticator apps such as Google Authenticator, KeePassXC, Microsoft Authentica
     ```php
     (new Totp($user->totpSecret))->verify($inputOtp)
     ```
+
+## Contents
+
+- [Provisioning TOTP for users](README.md#provisioning-totp-for-users)
+   - [Generating secrets](README.md#generating-secrets)
+   - [Notifying users](README.md#notifying-users)
+   - [Verifying successful provisioning](README.md#verifying-successful-provisioning)
+- [Authenticating](README.md#authenticating)
+   - [Ensuring OTPs are used only once](README.md#ensuring-otps-are-used-only-once)
+- [Custom TOTP Configurations](README.md#custom-totp-configurations)
+   - [Hashing algorithms](README.md#hashing-algorithms)
+   - [Password digits](README.md#password-digits)
+   - [Reference timestamp and time step](README.md#reference-timestamp-and-time-step)
+- [Base32/Base64 secrets](README.md#base32base64-secrets)
+
+## See also
+
+- [Secrets.md](Secrets.md)
+- [API.md](API.md)
 
 ## Introduction
 
@@ -98,19 +117,18 @@ variable containing the secret and it will overwrite the string with random byte
 All code in the _php-totp_ library that is intended for use with TOTP secrets scrubs its data in this way to help
 prevent unexpected visibility of TOTP secrets. This includes the `Totp` class, the `TotpSecret` class and the `Base32`
 and `Base64` classes. You should `unset()` your instances of these classes once you no longer need them, and ensure that
-you don't keep unnecessary references, to make sure they go out of scope and their destructors are called.
+you don't keep unnecessary references.
 
 ### Notifying users
 
 There are three common ways that users are provided with the details of their TOTP secret and most authenticator apps
-support at least one of them - many support all three. Whichever way you choose to distribute secrets you should impress
-upon users that they should either not store it or ensure it is stored securely.
+support at least one of them - many support all three.
 
-**1. Sending just the secret**
+**1. Just the secret**
 
-The first is simply sending them the secret. Since the secret is a binary string, it will need to be converted to some
-kind of plain-text safe format, and Base32 is usually used for this. This method of notifying users is only viable if
-the standard TOTP setup is being used - that is 6-digit OTPs, SHA1 hashes, the Unix epoch as the reference time and 30
+The first is simply providing them with the secret. Since the secret is a binary string, it will need to be converted to
+some kind of text-safe format, and Base32 is usually used for this. This method of notifying users is only viable if the
+standard TOTP setup is being used - that is 6-digit OTPs, SHA1 hashes, the Unix epoch as the reference time and 30
 seconds as the time step. If you are using a custom TOTP setup, you will need to provide more information to your users,
 and they will need to perform more steps to configure their authenticator app.
 
@@ -121,11 +139,11 @@ $user->notify(Base32::encode(decrypt($user->totpSecret)));
 Note that in this example, the `Base32` object that encodes the TOTP secret is a temporary and goes out of scope
 immediately after it is used, so its properties are safely scrubbed.
 
-**2. Sending an `otpauth` URL**
+**2. An `otpauth` URL**
 
-The second method is to send your users a specially constructed URL that their authenticator app can read. The URL
-format is [described here](https://github.com/google/google-authenticator/wiki/Key-Uri-Format). _php-totp_ provides a
-`UrlGenerator` class to create these URLs:
+The second method is to provide your users with a specially constructed URL that their authenticator app can read. The
+URL format is [described here](https://github.com/google/google-authenticator/wiki/Key-Uri-Format). _php-totp_ provides
+a `UrlGenerator` class to create these URLs:
 
 ```php
 $user->notify(UrlGenerator::from("MyWebApp")->for($user->username)->urlFor(new Totp(decrypt($user->totpSecret)));
@@ -146,10 +164,10 @@ no URL parameter for specifying it). Many TOTP-capable authenticator apps suppor
 need to check the level of support in the app you are targeting for your users - for example _Google Authenticator_
 supports URLs but does not recognise the `algorithm` parameter and always uses the SHA1 algorithm.
 
-**3. Sending a QR code**
+**3. A QR code**
 
-The third method is to send users a QR code that their authenticator app can scan. This is effectively identical to
-using the URL method above - the QR code is simply a representation of the generated URL.
+The third method is to provide users wiht a QR code that their authenticator app can scan. This is effectively identical
+to using the URL method above - the QR code is simply a representation of the generated URL.
 
 _php-totp_ does not (yet) have a QR code generator, but it should be simple to use an existing QR code generator along
 with the `UrlGenerator` to create QR codes to send to your users.
@@ -157,29 +175,29 @@ with the `UrlGenerator` to create QR codes to send to your users.
 
 ### Verifying successful provisioning
 
-Once a user has been provisioned, you need to aks them them for the OTP from their authenticator app to confirm that it
+Once a user has been provisioned, you need to ask them for the OTP from their authenticator app to confirm that it
 has been set up successfully. Once you've received the user's input, verification is simple:
 
 ```php
 $isVerified = (new Totp(decrypt($user->totpSecret))->verify($inputOtp);
 ```
 
-To avoid problems that can arise when the user enters their OTP close to the end of a time step, you can choose to
-accept a certain number of previous passwords as well as the current password. You can do this by providing a `window`
-argument to the `Totp::verify()` method. The argument identifies the maximum number of time steps the verification will
-go back to check for a matching OTP.
+To avoid problems arising when the user enters their OTP close to the end of a time step, you can choose to
+accept a small number of previous passwords as well as the current password. Provide a `window` argument to the
+`Totp::verify()` method, which identifies the maximum number of time steps the verification will go back to check for a
+matching OTP.
 
 ```php
 $isVerified = (new Totp(decrypt($user->totpSecret))->verify(password: $inputOtp, window: 1);
 ```
 
 By default, `Totp::verify()` only accepts the current OTP. **It is very strongly recommended that you verify _at
-most_ with a window of 1 (i.e. accept either the current OTP or the one immediately preceding it).**
+most_ with a window of 1**.
 
 ### Batch-provisioning users
 
-You can re-use an UrlGenerator instance to provision multiple users with TOTP and send each a notification with their
-own unique URL.
+You can re-use an UrlGenerator instance to provision multiple users with TOTP and notify each of them with their own
+unique URL.
 
 ````php
 $generator = UrlGenerator::from("Equit");
@@ -196,9 +214,8 @@ unset($totp);
 
 ## Authenticating
 
-Authenticating users' TOTPs is mostly a simple case of asking the user for their current OTP and verifying it.
-Obviously, you must only do this alongside verification of their primary factor (e.g. their main password). This process
-is identical to verifying the initial setup of their TOTP app:
+Authenticating users' TOTPs is mostly a simple case of asking the user for their current OTP and verifying it. This is
+identical to verifying the initial setup of their TOTP app:
 
 ```php
 $isVerified = (new Totp(decrypt($user->totpSecret))->verify($userInput);
@@ -475,7 +492,7 @@ $totp = new Totp(
 );
 ```
 
-## Base{32|64} secrets
+## Base32/Base64 secrets
 
 As mentioned above, TOTP is commonly used with secrets that are encoded either as Base32 or Base64 text to make them
 easy to enter into authenticator apps. If you have your secrets stored using one of these encodings (for example in a
