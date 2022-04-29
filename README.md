@@ -13,21 +13,21 @@ like Google Authenticator to secure their logins.
 
 1. Generate a secure, random secret for your user:
 
-```php
-Totp::randomSecret()
-```
+    ```php
+    $user->totpSecret = Totp::randomSecret()
+    ```
 
 2. Send a one-time notification to the user for them to import into their authenticator app:
 
-```php
-UrlGenerator::for($user->username)->urlFor(new Totp($user->secret))
-```
+    ```php
+    UrlGenerator::for($user->username)->urlFor(new Totp($user->totpSecret))
+    ```
 
 3. When a user logs in, ask them for their current TOTP and verify it:
 
-```php
-(new Totp($user->secret))->verify($inputOtp)
-```
+    ```php
+    (new Totp($user->totpSecret))->verify($inputOtp)
+    ```
 
 ## Introduction
 
@@ -36,20 +36,19 @@ TOTP is specified in [RFC 6238](https://www.ietf.org/rfc/rfc6238.txt) and builds
 [Hashed Message Authentication Code (HMAC, RFC 2104)](https://www.ietf.org/rfc/rfc2104.txt) based on a count of the
 number of time periods that have elapsed since a given point in time and a random secret that is known by the
 authorising server (your app) and a secure client app (your users' authenticator apps). A number between 0 and
-2,147,483,647 is then derived from the HMAC and the rightmost 6 (usually) digits are used as the password (padded with
+2,147,483,647 is then derived from the HMAC and the rightmost (usually 6) digits are used as the password (padded with
 0s if required). As long as the server and app agree on the current time, the reference time, the size of the time
 period and the secret, they both calculate the same sequence of passwords at the same time, enabling the server to
-verify the user's authenticity. It is very unlikely that different combinations of secret, reference time and interval
-will produce the same password at the same time.
+verify the user's authenticity.
 
 _php-totp_  consists of three main components: a `Totp` class, which does most of the heavy lifting to calculate TOTPs;
 an `UrlGenerator` class, which helps generate the information the user needs to set up their authenticator app;
 and a collection of OTP `Renderer` classes that turn the calculation performed by `Totp` into actual one-time passwords.
 (The latter classes are used internally by `Totp` and unless you are inventing your own scheme for creating passwords -
-which is very strongly **not** recommended - you are very unlikely to have to use them.)
+which is **very strongly discouraged** - you are unlikely to have to use them.)
 
-The following examples use notional functions, classes and methods to fill in the functionality gaps that are outside
-the scope of the _php-totp_ library. For example, is uses an `encrypt()` function as a placeholder for whatever
+The examples below use notional functions, classes and methods for clarity to fill in the functionality gaps that are
+outside the scope of the _php-totp_ library. For example, the `encrypt()` function is used as a placeholder for whatever
 mechanism your app uses to encrypt data. They also assume a standard TOTP setup as described in RFC 6238 - that is, a
 reference time of 00:00:00 on 01/01/1970, a time step of 30 seconds and the SHA1 hashing algorithm producing 6-digit
 passwords. Possibilities for customising the TOTP setup are described later.
@@ -67,7 +66,7 @@ There are three steps involved in provisioning a user with TOTP:
 The TOTP specification mandates that secrets are generated randomly (i.e. not chosen by the user). You can generate your
 own secrets, but the `Totp` class provides a method that will generate a random secret for you that is guaranteed to be
 cryptographically secure and strong enough for all the hashing algorithms supported by TOTP. This method is also used
-when instantiating `Totp` objects without providing an explicit secret.
+when instantiating `Totp` objects without providing an pre-existing secret.
 
 Once you have generated the secret you must store it securely. It must always be stored encrypted.
 
@@ -92,14 +91,14 @@ provides a `Base64` codec class that operates identically to the `Base32` class,
 You should strive to minimise the time that the shared secret is unencrypted in RAM. Whenever you are using it, whether
 to provision or to verify, you should only retrieve it just before you are ready to use it, you should discard it as
 soon as you no longer need it, and you should ensure that the variable containing the secret is securely erased before
-it is discarded. If you don't do this the unecrypted secret will remain "visible" in memory that is no longer in use by
-your app. The `Totp::shred()` method is provided to simplify this - simply pass it the variable containing the secret
-and it will overwrite it with random bytes.
+it is discarded. If you don't do this the unecrypted secret could remain "visible" in memory that is no longer in use by
+your app. The `scrubString()` function in the `\Equit\Totp` namespace is available to achieve this - simply pass it the
+string variable containing the secret and it will overwrite the string with random bytes.
 
-All code in the _php-totp_ library that are intended for use with TOTP secrets shred their data in this way to help
+All code in the _php-totp_ library that is intended for use with TOTP secrets scrubs its data in this way to help
 prevent unexpected visibility of TOTP secrets. This includes the `Totp` class, the `TotpSecret` class and the `Base32`
-and `Base64` classes. You should `unset()` your instances of these classes once you no longer need them and ensure that
-you don't keep unnecessary references to ensure they go out of scope.
+and `Base64` classes. You should `unset()` your instances of these classes once you no longer need them, and ensure that
+you don't keep unnecessary references, to make sure they go out of scope and their destructors are called.
 
 ### Notifying users
 
@@ -119,6 +118,9 @@ and they will need to perform more steps to configure their authenticator app.
 $user->notify(Base32::encode(decrypt($user->totpSecret)));
 ```
 
+Note that in this example, the `Base32` object that encodes the TOTP secret is a temporary and goes out of scope
+immediately after it is used, so its properties are safely scrubbed.
+
 **2. Sending an `otpauth` URL**
 
 The second method is to send your users a specially constructed URL that their authenticator app can read. The URL
@@ -128,6 +130,9 @@ format is [described here](https://github.com/google/google-authenticator/wiki/K
 ```php
 $user->notify(UrlGenerator::from("MyWebApp")->for($user->username)->urlFor(new Totp(decrypt($user->totpSecret)));
 ```
+
+Again, the `Totp` object is a temporary and goes out of scope immediately after it is used, so its secret is safely
+scrubbed.
 
 By default, the UrlGenerator will insert as much information into the generated URL as is necessary to represent your
 TOTP setup. So if you are using the SHA512 hash algorithm, the generated URL will contain the `algorithm` URL parameter
@@ -216,6 +221,7 @@ if ($user->highestUsedTotpCounter < $totp->counter()) {
 }
 
 // ensure the secret is shredded
+scrubString($inputOtp);
 unset($totp);
 ```
 
@@ -233,6 +239,7 @@ if (0 <= $window) {
 }
 
 // ensure the secret is shredded
+scrubString($inputOtp);
 unset($totp);
 ```
 
@@ -484,23 +491,8 @@ foreach (get_users() as $user) {
    $user->setTotpSecret($totp->secret());
    $user->notify($generator->for($user->userName())->urlFor($totp));
 }
-````
 
-### Authenticating
-
-````php
-// get hold of your user object in whatever way you normally do it
-$user = get_user();
-$totp = Totp::sixDigits(secret: $user->totpSecret());
-
-if ($totp->verify(password: $_POST["totp"], window: 1)) {
-    // user is authenticated
-} else {
-    // user is not authenticated
-}
-
-$totp->setSecret(random_bytes(20));
-$totp = null;
+unset($totp);
 ````
 
 ## Generating your own secure secrets
