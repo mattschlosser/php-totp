@@ -66,7 +66,7 @@ There are three steps involved in provisioning a user with TOTP:
 The TOTP specification mandates that secrets are generated randomly (i.e. not chosen by the user). You can generate your
 own secrets, but the `Totp` class provides a method that will generate a random secret for you that is guaranteed to be
 cryptographically secure and strong enough for all the hashing algorithms supported by TOTP. This method is also used
-when instantiating `Totp` objects without providing an pre-existing secret.
+when instantiating `Totp` objects without providing a pre-existing secret.
 
 Once you have generated the secret you must store it securely. It must always be stored encrypted.
 
@@ -178,9 +178,9 @@ most_ with a window of 1 (i.e. accept either the current OTP or the one immediat
 
 ## Authenticating
 
-Authenticating users' TOTP is mostly a simple case of asking the user for their current OTP and verifying it. Obviously,
-you must only do this alongside verification of their primary factor (e.g. their main password). This process is
-identical to verifying the initial setup of their TOTP app:
+Authenticating users' TOTPs is mostly a simple case of asking the user for their current OTP and verifying it.
+Obviously, you must only do this alongside verification of their primary factor (e.g. their main password). This process
+is identical to verifying the initial setup of their TOTP app:
 
 ```php
 $isVerified = (new Totp(decrypt($user->totpSecret))->verify($userInput);
@@ -197,8 +197,8 @@ app; if it returns `true` the user has provided a valid OTP and can be authentic
 
 ### Ensuring OTPs are used only once
 
-The specification mandates that each generated OTP must be used only once to successfully authenticate. That is, once an
-OTP has been used to successfully authenticate, that OTP may not be used again.
+The RFC mandates that each generated OTP must be used only once to successfully authenticate - once an OTP has been used
+to successfully authenticate, that OTP must not be used again.
 
 One way to ensure each OTP is never reused is to record the TOTP counter after each successful authentication. The
 counter is an incrementing integer that indicates how many time steps have passed since the reference time. By recording
@@ -243,10 +243,10 @@ scrubString($inputOtp);
 unset($totp);
 ```
 
-It is important that you ensure that **all routes to authentication that use the TOTP secret are protected in this
-way** - for example if you have a mobile app and a web app, you must ensure that a OTP used to authenticate with the web
-app cannot subsequently be used to authenticate using the mobile app. [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt)
-has a good discussion of the reasoning for this.
+It is important that you ensure that **all routes to authentication that use the TOTP secret are protected against OTP
+re-use** - for example if you have a mobile app and a web app, you must ensure that a OTP used to authenticate with the
+web app cannot subsequently be used to authenticate using the mobile app.
+[RFC 4226](https://www.ietf.org/rfc/rfc4226.txt) has a good discussion of the reasoning for this.
 
 ## Custom TOTP configurations
 
@@ -268,14 +268,13 @@ those aspects of your TOTP instances that are non-default.
 
 ### Hashing algorithms
 
-TOTP supports three hashing algorithms - SHA1, SHA256 and SHA512. The strongest is SHA512, while the default specified
-in the RFC is SHA1 (for compatibility with HOTP). As noted above, you should check that the authenticator apps that you
-are targeting for your users support the algorithm you are intending to use before customising it.
+TOTP supports three hashing algorithms - **SHA1**, **SHA256** and **SHA512**. The strongest is SHA512, while the default
+specified in the RFC is SHA1 (for compatibility with HOTP). As noted above, you should check that the authenticator apps
+that you are targeting for your users support the algorithm you are intending to use before customising it.
 
 The `Totp` class provides constants representing all supported hashing algorithms, and you are strongly encouraged to
-use these to avoid exceptions in your app. Using the constants protects your code against changes to the underlying
-values that are used to represent the algorithms, and will provide you with a pain-free upgrade path for your app
-if/when _php-totp_ is updated to use a PHP8.1 enumeration for specifying hash algorithms.
+use these to avoid exceptions in your app. Using the constants future-proofs your app against a potential future update
+of _php-totp_ to use a PHP8.1 enumeration for specifying hash algorithms.
 
 To use SHA256 create your `Totp` instances like this:
 
@@ -299,10 +298,10 @@ $totp = new Totp(secret: decrypt($user->totpSecret), hashAlgorithm: Totp::Sha512
 
 The counter that TOTP uses is the number of time steps that have elapsed since the reference time. By default, the
 reference time is 00:00:00 01/01/1970 (AKA the Unix epoch, or the Unix timestamp `0`). The default time step size is 30
-seconds. Unless you have a good reason to deviate from them, these defaults are reasonable choices. If you do choose to
+seconds. Unless you have a good reason to change them, these defaults are reasonable choices. If you do choose to
 customise the time step, bear in mind that very small intervals will make it harder for users since they'll have less
 time available to enter the correct OTP. Similarly, making the interval too large can also make it difficult for users
-since you may effectively lock them out for a short period after they log off.
+since you may effectively lock them out for a short period if they log off after only a short session.
 
 To use a time step of 60 seconds instead of 30 create your `Totp` instances like this:
 
@@ -365,9 +364,8 @@ $totp = new Totp(
 
 ### Password digits
 
-The number of digits in OTPs generated by TOTP defaults to 6, but can range from 6 to 9 inclusive. There's technically
-no reason why larger numbers of digits can't be used, but owing to the internal mechanism by which the password is
-generated there is nothing to gain other than padding with 0s to the left.
+The number of digits in OTPs defaults to 6, but can range from 6 to 9 inclusive. There's technically no reason why
+larger numbers of digits can't be used, but there is nothing to gain other than padding OTPs with 0s to the left.
 
 The easiest way to create a `Totp` with 8 digits is to use the `Totp::eightDigits()` convenience factory method:
 
@@ -427,9 +425,9 @@ $totp = Totp::integer(
 );
 ```
 
-For control over passwords that extends beyond just the number of digits they contain, you can provide the `renderer`
-argument to the constructor. For example, to have your `Totp` produce 5-character OTPs that are compatible with the
-_Steam_ authenticator:
+For control over passwords beyond just the number of digits they contain, you can provide the `renderer` argument to the
+constructor. For example, to have your `Totp` produce 5-character OTPs that are compatible with the _Steam_
+authenticator:
 
 ```php
 // when provisioning
@@ -461,22 +459,68 @@ $totp = new Totp(
 
 ## Base{32|64} secrets
 
-As mentioned above, TOTP is commonly used with secrets that are encoded either as Base32 or Base64 plain text to make
-them easy to enter into authenticator apps. If you have your secrets stored using one of these encodings (for example
-in a text field in your database), they will need decoding (as well as decrypting) before being passed to a `Totp`
-instance.
+As mentioned above, TOTP is commonly used with secrets that are encoded either as Base32 or Base64 text to make them
+easy to enter into authenticator apps. If you have your secrets stored using one of these encodings (for example in a
+text field in your database), they will need decoding (as well as decrypting) before being passed to a `Totp` instance.
 
 You can either do this yourself:
 
 ```php
 $totp = new Totp(Base32::decode(decrypt($user->totpSecret)));
+$totp = new Totp(Base64::decode(decrypt($user->totpSecret)));
 ```
 
 Or you can use the `TotpSecret` utility class:
 
 ```php
 $totp = new Totp(TotpSecret::fromBase32(decrypt($user->totpSecret)));
+$totp = new Totp(TotpSecret::fromBase64(decrypt($user->totpSecret)));
 ```
+
+The Base32/Base64 and TotpSecret classes both take care of scrubbing the details of the secret, so the only copy of the
+secret will be in the `Totp` instance. If you use another Base32/Base64 decoder (e.g. PHP's `base64_decode()` function),
+you may not be able to ensure that the secret is properly scrubbed from memory before it is freed.
+
+## Generating your own secure secrets
+
+As mentioned above, the `Totp` class can generate secrets that are as cryptographically strong as is possible for all
+valid hash algorithms supported by TOTP. However, if you can't or don't want to use this method, this section describes
+how to generate strong secrets.
+
+To generate good secrets for your users you need a good source of random data. PHP's `random_bytes()` function is a
+suitable source. If this is not available on your platform you'll need to look elsewhere. PHP's other random number
+generation functions are not necessarily good sources of cryptographically secure randomness.
+
+TOTP builds on HOTP, which uses HMACs, whose [RFC](https://www.ietf.org/rfc/rfc2104.txt) has this to say about the size
+of keys:
+
+> The authentication key K can be of any length up to B, the block length of the hash function. **Applications that use
+> keys longer than B bytes will first hash the key using H [the hashing algorithm]** and then use the resultant L
+> [the byte length of the computed hash] byte string as the actual key to HMAC.
+
+In other words, if you create a secret that is longer than the bit length of the digest that the hashing algorithm uses,
+it will first be hashed before being used, reducing it to the length of the digest. For TOTP this means there is little
+benefit to providing secrets longer than 160 bits (20 bytes) for SHA1, 256 bits (32 bytes) for SHA256 or 160 bits (64
+bytes) for SHA512.
+
+The absolute minimum size for a shared secret, according to the HOTP [RFC](https://www.ietf.org/rfc/rfc4226.txt) is 128
+bits (16 bytes):
+
+> R6 - The algorithm MUST use a strong shared secret.  **The length of the shared secret MUST be at least 128 bits.**
+> This document RECOMMENDs a shared secret length of 160 bits.
+
+The recommendation of 160 bits for shared secrets is based on HOTP using SHA1, whose digest length is 160 bits. For
+TOTP, since it can use SHA256 or SHA512, this recommendation should increase to the digest lengths for the appropriate
+algorihm - 256 bits for SHA256 or 512 bits for SHA512. Therefore, if you are providing your own random secrets, the
+following would be good ways to generate them:
+
+| Algorithm | Random secret generator |
+|-----------|-------------------------|
+| SHA1      | `random_bytes(20)`      |
+| SHA256    | `random_bytes(32)`      |
+| SHA512    | `random_bytes(64)`      |
+
+## Cookbook
 
 ### Provisioning multiple users
 
@@ -485,53 +529,15 @@ Provision multiple users with TOTP and send each a notification with a URL they 
 ````php
 $generator = UrlGenerator::from("Equit");
 
-// get hold of your user objects in whatever way you need
-foreach (get_users() as $user) {
+foreach ($users as $user) {
    $totp = new Totp(algorithm: Totp::Sha512Algorithm);
-   $user->setTotpSecret($totp->secret());
-   $user->notify($generator->for($user->userName())->urlFor($totp));
+   $user->totpSecret = $totp->secret();
+   $user->save();
+   $user->notify($generator->for($user->username)->urlFor($totp));
 }
 
 unset($totp);
 ````
-
-## Generating your own secure secrets
-
-As mentioned above, `Totp` provides a method for generating secrets that are as cryptographically strong as is possible
-for all valid hash algorithms supported by TOTP. However, if you can't or don't want to use this method, this section
-describes how to generate strong secrets.
-
-The TOTP specification mandates that secrets are generated randomly (i.e. not chosen by the user). So to generate good
-secrets for your users you need a good source of random data. PHP's `random_bytes()` function is a suitable source. If
-this is not available on your platform you'll need to look elsewhere. PHP's other random number generation functions are
-not necessarily good sources of cryptographically secure randomness.
-
-The HOTP algorithm which is used by TOTP, uses SHA1 HMACs under the hood when generating one-time passwords. Keys for
-this type of HMAC are limited to 160 bits as per [RFC 2104](https://www.ietf.org/rfc/rfc2104.txt):
-
-> The authentication key K can be of any length up to B, the block length of the hash function. **Applications that use
-> keys longer than B bytes will first hash the key using H [the hashing algorithm]** and then use the resultant L
-> [the byte length of the computed hash] byte string as the actual key to HMAC.
-
-The absolute minimum size for a shared secret, according to [RFC 4226](https://www.ietf.org/rfc/rfc4226.txt) (the HOTP
-specification) is 128 bits (16 bytes):
-
-> R6 - The algorithm MUST use a strong shared secret.  **The length of the shared secret MUST be at least 128 bits.**
-> This document RECOMMENDs a shared secret length of 160 bits.
-
-The TOTP specification allows for the use of SHA256 or SHA512 algorithms, while using SHA1 by default. Since it depends
-on HOTP, and HOTP uses HMACs, and HMACs reduce any key longer than the digest produced by the hashing algorithm to the
-length of the digest by hashing it, there is little value in providing a secret longer than the digest size of the
-algorithm in use. HOTP recommends 160 bits on the basis that the SHA1 algorithm's digests are of that length; if you are
-using SHA256 or SHA512 algorithms with your TOTPs, that recommendation should probably increase to the length of their
-digests - 256 bits (32 bytes) for SHA256 and 512 bits (64 bytes) for SHA512. Therefore, if you are providing your own
-random secrets, the following would be good ways to generate them:
-
-| Algorithm | Random secret generator |
-|-----------|-------------------------|
-| SHA1      | `random_bytes(20)`      |
-| SHA256    | `random_bytes(32)`      |
-| SHA512    | `random_bytes(64)`      |
 
 ## References
 - H. Krawczyk, M. Bellare & R. Canetti, _[RFC2104: HMAC: Keyed-Hashing for Message Authentication](https://www.ietf.org/rfc/rfc2104.txt)_, https://www.ietf.org/rfc/rfc2104.txt, retrieved 17th April, 2022.
