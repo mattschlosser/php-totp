@@ -2,12 +2,10 @@
 
 [![Conmposer Validation and Unit Tests](https://github.com/darrenedale/php-totp/actions/workflows/php-ci.yml/badge.svg)](https://github.com/darrenedale/php-totp/actions/workflows/php-ci.yml)
 
-**Warning** This is pre-release software, the API has not yet stabilised.
+Time-based One Time Password Generator for PHP.
 
-Time-based One Time Password Generator for PHP
-
-Add two-factor authentication to your app using TOTP and enable your users to use commonly-available authenticator apps
-like Google Authenticator to secure their logins.
+Add two-factor authentication to your app using RFC 6238-compliant TOTP, compatible with commonly-available
+authenticator apps such as Google Authenticator, KeePassXC, Microsoft Authenticator and so on.
 
 ## Quick start
 
@@ -34,39 +32,41 @@ like Google Authenticator to secure their logins.
 TOTP is specified in [RFC 6238](https://www.ietf.org/rfc/rfc6238.txt) and builds on
 [HMAC-based One-Time Passwords (HOTP, RFC4226)](https://www.ietf.org/rfc/rfc4226.txt) by computing a
 [Hashed Message Authentication Code (HMAC, RFC 2104)](https://www.ietf.org/rfc/rfc2104.txt) based on a count of the
-number of time periods that have elapsed since a given point in time and a random secret that is known by the
-authorising server (your app) and a secure client app (your users' authenticator apps). A number between 0 and
-2,147,483,647 is then derived from the HMAC and the rightmost (usually 6) digits are used as the password (padded with
-0s if required). As long as the server and app agree on the current time, the reference time, the size of the time
-period and the secret, they both calculate the same sequence of passwords at the same time, enabling the server to
-verify the user's authenticity.
+number of time steps that have elapsed since a given point in time and a random secret that is known by the
+authorising server (your app) and a secure client app (your users' authenticator apps). A 31-bit integer is then derived
+from the HMAC and the rightmost (usually 6) decimal digits are used as the password (padded with 0s if required). As
+long as the server and app agree on the current time, the reference time, the size of the time step and the secret, they
+both calculate the same sequence of passwords at the same time.
 
-_php-totp_  consists of three main components: a `Totp` class, which does most of the heavy lifting to calculate TOTPs;
-an `UrlGenerator` class, which helps generate the information the user needs to set up their authenticator app;
-and a collection of OTP `Renderer` classes that turn the calculation performed by `Totp` into actual one-time passwords.
-(The latter classes are used internally by `Totp` and unless you are inventing your own scheme for creating passwords -
-which is **very strongly discouraged** - you are unlikely to have to use them.)
+_php-totp_  consists of three main components: a `Totp` class, which does most of the work in calculating TOTPs; an
+`UrlGenerator` class, which helps generate the information the user needs to set up their authenticator app; and a
+collection of OTP `Renderer` classes that turn the result of the calculation performed by `Totp` into actual one-time
+passwords. (The latter classes are used internally by `Totp` and unless you are inventing your own scheme for creating
+passwords - which is **very strongly discouraged** - you are unlikely to need to know about them.)
 
-The examples below use notional functions, classes and methods for clarity to fill in the functionality gaps that are
-outside the scope of the _php-totp_ library. For example, the `encrypt()` function is used as a placeholder for whatever
-mechanism your app uses to encrypt data. They also assume a standard TOTP setup as described in RFC 6238 - that is, a
-reference time of 00:00:00 on 01/01/1970, a time step of 30 seconds and the SHA1 hashing algorithm producing 6-digit
-passwords. Possibilities for customising the TOTP setup are described later.
+The examples below use notional functions, classes and methods to fill in the functionality that is outside the scope of
+the _php-totp_ library. For example, the `encrypt()` function is used as a placeholder for whatever mechanism your app
+uses to encrypt data. They also assume a standard TOTP setup as described in RFC 6238 - that is, a reference time of
+00:00:00 on 01/01/1970, a time step of 30 seconds and the SHA1 hashing algorithm producing 6-digit passwords.
+Possibilities for customising the TOTP setup are described later.
 
 ## Provisioning TOTP for Users
 
 There are three steps involved in provisioning a user with TOTP:
 
-1. Generate, encrypt and store a secret for the user.
-2. Send them a notification with a URL, secret and/or QR code they can import into their authenticator app.
-3. Verify successful provisioning by asking them for their current OTP.
+1. [Generate, encrypt and store a secret](README.md#generating-secrets) for the user.
+2. [Send the user a notification](README.md#notifying-users) with a URL, secret and/or QR code they can import into
+   their authenticator app.
+3. [Verify successful provisioning](README.md#verifying-successful-provisioning) by asking the user for their current
+   OTP.
 
 ### Generating secrets
 
 The TOTP specification mandates that secrets are generated randomly (i.e. not chosen by the user). You can generate your
-own secrets, but the `Totp` class provides a method that will generate a random secret for you that is guaranteed to be
-cryptographically secure and strong enough for all the hashing algorithms supported by TOTP. This method is also used
-when instantiating `Totp` objects without providing a pre-existing secret.
+own secrets, but the `Totp` class provides a method - `Totp::randomSecret()` that will generate a random secret for you
+that is guaranteed to be cryptographically secure and strong enough for all the hashing algorithms supported by TOTP.
+Alternatively you can just instantiate a `Totp` object without providing a secret and a random one will be generated
+automatically.
 
 Once you have generated the secret you must store it securely. It must always be stored encrypted.
 
@@ -84,16 +84,16 @@ $user->save();
 ```
 
 Sometimes Base64 is also used. PHP provides built-in Base64 encoding and decoding, but for consistency _php-totp_ also
-provides a `Base64` codec class that operates identically to the `Base32` class, except it works with Base64.
+provides a `Base64` codec class that operates identically to the `Base32` class, except with Base64.
 
 ### Minimising the secret's unencrypted availability
 
 You should strive to minimise the time that the shared secret is unencrypted in RAM. Whenever you are using it, whether
 to provision or to verify, you should only retrieve it just before you are ready to use it, you should discard it as
 soon as you no longer need it, and you should ensure that the variable containing the secret is securely erased before
-it is discarded. If you don't do this the unecrypted secret could remain "visible" in memory that is no longer in use by
-your app. The `scrubString()` function in the `\Equit\Totp` namespace is available to achieve this - simply pass it the
-string variable containing the secret and it will overwrite the string with random bytes.
+it is discarded. If you don't do this the unecrypted secret could remain "visible" in memory that is no longer used by
+your app. The `scrubString()` function in the `\Equit\Totp` namespace is available to achieve this - pass it the string
+variable containing the secret and it will overwrite the string with random bytes.
 
 All code in the _php-totp_ library that is intended for use with TOTP secrets scrubs its data in this way to help
 prevent unexpected visibility of TOTP secrets. This includes the `Totp` class, the `TotpSecret` class and the `Base32`
@@ -175,6 +175,24 @@ $isVerified = (new Totp(decrypt($user->totpSecret))->verify(password: $inputOtp,
 
 By default, `Totp::verify()` only accepts the current OTP. **It is very strongly recommended that you verify _at
 most_ with a window of 1 (i.e. accept either the current OTP or the one immediately preceding it).**
+
+### Batch-provisioning users
+
+You can re-use an UrlGenerator instance to provision multiple users with TOTP and send each a notification with their
+own unique URL.
+
+````php
+$generator = UrlGenerator::from("Equit");
+
+foreach ($users as $user) {
+   $totp = new Totp(algorithm: Totp::Sha512Algorithm);
+   $user->totpSecret = $totp->secret();
+   $user->save();
+   $user->notify($generator->for($user->username)->urlFor($totp));
+}
+
+unset($totp);
+````
 
 ## Authenticating
 
@@ -481,65 +499,7 @@ The Base32/Base64 and TotpSecret classes both take care of scrubbing the details
 secret will be in the `Totp` instance. If you use another Base32/Base64 decoder (e.g. PHP's `base64_decode()` function),
 you may not be able to ensure that the secret is properly scrubbed from memory before it is freed.
 
-## Generating your own secure secrets
-
-As mentioned above, the `Totp` class can generate secrets that are as cryptographically strong as is possible for all
-valid hash algorithms supported by TOTP. However, if you can't or don't want to use this method, this section describes
-how to generate strong secrets.
-
-To generate good secrets for your users you need a good source of random data. PHP's `random_bytes()` function is a
-suitable source. If this is not available on your platform you'll need to look elsewhere. PHP's other random number
-generation functions are not necessarily good sources of cryptographically secure randomness.
-
-TOTP builds on HOTP, which uses HMACs, whose [RFC](https://www.ietf.org/rfc/rfc2104.txt) has this to say about the size
-of keys:
-
-> The authentication key K can be of any length up to B, the block length of the hash function. **Applications that use
-> keys longer than B bytes will first hash the key using H [the hashing algorithm]** and then use the resultant L
-> [the byte length of the computed hash] byte string as the actual key to HMAC.
-
-In other words, if you create a secret that is longer than the bit length of the digest that the hashing algorithm uses,
-it will first be hashed before being used, reducing it to the length of the digest. For TOTP this means there is little
-benefit to providing secrets longer than 160 bits (20 bytes) for SHA1, 256 bits (32 bytes) for SHA256 or 160 bits (64
-bytes) for SHA512.
-
-The absolute minimum size for a shared secret, according to the HOTP [RFC](https://www.ietf.org/rfc/rfc4226.txt) is 128
-bits (16 bytes):
-
-> R6 - The algorithm MUST use a strong shared secret.  **The length of the shared secret MUST be at least 128 bits.**
-> This document RECOMMENDs a shared secret length of 160 bits.
-
-The recommendation of 160 bits for shared secrets is based on HOTP using SHA1, whose digest length is 160 bits. For
-TOTP, since it can use SHA256 or SHA512, this recommendation should increase to the digest lengths for the appropriate
-algorihm - 256 bits for SHA256 or 512 bits for SHA512. Therefore, if you are providing your own random secrets, the
-following would be good ways to generate them:
-
-| Algorithm | Random secret generator |
-|-----------|-------------------------|
-| SHA1      | `random_bytes(20)`      |
-| SHA256    | `random_bytes(32)`      |
-| SHA512    | `random_bytes(64)`      |
-
-## Cookbook
-
-### Provisioning multiple users
-
-Provision multiple users with TOTP and send each a notification with a URL they can import into their authenticator app.
-
-````php
-$generator = UrlGenerator::from("Equit");
-
-foreach ($users as $user) {
-   $totp = new Totp(algorithm: Totp::Sha512Algorithm);
-   $user->totpSecret = $totp->secret();
-   $user->save();
-   $user->notify($generator->for($user->username)->urlFor($totp));
-}
-
-unset($totp);
-````
-
-## References
+## RFCs
 - H. Krawczyk, M. Bellare & R. Canetti, _[RFC2104: HMAC: Keyed-Hashing for Message Authentication](https://www.ietf.org/rfc/rfc2104.txt)_, https://www.ietf.org/rfc/rfc2104.txt, retrieved 17th April, 2022.
 - D. M'Raihi, M. Bellare, F. Hoornaert, D. Naccache & O. Ranen, 2005, _[RFC4226: HOTP: An HMAC-Based One-Time Password Algorithm](https://www.ietf.org/rfc/rfc4226.txt)_, https://www.ietf.org/rfc/rfc4226.txt, retrieved 17th April, 2022.
 - D. M'Raihi, S. Machani, M. Pei & J. Rydell, 2011, _[RFC6238: TOTP: Time-Based One-Time Password Algorithm](https://www.ietf.org/rfc/rfc6238.txt)_, https://www.ietf.org/rfc/rfc6238.txt, retrieved 17th April, 2022.
