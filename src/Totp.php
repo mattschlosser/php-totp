@@ -42,7 +42,7 @@ use Exception;
  * integer). Since it mentions nothing regarding the signedness of T0, this implementation does not forbid reference
  * times before the Unix epoch (i.e. -ve timestamps).
  */
-class Totp
+class Totp implements Contracts\Totp
 {
     /**
      * Import the trait that securely erases all string properties on destruction.
