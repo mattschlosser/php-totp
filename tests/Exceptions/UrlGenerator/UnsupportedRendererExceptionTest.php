@@ -20,14 +20,13 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Tests\Exceptions\UrlGenerator;
 
+use Equit\Totp\Contracts\Renderer;
 use Equit\Totp\Exceptions\UrlGenerator\UnsupportedRendererException;
 use Equit\Totp\Renderers\EightDigits;
 use Equit\Totp\Renderers\Integer;
-use Equit\Totp\Renderers\Renderer;
 use Equit\Totp\Renderers\SixDigits;
 use Equit\Totp\Tests\Framework\TestCase;
 use Exception;
-use Generator;
 use TypeError;
 
 /**
@@ -38,7 +37,7 @@ class UnsupportedRendererExceptionTest extends TestCase
     /**
      * Create an anonymous unsupported Renderer instance.
      *
-     * @return \Equit\Totp\Renderers\Renderer The generated renderer.
+     * @return \Equit\Totp\Contracts\Renderer The generated renderer.
      */
     private static function createUnsupportedRenderer(): Renderer
     {

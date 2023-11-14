@@ -20,17 +20,19 @@ declare(strict_types=1);
 
 namespace Equit\Totp;
 
+use Equit\Totp\Exceptions\InvalidBase32DataException;
+use Equit\Totp\Exceptions\InvalidBase64DataException;
 use Equit\Totp\Exceptions\InvalidSecretException;
+use Equit\Totp\Traits\SecurelyErasesProperties;
 
 /**
- * An abstraction of the different ways to set a secret for a Totp object.
+ * Enforces rules for secrets used in TOTP.
  *
- * Instances of this class can only be instantiated using one of the factory mewthods fromRaw(), fromBase32() or
- * fromBase64(), and are immutable. The class exists primarily to ensure that it's easy to intialise a Totp with a
- * secret regardless of the encoding in which the secret is available - it avoids having to pass the Totp constructor
- * the secret's encoding in another parameter.
+ * Instances of this class can only be instantiated using one of the factory methods fromRaw(), fromBase32() or
+ * fromBase64(), and are immutable. The class exists primarily to ensure that it's only possible to intialise a Totp
+ * with a valid secret regardless of the encoding in which the secret is available.
  *
- *     $totp = new Totp(TotpSecret::fromBase32($base32Secret));
+ *     $totp = new Totp(TotpSecret::fromBase32($base32Secret), ...);
  *
  * It is not possible to create an instance with invalid Base32 or Base64 data - the factory methods ensure the given
  * string is valid Base32/Base64 respectively before instantiating the TotpSecret object.
@@ -41,14 +43,10 @@ use Equit\Totp\Exceptions\InvalidSecretException;
  */
 final class TotpSecret
 {
-    /**
-     * Import the trait that securely erases all string properties on destruction.
-     */
+    /** Import the trait that securely erases all string properties on destruction. */
     use SecurelyErasesProperties;
 
-    /**
-     * @var string The raw bytes of the secret.
-     */
+    /** @var string The raw bytes of the secret. */
     private string $m_raw;
 
     /**
@@ -68,7 +66,7 @@ final class TotpSecret
     /**
      * @param string $secret The raw secret.
      *
-     * @throws \Equit\Totp\Exceptions\InvalidSecretException if the secret is less than 128 bits (16 bytes) in length.
+     * @throws InvalidSecretException if the secret is less than 128 bits (16 bytes) in length.
      */
     private function __construct(string $secret)
     {
@@ -123,7 +121,7 @@ final class TotpSecret
      * @param string $secret The raw secret.
      *
      * @return static The created TotpSecret.
-     * @throws \Equit\Totp\Exceptions\InvalidSecretException if the secret is less than 128 bits (16 bytes) in length.
+     * @throws InvalidSecretException if the secret is less than 128 bits (16 bytes) in length.
      */
     public static function fromRaw(string $secret): self
     {
@@ -136,8 +134,8 @@ final class TotpSecret
      * @param string $secret The Base32 encoded secret.
      *
      * @return static The created TotpSecret.
-     * @throws \Equit\Totp\Exceptions\InvalidBase32DataException if the provided secret is not valid Base32.
-     * @throws \Equit\Totp\Exceptions\InvalidSecretException if the secret is less than 128 bits (16 bytes) in length.
+     * @throws InvalidBase32DataException if the provided secret is not valid Base32.
+     * @throws InvalidSecretException if the secret is less than 128 bits (16 bytes) in length.
      */
     public static function fromBase32(string $secret): self
     {
@@ -152,8 +150,8 @@ final class TotpSecret
      * @param string $secret The Base64 encoded secret.
      *
      * @return static The created TotpSecret.
-     * @throws \Equit\Totp\Exceptions\InvalidBase64DataException if the provided secret is not valid Base64.
-     * @throws \Equit\Totp\Exceptions\InvalidSecretException if the secret is less than 128 bits (16 bytes) in length.
+     * @throws InvalidBase64DataException if the provided secret is not valid Base64.
+     * @throws InvalidSecretException if the secret is less than 128 bits (16 bytes) in length.
      */
     public static function fromBase64(string $secret): self
     {

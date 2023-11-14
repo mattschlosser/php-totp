@@ -296,7 +296,7 @@ class UrlGenerator
     /**
      * Generate the provisioning URL for a given TOTP.
      *
-     * @param Totp $totp The TOTP for which to generate the provisioning URL.
+     * @param TotpFactory $totp The TOTP for which to generate the provisioning URL.
      *
      * @return string The URL.
      * @throws \Equit\Totp\Exceptions\UrlGenerator\UnsupportedRendererException if the Totp's renderer is not an
@@ -304,7 +304,7 @@ class UrlGenerator
      * @throws \Equit\Totp\Exceptions\UrlGenerator\InvalidUserException if no user has been set in the generator.
      * @throws \Equit\Totp\Exceptions\UrlGenerator\UnsupportedReferenceTimeException if the provided Totp's reference time is not 0.
      */
-    public function urlFor(Totp $totp): string
+    public function urlFor(TotpFactory $totp): string
     {
         if (empty($this->user())) {
             throw new InvalidUserException($this->user(), "It is not possible to generate a URL with an empty user.");
@@ -338,11 +338,11 @@ class UrlGenerator
             $url .= "&digits={$totp->renderer()->digits()}";
         }
 
-        if (true === $this->includesAlgorithm() || (is_null($this->includesAlgorithm()) && Totp::DefaultAlgorithm !== $totp->hashAlgorithm())) {
+        if (true === $this->includesAlgorithm() || (is_null($this->includesAlgorithm()) && TotpFactory::DefaultAlgorithm !== $totp->hashAlgorithm())) {
             $url .= "&algorithm=" . strtoupper($totp->hashAlgorithm());
         }
 
-        if (true === $this->includesPeriod() || (is_null($this->includesPeriod()) && Totp::DefaultTimeStep !== $totp->timeStep())) {
+        if (true === $this->includesPeriod() || (is_null($this->includesPeriod()) && TotpFactory::DefaultTimeStep !== $totp->timeStep())) {
             $url .= "&period={$totp->timeStep()}";
         }
 

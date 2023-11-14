@@ -20,7 +20,9 @@ declare(strict_types=1);
 
 namespace Equit\Totp;
 
+use Equit\Totp\Contracts\Codec;
 use Equit\Totp\Exceptions\InvalidBase32DataException;
+use Equit\Totp\Traits\SecurelyErasesProperties;
 
 /**
  * Codec class for Base32 data.
@@ -34,7 +36,7 @@ use Equit\Totp\Exceptions\InvalidBase32DataException;
  *
  * Encoding/decoding is only performed when required, so the class is relatively lightweight.
  */
-class Base32
+class Base32 implements Codec
 {
     /**
      * Import the trait that securely erases all string properties on destruction.

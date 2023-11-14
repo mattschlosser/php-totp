@@ -18,9 +18,10 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp;
+namespace Equit\Totp\Traits;
 
 use ReflectionClass;
+use function Equit\Totp\scrubString;
 
 /**
  * Import this trait to have your class automatically scrub all string properties on destruction.
@@ -33,11 +34,9 @@ trait SecurelyErasesProperties
     private function securelyEraseProperties(): void
     {
         foreach ((new ReflectionClass($this))->getProperties() as $property) {
-            if (!is_string($this->{$property->name})) {
-                continue;
+            if (is_string($this->{$property->name})) {
+                scrubString($this->{$property->name});
             }
-
-            scrubString($this->{$property->name});
         }
     }
 

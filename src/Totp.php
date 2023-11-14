@@ -22,17 +22,13 @@ namespace Equit\Totp;
 
 use DateTime;
 use DateTimeZone;
-use Equit\Totp\Exceptions\SecureRandomDataUnavailableException;
-use Equit\Totp\Exceptions\InvalidHashAlgorithmException;
-use Equit\Totp\Exceptions\InvalidTimeStepException;
+use Equit\Totp\Contracts\Renderer;
+use Equit\Totp\Contracts\Totp as TotpContract;
 use Equit\Totp\Exceptions\InvalidSecretException;
 use Equit\Totp\Exceptions\InvalidTimeException;
+use Equit\Totp\Exceptions\InvalidTimeStepException;
 use Equit\Totp\Exceptions\InvalidVerificationWindowException;
-use Equit\Totp\Renderers\EightDigits;
-use Equit\Totp\Renderers\Integer;
-use Equit\Totp\Renderers\Renderer;
-use Equit\Totp\Renderers\SixDigits;
-use Exception;
+use Equit\Totp\Traits\SecurelyErasesProperties;
 
 /**
  * Class for generating Time-based One-Time Passwords.
@@ -42,44 +38,12 @@ use Exception;
  * integer). Since it mentions nothing regarding the signedness of T0, this implementation does not forbid reference
  * times before the Unix epoch (i.e. -ve timestamps).
  */
-class Totp implements Contracts\Totp
+class Totp implements TotpContract
 {
     /**
      * Import the trait that securely erases all string properties on destruction.
      */
     use SecurelyErasesProperties;
-
-    /**
-     * Use this to specify that the SHA1 algorithm should be used to generate HMACs.
-     */
-    public const Sha1Algorithm = "sha1";
-
-    /**
-     * Use this to specify that the SHA256 algorithm should be used to generate HMACs.
-     */
-    public const Sha256Algorithm = "sha256";
-
-    /**
-     * Use this to specify that the SHA512 algorithm should be used to generate HMACs.
-     */
-    public const Sha512Algorithm = "sha512";
-
-    /**
-     * The default algorithm to use to generate HMACs.
-     *
-     * This is equal to Sha1Algorithm.
-     */
-    public const DefaultAlgorithm = self::Sha1Algorithm;
-
-    /**
-     * The default update time step for passwords.
-     */
-    public const DefaultTimeStep = 30;
-
-    /**
-     * The default reference time for passwords.
-     */
-    public const DefaultReferenceTime = 0;
 
     /**
      * Error code for InvalidVerificationWindowException when the window is < 0.
@@ -95,7 +59,7 @@ class Totp implements Contracts\Totp
     /**
      * @var string The hashing algorithm to use when generating HMACs.
      */
-    private string $m_hashAlgorithm = self::DefaultAlgorithm;
+    private string $m_hashAlgorithm;
 
     /**
      * @var string The secret for password generation.
@@ -124,144 +88,22 @@ class Totp implements Contracts\Totp
      * If the reference time is specified as an int, it is interpreted as the number of seconds since the Unix epoch.
      * The default hashing algorithm is SHA1.
      *
-     * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
-     * @param Renderer|null $renderer The renderer that produces one-time passwords from HMACs.
-     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
+     * @param TotpSecret $secret The TOTP secret.
+     * @param Renderer $renderer The renderer that produces one-time passwords from HMACs.
+     * @param TotpTimeStep $timeStep The update time step for the passwords. Defaults to 30 seconds.
      * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
      * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
      * constants. Defaults to Sha1Algorithm.
      *
      * @throws InvalidTimeStepException if the time step is not a positive integer.
-     * @throws InvalidSecretException if the provided secret is less than 128 bits in length.
-     * @throws InvalidHashAlgorithmException if the provided hash algorithm is not one of the supported algorithms. See
-     * the class constants.
-     * @throws SecureRandomDataUnavailableException if a randomly-generated secret is required but a
-     * source of cryptographically-secure random data is not available.
      */
-    public function __construct(TotpSecret|string $secret = null, Renderer $renderer = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm)
+    public function __construct(TotpSecret $secret, Renderer $renderer, TotpTimeStep $timeStep, int|DateTime $referenceTime, string $hashAlgorithm)
     {
-        $this->setSecret($secret ?? static::randomSecret());
-        $this->setRenderer($renderer ?? static::defaultRenderer());
-        $this->setTimeStep($timeStep);
-        $this->setHashAlgorithm($hashAlgorithm);
+        $this->m_secret = $secret->raw();
+        $this->m_renderer = clone $renderer;
+        $this->m_timeStep = $timeStep->seconds();
+        $this->m_hashAlgorithm = $hashAlgorithm;
         $this->m_referenceTime = ($referenceTime instanceof DateTime ? $referenceTime->getTimestamp() : $referenceTime);
-    }
-
-    /**
-     * Helper to generate a random secret.
-     *
-     * The constructor uses this if no secret is provided. The secret is guaranteed to be valid for a TOTP. Currently
-     * it is always 64 bytes (512 bits) in length so that it is sufficiently strong for all the supported algorithms.
-     *
-     * @return string The random secret.
-     * @throws SecureRandomDataUnavailableException if a known source of cryptographically secure random data is
-     * not available.
-     */
-    public static function randomSecret(): string
-    {
-        try {
-            return random_bytes(64);
-        }
-        catch (Exception $e) {
-            if (function_exists("openssl_random_pseudo_bytes")) {
-                $secret = openssl_random_pseudo_bytes(64, $isStrong);
-
-                if (false !== $secret && $isStrong) {
-                    return $secret;
-                }
-            }
-
-            throw new SecureRandomDataUnavailableException($e->getMessage(), $e->getCode(), $e);
-        }
-    }
-
-    /**
-     * Instantiate a TOTP generator with a six-digit integer password renderer.
-     *
-     * This is a convenience factory function for a commonly-used type of TOTP.
-     *
-     * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
-     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
-     * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
-     * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
-     * constants. Defaults to Sha1Algorithm.
-     *
-     * @return Totp
-     * @throws \Equit\Totp\Exceptions\InvalidHashAlgorithmException If the supplied hashing algorithm is not one
-     * supported by TOTP.
-     * @throws \Equit\Totp\Exceptions\InvalidTimeStepException if the time step is < 1.
-     * @throws \Equit\Totp\Exceptions\InvalidSecretException if the provided secret is less than 128 bits in length.
-     * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
-     * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
-     *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
-     */
-    public static function sixDigits(TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
-    {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        return new Totp(secret: $secret, renderer: new SixDigits(), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
-    }
-
-    /**
-     * Instantiate a TOTP generator with an eight-digit integer password renderer.
-     *
-     * This is a convenience factory function for a commonly-used type of TOTP.
-     *
-     * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
-     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
-     * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
-     * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
-     * constants. Defaults to Sha1Algorithm.
-     *
-     * @return Totp
-     * @throws \Equit\Totp\Exceptions\InvalidHashAlgorithmException If the supplied hashing algorithm is not one
-     * supported by TOTP.
-     * @throws \Equit\Totp\Exceptions\InvalidTimeStepException if the time step is < 1.
-     * @throws \Equit\Totp\Exceptions\InvalidSecretException if the provided secret is less than 128 bits in length.
-     * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
-     * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
-     *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
-     */
-    public static function eightDigits(TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
-    {
-        /** @noinspection PhpUnhandledExceptionInspection */
-        return new Totp(secret: $secret, renderer: new EightDigits(), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
-    }
-
-    /**
-     * Instantiate a TOTP generator with an integer password renderer of a given number of digits.
-     *
-     * This is a convenience factory function for commonly-used types of TOTP.
-     *
-     * @param int $digits The number of digits in generated one-time passwords.
-     * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
-     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
-     * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
-     * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
-     * constants. Defaults to Sha1Algorithm.
-     *
-     * @return Totp
-     * @throws \Equit\Totp\Exceptions\InvalidHashAlgorithmException If the supplied hashing algorithm is not one
-     * supported by TOTP.
-     * @throws \Equit\Totp\Exceptions\InvalidDigitsException if the number of digits is < 1.
-     * @throws \Equit\Totp\Exceptions\InvalidTimeStepException if the time step is < 1.
-     * @throws \Equit\Totp\Exceptions\InvalidSecretException if the provided secret is less than 128 bits in length.
-     * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
-     * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
-     *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
-     */
-    public static function integer(int $digits, TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
-    {
-        return new Totp(secret: $secret, renderer: new Integer($digits), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
-    }
-
-    /**
-     * Helper to create the default renderer when none is provided to the constructor.
-     *
-     * @return Renderer The default renderer.
-     */
-    protected static function defaultRenderer(): Renderer
-    {
-        return new SixDigits();
     }
 
     /**
@@ -272,23 +114,6 @@ class Totp implements Contracts\Totp
     public function hashAlgorithm(): string
     {
         return $this->m_hashAlgorithm;
-    }
-
-    /**
-     * Set the hash algorithm to use when generating HMACs.
-     *
-     * The hash algorithm must be one of SHA1, SHA256 or SHA512. Use the class constants for these to avoid errors.
-     *
-     * @param string $hashAlgorithm The hash algorithm.
-     *
-     * @throws InvalidHashAlgorithmException if the hash algorithm provided is not valid.
-     */
-    public function setHashAlgorithm(string $hashAlgorithm): void
-    {
-        $this->m_hashAlgorithm = match ($hashAlgorithm) {
-            self::Sha1Algorithm, self::Sha256Algorithm, self::Sha512Algorithm => $hashAlgorithm,
-            default => throw new InvalidHashAlgorithmException($hashAlgorithm, "The hash algorithm must be one of " . self::Sha1Algorithm . ", " . self::Sha256Algorithm . " or " . self::Sha512Algorithm . "."),
-        };
     }
 
     /**
@@ -320,48 +145,15 @@ class Totp implements Contracts\Totp
     }
 
     /**
-     * Set the secret for generated passwords.
-     *
-     * The secret must be at least 128 bits (16 bytes) in length, ideally 160 bits (SHA1), 256 bits (SHA256) or 512 bits
-     * (SHA512). There is minimal value in setting a secret with more than the ideal bits.
-     *
-     * @param TotpSecret|string $secret The secret. If given as a string, the string is assumed to be the raw secret.
-     *
-     * @throws InvalidSecretException if the secret is less than 128 bits in length.
-     */
-    public function setSecret(TotpSecret|string $secret): void
-    {
-        if ($secret instanceof TotpSecret) {
-            $this->m_secret = $secret->raw();
-            return;
-        }
-
-        if (16 > strlen($secret)) {
-            throw new InvalidSecretException($secret, "TOTP secrets must be at least 128 bits (16 octets) in size.");
-        }
-
-        $this->m_secret = $secret;
-    }
-
-    /**
      * Fetch the renderer being used to generate one-time passwords from HMACs.
      *
-     * @return \Equit\Totp\Renderers\Renderer The renderer.
+     * @return string The name of the passcode renderer.
      */
-    public function renderer(): Renderer
+    public function renderer(): string
     {
-        return $this->m_renderer;
+        return $this->m_renderer->name();
     }
 
-    /**
-     * Set the renderer to use to generate one-time passwords from HMACs.
-     *
-     * @param \Equit\Totp\Renderers\Renderer $renderer The renderer.
-     */
-    public function setRenderer(Renderer $renderer): void
-    {
-        $this->m_renderer = $renderer;
-    }
 
     /**
      * Fetch the size of the time step at which the one-time password changes, in seconds.
@@ -371,20 +163,6 @@ class Totp implements Contracts\Totp
     public function timeStep(): int
     {
         return $this->m_timeStep;
-    }
-
-    /**
-     * @param int $timeStep
-     *
-     * @throws InvalidTimeStepException
-     */
-    public function setTimeStep(int $timeStep): void
-    {
-        if (1 > $timeStep) {
-            throw new InvalidTimeStepException($timeStep, "The time step for a TOTP must be >= 1 second.");
-        }
-
-        $this->m_timeStep = $timeStep;
     }
 
     /**
@@ -409,27 +187,6 @@ class Totp implements Contracts\Totp
     {
         /** @noinspection PhpUnhandledExceptionInspection DateTime constructor doesn't throw with Unix timestamp. */
         return new DateTime("@{$this->m_referenceTime}", new DateTimeZone("UTC"));
-    }
-
-    /**
-     * Set the reference time from which time steps are generated.
-     *
-     * The reference time can be set either as an integer number of seconds since the Unix epoch or as a PHP DateTime
-     * object. If using a DateTime object, make sure you know what time it represents in UTC since it is the number of
-     * seconds since 1970-01-01 00:00:00 UTC that will be used as the reference time. (In effect, the DateTime you
-     * provide is converted to UTC before the number of seconds is calculated.)
-     *
-     * @param int|\DateTime $referenceTime The
-     *
-     * @return void
-     */
-    public function setReferenceTime(int|DateTime $referenceTime): void
-    {
-        if ($referenceTime instanceof DateTime) {
-            $referenceTime = $referenceTime->getTimestamp();
-        }
-
-        $this->m_referenceTime = $referenceTime;
     }
 
     /**

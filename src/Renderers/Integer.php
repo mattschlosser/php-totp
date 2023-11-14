@@ -21,6 +21,7 @@ declare(strict_types=1);
 namespace Equit\Totp\Renderers;
 
 use Equit\Totp\Exceptions\InvalidDigitsException;
+use Equit\Totp\Renderers\Traits\RendersStandardIntegerPasswords;
 
 /**
  * Render a TOTP with an arbitrary number of decimal digits.
@@ -28,6 +29,8 @@ use Equit\Totp\Exceptions\InvalidDigitsException;
  * This renders the truncation of the computed HMAC as a number of decimal digits, as specified by the HOTP
  * specification (see RFC 4226, https://datatracker.ietf.org/doc/html/rfc4226). The number of digits must be 6 or more
  * and should ordinarily be 9 or lower.
+ *
+ * Instances of this class model immutability.
  */
 class Integer implements IntegerRenderer
 {
@@ -53,11 +56,19 @@ class Integer implements IntegerRenderer
      *
      * @param int $digits The digit count for rendered passwords. Defaults to 6.
      *
-     * @throws \Equit\Totp\Exceptions\InvalidDigitsException if the number of digits is < 6.
+     * @throws InvalidDigitsException if the number of digits is < 6.
      */
     public function __construct(int $digits = self::DefaultDigits)
     {
-        $this->setDigits($digits);
+        self::checkDigits($digits);
+        $this->digitCount = $digits;
+    }
+
+    private static function checkDigits(int $digits): void
+    {
+        if (self::MinimumDigits > $digits) {
+            throw new InvalidDigitsException($digits, "Integer renderers must have at least six digits in the password.");
+        }
     }
 
     /**
@@ -67,16 +78,17 @@ class Integer implements IntegerRenderer
      * specifying more than 9 digits since you're likely to just be adding extra 0 pad characters on the left of the
      * 9-digit rendering.
      *
-     * @param int $digits The number of digits.
+     * The renderer is cloned, the digits are set on the clone, and the clone is returned.
      *
-     * @throws \Equit\Totp\Exceptions\InvalidDigitsException if the number of digits is < 6.
+     * @param int $digits The number of digits.
+     * @return $this
+     * @throws InvalidDigitsException if the number of digits is < 6.
      */
-    public function setDigits(int $digits)
+    public function withDigits(int $digits): self
     {
-        if (self::MinimumDigits > $digits) {
-            throw new InvalidDigitsException($digits, "Integer renderers must have at least six digits in the password.");
-        }
-
-        $this->digitCount = $digits;
+        self::checkDigits($digits);
+        $clone = clone $this;
+        $clone->digitCount = $digits;
+        return $clone;
     }
 }

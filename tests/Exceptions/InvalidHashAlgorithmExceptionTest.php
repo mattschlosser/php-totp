@@ -22,7 +22,7 @@ namespace Equit\Totp\Tests\Exceptions;
 
 use Equit\Totp\Exceptions\InvalidHashAlgorithmException;
 use Equit\Totp\Tests\Framework\TestCase;
-use Equit\Totp\Totp;
+use Equit\Totp\TotpFactory;
 use Exception;
 use Generator;
 use TypeError;
@@ -45,7 +45,7 @@ class InvalidHashAlgorithmExceptionTest extends TestCase
 
         if (!isset($algorithms)) {
             $algorithms = array_values(array_filter(hash_algos(), fn(string $algorithm): bool => match ($algorithm) {
-                Totp::Sha1Algorithm, Totp::Sha256Algorithm, Totp::Sha512Algorithm => false,
+                TotpFactory::Sha1Algorithm, TotpFactory::Sha256Algorithm, TotpFactory::Sha512Algorithm => false,
                 default => true,
             }));
         }

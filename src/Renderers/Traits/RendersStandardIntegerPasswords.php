@@ -18,7 +18,7 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Renderers;
+namespace Equit\Totp\Renderers\Traits;
 
 /**
  * Trait for renderers that produce padded integer one-time passwords.
@@ -33,6 +33,12 @@ namespace Equit\Totp\Renderers;
 trait RendersStandardIntegerPasswords
 {
     use ExtractsStandard31BitInteger;
+
+    /** The renderer name. */
+    public function name(): string
+    {
+        return "{$this->digits()}-digits";
+    }
 
     /**
      * @return int The number of digits in the rendered password.

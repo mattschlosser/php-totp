@@ -20,6 +20,8 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Renderers;
 
+use Equit\Totp\Renderers\Traits\RendersStandardIntegerPasswords;
+
 /**
  * Render a TOTP of eight decimal digits.
  *

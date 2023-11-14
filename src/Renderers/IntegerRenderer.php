@@ -20,6 +20,8 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Renderers;
 
+use Equit\Totp\Contracts\Renderer;
+
 /**
  * Interface for renderers that produce a fixed-width integer one-time password.
  */

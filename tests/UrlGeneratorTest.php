@@ -22,13 +22,13 @@ namespace Equit\Totp\Tests;
 
 use BadMethodCallException;
 use Equit\Totp\Base32;
+use Equit\Totp\Contracts\Renderer;
 use Equit\Totp\Exceptions\UrlGenerator\InvalidUserException;
 use Equit\Totp\Exceptions\UrlGenerator\UnsupportedReferenceTimeException;
 use Equit\Totp\Exceptions\UrlGenerator\UnsupportedRendererException;
-use Equit\Totp\Renderers\Renderer;
 use Equit\Totp\Tests\Framework\Exceptions\InvalidOtpUrlException;
 use Equit\Totp\Tests\Framework\TestCase;
-use Equit\Totp\Totp;
+use Equit\Totp\TotpFactory;
 use Equit\Totp\UrlGenerator;
 use Generator;
 use InvalidArgumentException;
@@ -368,7 +368,7 @@ class UrlGeneratorTest extends TestCase
                 ],
                 [
                     "secret" => "password-password",
-                    "hashAlgorithm" => Totp::Sha512Algorithm,
+                    "hashAlgorithm" => TotpFactory::Sha512Algorithm,
                 ],
                 "otpauth://totp/arthur.dent/?secret=OBQXG43XN5ZGILLQMFZXG53POJSA====&algorithm=SHA512",
             ],
@@ -389,7 +389,7 @@ class UrlGeneratorTest extends TestCase
                 ],
                 [
                     "secret" => "password-password",
-                    "hashAlgorithm" => Totp::Sha512Algorithm,
+                    "hashAlgorithm" => TotpFactory::Sha512Algorithm,
                 ],
                 "otpauth://totp/arthur.dent/?secret=OBQXG43XN5ZGILLQMFZXG53POJSA====&algorithm=SHA512",
             ],
@@ -531,19 +531,19 @@ class UrlGeneratorTest extends TestCase
         }
 
         if (isset($totpConfig["renderer"])) {
-            $totp = new Totp(secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? Totp::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? Totp::DefaultAlgorithm);
+            $totp = new TotpFactory(secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? TotpFactory::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? TotpFactory::DefaultAlgorithm);
 
             if (is_string($totpConfig["renderer"])) {
-                $totp->setRenderer(new $totpConfig["renderer"]());
+                $totp->withRenderer(new $totpConfig["renderer"]());
             } else if (is_callable($totpConfig["renderer"])) {
-                $totp->setRenderer($totpConfig["renderer"]());
+                $totp->withRenderer($totpConfig["renderer"]());
             } else if ($totpConfig["renderer"] instanceof Renderer) {
-                $totp->setRenderer($totpConfig["renderer"]);
+                $totp->withRenderer($totpConfig["renderer"]);
             } else {
                 throw new InvalidArgumentException("The renderer provided in the TOTP config is not valid.");
             }
         } else {
-            $totp = Totp::integer(digits: $totpConfig["digits"] ?? 6, secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? Totp::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? Totp::DefaultAlgorithm);
+            $totp = TotpFactory::integer(digits: $totpConfig["digits"] ?? 6, secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? TotpFactory::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? TotpFactory::DefaultAlgorithm);
         }
 
         if ($urlConfig["withDigits"] ?? false) {

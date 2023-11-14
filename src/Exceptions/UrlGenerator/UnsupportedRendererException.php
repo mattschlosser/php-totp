@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Exceptions\UrlGenerator;
 
-use Equit\Totp\Renderers\Renderer;
+use Equit\Totp\Contracts\Renderer;
 use Throwable;
 
 /**
@@ -37,7 +37,7 @@ class UnsupportedRendererException extends UrlGeneratorException
     private Renderer $m_renderer;
 
     /**
-     * @param \Equit\Totp\Renderers\Renderer $renderer The unsupported renderer.
+     * @param \Equit\Totp\Contracts\Renderer $renderer The unsupported renderer.
      * @param string $message An optional description of why it's unsuported. Defaults to an empty string.
      * @param int $code An optional error code. Defaults to 0.
      * @param Throwable|null $previous An optional previous Throwable. Defaults to null.
@@ -51,7 +51,7 @@ class UnsupportedRendererException extends UrlGeneratorException
     /**
      * Fetch the unsupported renderer.
      *
-     * @return \Equit\Totp\Renderers\Renderer The unsupported renderer.
+     * @return \Equit\Totp\Contracts\Renderer The unsupported renderer.
      */
     public function getRenderer(): Renderer
     {

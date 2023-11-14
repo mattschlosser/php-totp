@@ -33,7 +33,7 @@ use Equit\Totp\Exceptions\SecureRandomDataUnavailableException;
 use Equit\Totp\Renderers\EightDigits;
 use Equit\Totp\Renderers\SixDigits;
 use Equit\Totp\Renderers\Steam;
-use Equit\Totp\Totp;
+use Equit\Totp\TotpFactory;
 use Exception;
 use Throwable;
 use function Equit\Totp\Tools\toPhpHexString;
@@ -103,11 +103,11 @@ const ErrCannotGenerateRandomSecret = 11;
  */
 class Options
 {
-    public int $referenceTime = Totp::DefaultReferenceTime; // The TOTP reference time (T0)
-    public int $timeStep = Totp::DefaultTimeStep;           // The TOTP time step
+    public int $referenceTime = TotpFactory::DefaultReferenceTime; // The TOTP reference time (T0)
+    public int $timeStep = TotpFactory::DefaultTimeStep;           // The TOTP time step
     public ?int $totpTime = null;                           // The time at which to calculate the TOTP
     public ?string $secret = null;                          // The raw TOTP secret
-    public string $algorithm = Totp::DefaultAlgorithm;      // The TOTP hash algorithm
+    public string $algorithm = TotpFactory::DefaultAlgorithm;      // The TOTP hash algorithm
     public string $renderer = SixDigits::class;             // The class of the TOTP renderer
     public bool $explain = false;                           // Flag indicating whether to explain all steps
 
@@ -222,17 +222,17 @@ class Options
 
                 case "--sha1":
                 case "--SHA1":
-                    $options->algorithm = Totp::Sha1Algorithm;
+                    $options->algorithm = TotpFactory::Sha1Algorithm;
                     break;
 
                 case "--sha256":
                 case "--SHA256":
-                    $options->algorithm = Totp::Sha256Algorithm;
+                    $options->algorithm = TotpFactory::Sha256Algorithm;
                     break;
 
                 case "--sha512":
                 case "--SHA512":
-                    $options->algorithm = Totp::Sha512Algorithm;
+                    $options->algorithm = TotpFactory::Sha512Algorithm;
                     break;
 
                 case "--steam":
@@ -259,7 +259,7 @@ class Options
         // fill in the blanks for those options that the user has not supplied, and for which we use late population
         if (!isset($options->secret)) {
             try {
-                $options->secret = Totp::randomSecret();
+                $options->secret = TotpFactory::randomSecret();
             }
             catch (SecureRandomDataUnavailableException $err) {
                 throw new Exception("It has not been possible to generate cryptographically-secure random secrets - you must provide a secret using the command-line options.", ErrCannotGenerateRandomSecret, $err);
@@ -493,7 +493,7 @@ EOT;
              * - InvalidHashAlgorithmException
              * - SecureRandomDataUnavailableException
              */
-            $totp = new Totp(secret: $options->secret, renderer: new $options->renderer, timeStep: $options->timeStep, referenceTime: $options->referenceTime, hashAlgorithm: $options->algorithm);
+            $totp = new TotpFactory(secret: $options->secret, renderer: new $options->renderer, timeStep: $options->timeStep, referenceTime: $options->referenceTime, hashAlgorithm: $options->algorithm);
         }
         catch (InvalidSecretException $err) {
             fputs(STDERR, "The provided secret is not valid: {$err->getMessage()}\n");

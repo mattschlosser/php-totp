@@ -27,7 +27,7 @@ namespace Equit\Totp\Tools\Dev\RandomBinaryString;
 require_once(__DIR__ . "/../bootstrap.php");
 
 use DateTime;
-use Equit\Totp\Totp;
+use Equit\Totp\TotpFactory;
 use ReflectionMethod;
 use function Equit\Totp\Tools\toPhpHexString;
 
@@ -55,9 +55,9 @@ if (isset($argv[1]) && "--help" === $argv[1]) {
     exit(1);
 }
 
-$totp = Totp::integer(
+$totp = TotpFactory::integer(
     digits: 6,
-    secret: Totp::randomSecret(),
+    secret: TotpFactory::randomSecret(),
     timeStep: 10 * mt_rand(1, 6),                                  // random time-step, 10, 20, 30 40, 50 or 60 seconds
     referenceTime: mt_rand(0, time() - (60 * 60 * 24 * 365 * 20))  // reference time is a random time up to 20 years ago
 );
@@ -81,29 +81,29 @@ echo "Current Time   : {$currentTime} " . (new DateTime("@{$currentTime}"))->for
 echo "Counter        : " . $totp->counterAt($currentTime) . " - " . toPhpHexString($counterBytesAt($currentTime)) . "\n";
 echo "HMAC           : " . toPhpHexString($totp->hmacAt($currentTime)) . "\n";
 echo "OTP (6)        : {$totp->passwordAt($currentTime)}\n";
-$totp->renderer()->setDigits(7);
+$totp->renderer()->withDigits(7);
 echo "OTP (7)        : {$totp->passwordAt($currentTime)}\n";
-$totp->renderer()->setDigits(8);
+$totp->renderer()->withDigits(8);
 echo "OTP (8)        : {$totp->passwordAt($currentTime)}\n\n";
 
 // OTP details at -1 time step
 $currentTime -= $totp->timeStep();
 echo "Counter - 1     : " . $totp->counterAt($currentTime) . " - " . toPhpHexString($counterBytesAt($currentTime)) . "\n";
 echo "HMAC - 1        : " . toPhpHexString($totp->hmacAt($currentTime)) . "\n";
-$totp->renderer()->setDigits(6);
+$totp->renderer()->withDigits(6);
 echo "OTP - 1 (6)     : {$totp->passwordAt($currentTime)}\n";
-$totp->renderer()->setDigits(7);
+$totp->renderer()->withDigits(7);
 echo "OTP - 1 (7)     : {$totp->passwordAt($currentTime)}\n";
-$totp->renderer()->setDigits(8);
+$totp->renderer()->withDigits(8);
 echo "OTP - 1 (8)     : {$totp->passwordAt($currentTime)}\n\n";
 
 // OTP details at +1 time step
 $currentTime += (2 * $totp->timeStep());
 echo "Counter + 1     : " . $totp->counterAt($currentTime) . " - " . toPhpHexString($counterBytesAt($currentTime)) . "\n";
 echo "HMAC + 1        : " . toPhpHexString($totp->hmacAt($currentTime)) . "\n";
-$totp->renderer()->setDigits(6);
+$totp->renderer()->withDigits(6);
 echo "OTP + 1 (6)     : {$totp->passwordAt($currentTime)}\n";
-$totp->renderer()->setDigits(7);
+$totp->renderer()->withDigits(7);
 echo "OTP + 1 (7)     : {$totp->passwordAt($currentTime)}\n";
-$totp->renderer()->setDigits(8);
+$totp->renderer()->withDigits(8);
 echo "OTP + 1 (8)     : {$totp->passwordAt($currentTime)}\n";

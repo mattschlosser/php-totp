@@ -20,6 +20,9 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Renderers;
 
+use Equit\Totp\Contracts\Renderer;
+use Equit\Totp\Renderers\Traits\ExtractsStandard31BitInteger;
+
 /**
  * Renderer for Steam authenticator passwords.
  *
@@ -38,6 +41,11 @@ class Steam implements Renderer
 	 * The number of characters in the rendered passwords.
 	 */
 	protected const CharacterCount = 5;
+
+    public function name(): string
+    {
+        return "Steam";
+    }
 
 	/**
 	 * @inheritDoc

@@ -20,7 +20,9 @@ declare(strict_types=1);
 
 namespace Equit\Totp;
 
+use Equit\Totp\Contracts\Codec;
 use Equit\Totp\Exceptions\InvalidBase64DataException;
+use Equit\Totp\Traits\SecurelyErasesProperties;
 
 /**
  * Codec class for Base64 data.
@@ -29,7 +31,7 @@ use Equit\Totp\Exceptions\InvalidBase64DataException;
  *
  * Encoding/decoding is only performed when required, so the class is relatively lightweight.
  */
-class Base64
+class Base64 implements Codec
 {
     /**
      * Import the trait that securely erases all string properties on destruction.
