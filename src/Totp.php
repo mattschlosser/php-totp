@@ -24,9 +24,7 @@ use DateTime;
 use DateTimeZone;
 use Equit\Totp\Contracts\Renderer;
 use Equit\Totp\Contracts\Totp as TotpContract;
-use Equit\Totp\Exceptions\InvalidSecretException;
 use Equit\Totp\Exceptions\InvalidTimeException;
-use Equit\Totp\Exceptions\InvalidTimeStepException;
 use Equit\Totp\Exceptions\InvalidVerificationWindowException;
 use Equit\Totp\Traits\SecurelyErasesProperties;
 
@@ -59,28 +57,28 @@ class Totp implements TotpContract
     /**
      * @var string The hashing algorithm to use when generating HMACs.
      */
-    private string $m_hashAlgorithm;
+    private string $hashAlgorithm;
 
     /**
      * @var string The secret for password generation.
      */
-    private string $m_secret;
+    private string $secret;
 
     /**
      * @var int The time step, in seconds, at which the password changes.
      */
-    private int $m_timeStep;
+    private int $timeStep;
 
     /**
      * @var int The reference time from new password generation time steps are measured.
      */
-    private int $m_referenceTime;
+    private int $referenceTime;
 
     /**
      * @var Renderer The renderer that will perform the truncation that turns the computed HMAC into a user-readable
      * one-time password.
      */
-    private Renderer $m_renderer;
+    private Renderer $renderer;
 
     /**
      * Initialise a new TOTP.
@@ -94,16 +92,14 @@ class Totp implements TotpContract
      * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
      * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
      * constants. Defaults to Sha1Algorithm.
-     *
-     * @throws InvalidTimeStepException if the time step is not a positive integer.
      */
     public function __construct(TotpSecret $secret, Renderer $renderer, TotpTimeStep $timeStep, int|DateTime $referenceTime, string $hashAlgorithm)
     {
-        $this->m_secret = $secret->raw();
-        $this->m_renderer = clone $renderer;
-        $this->m_timeStep = $timeStep->seconds();
-        $this->m_hashAlgorithm = $hashAlgorithm;
-        $this->m_referenceTime = ($referenceTime instanceof DateTime ? $referenceTime->getTimestamp() : $referenceTime);
+        $this->secret = $secret->raw();
+        $this->renderer = clone $renderer;
+        $this->timeStep = $timeStep->seconds();
+        $this->hashAlgorithm = $hashAlgorithm;
+        $this->referenceTime = ($referenceTime instanceof DateTime ? $referenceTime->getTimestamp() : $referenceTime);
     }
 
     /**
@@ -113,7 +109,7 @@ class Totp implements TotpContract
      */
     public function hashAlgorithm(): string
     {
-        return $this->m_hashAlgorithm;
+        return $this->hashAlgorithm;
     }
 
     /**
@@ -125,10 +121,11 @@ class Totp implements TotpContract
      */
     public function secret(): string
     {
-        return $this->m_secret;
+        return $this->secret;
     }
 
     /**
+     * @api
      * @return string The secret, base32 encoded so that it's printable.
      */
     public function base32Secret(): string
@@ -137,6 +134,7 @@ class Totp implements TotpContract
     }
 
     /**
+     * @api
      * @return string The secret, base64 encoded so that it's printable.
      */
     public function base64Secret(): string
@@ -151,7 +149,7 @@ class Totp implements TotpContract
      */
     public function renderer(): string
     {
-        return $this->m_renderer->name();
+        return $this->renderer->name();
     }
 
 
@@ -162,7 +160,7 @@ class Totp implements TotpContract
      */
     public function timeStep(): int
     {
-        return $this->m_timeStep;
+        return $this->timeStep;
     }
 
     /**
@@ -174,19 +172,20 @@ class Totp implements TotpContract
      */
     public function referenceTimestamp(): int
     {
-        return $this->m_referenceTime;
+        return $this->referenceTime;
     }
 
     /**
      * The reference time from which time steps are measured as a DateTime object.
      *
-     * @return \DateTime The reference time.
+     * @api
+     * @return DateTime The reference time.
      * @noinspection PhpDocMissingThrowsInspection DateTime constructor doesn't throw with Unix timestamp.
      */
     public function referenceTime(): DateTime
     {
         /** @noinspection PhpUnhandledExceptionInspection DateTime constructor doesn't throw with Unix timestamp. */
-        return new DateTime("@{$this->m_referenceTime}", new DateTimeZone("UTC"));
+        return new DateTime("@{$this->referenceTime}", new DateTimeZone("UTC"));
     }
 
     /**
@@ -199,7 +198,7 @@ class Totp implements TotpContract
      * is required for that purpose. The counterBytesAt() and counterBytes() methods provide the actual data that is
      * used when generating the HMAC.
      *
-     * @param \DateTime|int $time The time at which the counter is sought.
+     * @param DateTime|int $time The time at which the counter is sought.
      *
      * @return int The number of time steps between the reference time and the provided time.
      * @throws InvalidTimeException if the requested time is before the reference time.
@@ -234,6 +233,7 @@ class Totp implements TotpContract
      * This method is provided as a convenience to use, for example when determining whether a submitted OTP has already
      * been used to authenticate.
      *
+     * @api
      * @return int The number of time steps between the reference time and the current time.
      * @throws InvalidTimeException if the current system time is before the reference time.
      */
@@ -245,7 +245,8 @@ class Totp implements TotpContract
     /**
      * Fetch the HOTP counter bytes at a specified time.
      *
-     * @param \DateTime|int $time The time at which the counter is sought.
+     * @api
+     * @param DateTime|int $time The time at which the counter is sought.
      *
      * @return string The 64 bits of the counter, in BIG ENDIAN format.
      * @throws InvalidTimeException if the requested time is before the reference time.
@@ -258,6 +259,7 @@ class Totp implements TotpContract
     /**
      * Fetch the HOTP counter bytes for the current system time.
      *
+     * @api
      * @return string The 64 bits of the counter, in BIG ENDIAN format.
      * @throws InvalidTimeException if the current time is before the reference time.
      */
@@ -271,7 +273,8 @@ class Totp implements TotpContract
      *
      * This is the raw byte sequence generated using the secret, reference time and time step.
      *
-     * @param \DateTime|int $time The time at which the hmac is sought.
+     * @api
+     * @param DateTime|int $time The time at which the hmac is sought.
      *
      * @return string The current HMAC for the given point in tim.
      * @throws InvalidTimeException if the requested time is before the reference time.
@@ -286,6 +289,7 @@ class Totp implements TotpContract
      *
      * This is the raw byte sequence generated using the secret, reference time and time step.
      *
+     * @api
      * @return string The HMAC at the current system time.
      * @throws InvalidTimeException if the current time is before the reference time.
      */
@@ -297,19 +301,21 @@ class Totp implements TotpContract
     /**
      * Fetch the one-time password at a given point in time.
      *
-     * @param \DateTime|int $time The time at which the password is sought.
+     * @api
+     * @param DateTime|int $time The time at which the password is sought.
      *
      * @return string The one-time password for the given point in time, formatted for display.
      * @throws InvalidTimeException if the requested time is before the reference time.
      */
     public final function passwordAt(DateTime|int $time): string
     {
-        return $this->renderer()->render($this->hmacAt($time));
+        return $this->renderer->render($this->hmacAt($time));
     }
 
     /**
      * Fetch the one-time password for the current system time.
      *
+     * @api
      * @return string The current TOTP password.
      * @throws InvalidTimeException if the current time is before the reference time.
      */
@@ -332,8 +338,9 @@ class Totp implements TotpContract
      * Note that this method does not verify that the password has not been used for a previous authentication - it is
      * the consuming application's responsibility to ensure that one-time passwords are not re-used.
      *
+     * @api
      * @param string $password The user-supplied password.
-     * @param \DateTime|int $time The time at which to verify the user-supplied password matches the TOTP.
+     * @param DateTime|int $time The time at which to verify the user-supplied password matches the TOTP.
      * @param int $window The window of acceptable passwords, measured in time steps before the specified time.
      *
      * @return bool
@@ -385,6 +392,7 @@ class Totp implements TotpContract
      * Note that this method does not verify that the password has not been used for a previous authentication - it is
      * the consuming application's responsibility to ensure that one-time passwords are not re-used.
      *
+     * @api
      * @param string $password The user-supplied password.
      * @param int $window The window of acceptable passwords, measured in time steps.
      *
@@ -400,7 +408,8 @@ class Totp implements TotpContract
     /**
      * Helper to get the current time.
      *
-     * @return \DateTime The current time.
+     * @api
+     * @return DateTime The current time.
      * @noinspection PhpDocMissingThrowsInspection the DateTime constructor does not throw with "now".
      */
     protected static final function currentTime(): DateTime

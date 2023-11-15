@@ -47,7 +47,14 @@ final class TotpTimeStep
 
     public function fromDateInterval(DateInterval $interval): self
     {
-        // TODO implement
-        return new self()
+        if (0 !== $interval->y || 0 !== $interval->m) {
+            throw new InvalidTimeStepException(0, "DateIntervals that include years or months cannot be used as they don't represent a fixed time interval.");
+        }
+
+        return new self(
+            ($interval->d * 24 * 60 * 60)
+            + ($interval->h * 60 * 60)
+            + ($interval->m * 60)
+            + $interval->s);
     }
 }

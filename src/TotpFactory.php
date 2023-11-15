@@ -24,8 +24,8 @@ use DateTime;
 use DateTimeZone;
 use Equit\Totp\Contracts\Renderer;
 use Equit\Totp\Contracts\TotpFactory as TotpFactoryContract;
+use Equit\Totp\Exceptions\InvalidDigitsException;
 use Equit\Totp\Exceptions\InvalidHashAlgorithmException;
-use Equit\Totp\Exceptions\InvalidSecretException;
 use Equit\Totp\Exceptions\InvalidTimeStepException;
 use Equit\Totp\Exceptions\SecureRandomDataUnavailableException;
 use Equit\Totp\Renderers\EightDigits;
@@ -82,41 +82,30 @@ class TotpFactory implements TotpFactoryContract
     public const DefaultReferenceTime = 0;
 
     /**
-     * Error code for InvalidVerificationWindowException when the window is < 0.
-     */
-    public const ErrNegativeWindow = 1;
-
-    /**
-     * Error code for InvalidVerificationWindowException when the window would cause verification of passwords from
-     * before the reference time.
-     */
-    public const ErrWindowViolatesReferenceTime = 2;
-
-    /**
      * @var string The hashing algorithm to use when generating HMACs.
      */
-    private string $m_hashAlgorithm = self::DefaultAlgorithm;
+    private string $hashAlgorithm;
 
     /**
-     * @var string The secret for password generation.
+     * @var TotpSecret The secret for password generation.
      */
-    private string $m_secret;
+    private TotpSecret $secret;
 
     /**
      * @var int The time step, in seconds, at which the password changes.
      */
-    private int $m_timeStep;
+    private int $timeStep;
 
     /**
      * @var int The reference time from new password generation time steps are measured.
      */
-    private int $m_referenceTime;
+    private int $referenceTime;
 
     /**
      * @var Renderer The renderer that will perform the truncation that turns the computed HMAC into a user-readable
      * one-time password.
      */
-    private Renderer $m_renderer;
+    private Renderer $renderer;
 
     /**
      * Initialise a new TOTP.
@@ -124,32 +113,44 @@ class TotpFactory implements TotpFactoryContract
      * If the reference time is specified as an int, it is interpreted as the number of seconds since the Unix epoch.
      * The default hashing algorithm is SHA1.
      *
-     * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
+     * @param TotpSecret|null $secret The TOTP secret. If null, a cryptographically secure random secret is chosen.
      * @param Renderer|null $renderer The renderer that produces one-time passwords from HMACs.
-     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
+     * @param TotpTimeStep|null $timeStep The update time step for the passwords. Defaults to 30 seconds.
      * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
      * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
      * constants. Defaults to Sha1Algorithm.
      *
-     * @throws InvalidTimeStepException if the time step is not a positive integer.
-     * @throws InvalidSecretException if the provided secret is less than 128 bits in length.
      * @throws InvalidHashAlgorithmException if the provided hash algorithm is not one of the supported algorithms. See
      * the class constants.
      * @throws SecureRandomDataUnavailableException if a randomly-generated secret is required but a
      * source of cryptographically-secure random data is not available.
      */
-    public function __construct(TotpSecret|string $secret = null, Renderer $renderer = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm)
+    public function __construct(?TotpSecret $secret = null, ?Renderer $renderer = null, ?TotpTimeStep $timeStep = null, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm)
     {
-        $this->setSecret($secret ?? static::randomSecret());
-        $this->withRenderer($renderer ?? static::defaultRenderer());
-        $this->withTimeStep($timeStep);
-        $this->withHashAlgorithm($hashAlgorithm);
-        $this->m_referenceTime = ($referenceTime instanceof DateTime ? $referenceTime->getTimestamp() : $referenceTime);
+        self::checkHashAlgorithm($hashAlgorithm);
+        $this->secret = $secret ?? static::randomSecret();
+        $this->renderer = $renderer ?? static::defaultRenderer();
+        $this->timeStep = $timeStep?->seconds() ?? self::DefaultTimeStep;
+        $this->hashAlgorithm = $hashAlgorithm;
+        $this->referenceTime = ($referenceTime instanceof DateTime ? $referenceTime->getTimestamp() : $referenceTime);
+    }
+
+    /** @throws InvalidHashAlgorithmException if the hash algorithm is not supported. */
+    private static function checkHashAlgorithm(string $algorithm): void
+    {
+        switch ($algorithm) {
+            case self::Sha1Algorithm:
+            case self::Sha256Algorithm:
+            case self::Sha512Algorithm:
+                return;
+        }
+
+        throw new InvalidHashAlgorithmException($algorithm, "The hash algorithm must be one of " . self::Sha1Algorithm . ", " . self::Sha256Algorithm . " or " . self::Sha512Algorithm . ".");
     }
 
     public function __clone(): void
     {
-        $this->m_renderer = clone $this->m_renderer;
+        $this->renderer = clone $this->renderer;
     }
 
     /**
@@ -158,21 +159,23 @@ class TotpFactory implements TotpFactoryContract
      * The constructor uses this if no secret is provided. The secret is guaranteed to be valid for a TOTP. Currently
      * it is always 64 bytes (512 bits) in length so that it is sufficiently strong for all the supported algorithms.
      *
-     * @return string The random secret.
+     * @return TotpSecret The random secret.
      * @throws SecureRandomDataUnavailableException if a known source of cryptographically secure random data is
      * not available.
      */
-    public static function randomSecret(): string
+    public static final function randomSecret(): TotpSecret
     {
         try {
-            return random_bytes(64);
+            return TotpSecret::fromRaw(random_bytes(64));
         }
         catch (Exception $e) {
             if (function_exists("openssl_random_pseudo_bytes")) {
                 $secret = openssl_random_pseudo_bytes(64, $isStrong);
 
-                if (false !== $secret && $isStrong) {
-                    return $secret;
+
+                if (is_string($secret) && $isStrong) {
+                    // this is guaranteed not to throw
+                    return TotpSecret::fromRaw($secret);
                 }
             }
 
@@ -185,22 +188,20 @@ class TotpFactory implements TotpFactoryContract
      *
      * This is a convenience factory function for a commonly-used type of TOTP.
      *
-     * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
-     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
+     * @param TotpSecret|null $secret The TOTP secret. If null, a cryptographically secure random secret will be chosen.
+     * @param TotpTimeStep|null $timeStep The update time step for the passwords. Defaults to 30 seconds.
      * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
      * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
      * constants. Defaults to Sha1Algorithm.
      *
      * @return TotpFactory
-     * @throws \Equit\Totp\Exceptions\InvalidHashAlgorithmException If the supplied hashing algorithm is not one
+     * @throws InvalidHashAlgorithmException If the supplied hashing algorithm is not one
      * supported by TOTP.
-     * @throws \Equit\Totp\Exceptions\InvalidTimeStepException if the time step is < 1.
-     * @throws \Equit\Totp\Exceptions\InvalidSecretException if the provided secret is less than 128 bits in length.
-     * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
+     * @throws SecureRandomDataUnavailableException
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
      */
-    public static function sixDigits(TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): TotpFactory
+    public static function sixDigits(?TotpSecret $secret = null, TotpTimeStep $timeStep = null, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): TotpFactory
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         return new TotpFactory(secret: $secret, renderer: new SixDigits(), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
@@ -211,22 +212,20 @@ class TotpFactory implements TotpFactoryContract
      *
      * This is a convenience factory function for a commonly-used type of TOTP.
      *
-     * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
-     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
+     * @param TotpSecret|null $secret The TOTP secret. If null, a cryptographically secure random secret will be chosen.
+     * @param TotpTimeStep|null $timeStep The update time step for the passwords. Defaults to 30 seconds.
      * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
      * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
      * constants. Defaults to Sha1Algorithm.
      *
      * @return TotpFactory
-     * @throws \Equit\Totp\Exceptions\InvalidHashAlgorithmException If the supplied hashing algorithm is not one
+     * @throws InvalidHashAlgorithmException If the supplied hashing algorithm is not one
      * supported by TOTP.
-     * @throws \Equit\Totp\Exceptions\InvalidTimeStepException if the time step is < 1.
-     * @throws \Equit\Totp\Exceptions\InvalidSecretException if the provided secret is less than 128 bits in length.
-     * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
+     * @throws SecureRandomDataUnavailableException
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
      */
-    public static function eightDigits(TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): TotpFactory
+    public static function eightDigits(?TotpSecret $secret = null, TotpTimeStep $timeStep = null, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): TotpFactory
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         return new TotpFactory(secret: $secret, renderer: new EightDigits(), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
@@ -238,23 +237,21 @@ class TotpFactory implements TotpFactoryContract
      * This is a convenience factory function for commonly-used types of TOTP.
      *
      * @param int $digits The number of digits in generated one-time passwords.
-     * @param TotpSecret|string|null $secret The TOTP secret. If given as a string, it's assumed to be raw binary.
-     * @param int $timeStep The update time step for the passwords. Defaults to 30 seconds.
+     * @param TotpSecret|null $secret The TOTP secret. If null, a cryptographically secure random secret will be chosen.
+     * @param TotpTimeStep|null $timeStep The update time step for the passwords. Defaults to 30 seconds.
      * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
      * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
      * constants. Defaults to Sha1Algorithm.
      *
      * @return TotpFactory
-     * @throws \Equit\Totp\Exceptions\InvalidHashAlgorithmException If the supplied hashing algorithm is not one
+     * @throws InvalidHashAlgorithmException If the supplied hashing algorithm is not one
      * supported by TOTP.
-     * @throws \Equit\Totp\Exceptions\InvalidDigitsException if the number of digits is < 1.
-     * @throws \Equit\Totp\Exceptions\InvalidTimeStepException if the time step is < 1.
-     * @throws \Equit\Totp\Exceptions\InvalidSecretException if the provided secret is less than 128 bits in length.
-     * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
+     * @throws InvalidDigitsException if the number of digits is < 1.
+     * @throws SecureRandomDataUnavailableException
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
      */
-    public static function integer(int $digits, TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): TotpFactory
+    public static function integer(int $digits, ?TotpSecret $secret = null, ?TotpTimeStep $timeStep = null, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): TotpFactory
     {
         return new TotpFactory(secret: $secret, renderer: new Integer($digits), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
     }
@@ -276,7 +273,7 @@ class TotpFactory implements TotpFactoryContract
      */
     public function hashAlgorithm(): string
     {
-        return $this->m_hashAlgorithm;
+        return $this->hashAlgorithm;
     }
 
     /**
@@ -290,11 +287,9 @@ class TotpFactory implements TotpFactoryContract
      */
     public function withHashAlgorithm(string $hashAlgorithm): self
     {
+        self::checkHashAlgorithm($hashAlgorithm);
         $clone = clone $this;
-        $clone->m_hashAlgorithm = match ($hashAlgorithm) {
-            self::Sha1Algorithm, self::Sha256Algorithm, self::Sha512Algorithm => $hashAlgorithm,
-            default => throw new InvalidHashAlgorithmException($hashAlgorithm, "The hash algorithm must be one of " . self::Sha1Algorithm . ", " . self::Sha256Algorithm . " or " . self::Sha512Algorithm . "."),
-        };
+        $clone->hashAlgorithm = $hashAlgorithm;
         return $clone;
     }
 
@@ -305,7 +300,7 @@ class TotpFactory implements TotpFactoryContract
      */
     public function renderer(): string
     {
-        return $this->m_renderer->name();
+        return $this->renderer->name();
     }
 
     /**
@@ -317,7 +312,7 @@ class TotpFactory implements TotpFactoryContract
     public function withRenderer(Renderer $renderer): self
     {
         $clone = clone $this;
-        $clone->m_renderer = $renderer;
+        $clone->renderer = $renderer;
         return $clone;
     }
 
@@ -328,22 +323,17 @@ class TotpFactory implements TotpFactoryContract
      */
     public function timeStep(): int
     {
-        return $this->m_timeStep;
+        return $this->timeStep;
     }
 
     /**
-     * @param int $timeStep
+     * @param TotpTimeStep $timeStep
      * @return $this
-     * @throws InvalidTimeStepException
      */
-    public function withTimeStep(int $timeStep): self
+    public function withTimeStep(TotpTimeStep $timeStep): self
     {
-        if (1 > $timeStep) {
-            throw new InvalidTimeStepException($timeStep, "The time step for a TOTP must be >= 1 second.");
-        }
-
         $clone = clone $this;
-        $clone->m_timeStep = $timeStep;
+        $clone->timeStep = $timeStep->seconds();
         return $clone;
     }
 
@@ -356,19 +346,19 @@ class TotpFactory implements TotpFactoryContract
      */
     public function referenceTimestamp(): int
     {
-        return $this->m_referenceTime;
+        return $this->referenceTime;
     }
 
     /**
      * The reference time from which time steps are measured as a DateTime object.
      *
-     * @return \DateTime The reference time.
+     * @return DateTime The reference time.
      * @noinspection PhpDocMissingThrowsInspection DateTime constructor doesn't throw with Unix timestamp.
      */
     public function referenceTime(): DateTime
     {
         /** @noinspection PhpUnhandledExceptionInspection DateTime constructor doesn't throw with Unix timestamp. */
-        return new DateTime("@{$this->m_referenceTime}", new DateTimeZone("UTC"));
+        return new DateTime("@{$this->referenceTime}", new DateTimeZone("UTC"));
     }
 
     /**
@@ -379,7 +369,7 @@ class TotpFactory implements TotpFactoryContract
      * seconds since 1970-01-01 00:00:00 UTC that will be used as the reference time. (In effect, the DateTime you
      * provide is converted to UTC before the number of seconds is calculated.)
      *
-     * @param int|\DateTime $referenceTime The
+     * @param int|DateTime $referenceTime The
      * @return $this
      */
     public function withReferenceTime(int|DateTime $referenceTime): self
@@ -389,21 +379,20 @@ class TotpFactory implements TotpFactoryContract
         }
 
         $clone = clone $this;
-        $clone->m_referenceTime = $referenceTime;
+        $clone->referenceTime = $referenceTime;
         return $clone;
     }
 
     /**
      * Produce a TOTP calculator for a given secret.
      *
-     * @param TotpSecret|string $secret
+     * @param TotpSecret $secret
      * @return Totp
-     * @throws InvalidSecretException
      * @throws InvalidTimeStepException
      */
-    public function totp(TotpSecret|string $secret): Totp
+    public function totp(TotpSecret $secret): Totp
     {
-        // NOTE the Totp constructor will clone the renderer.
-        return new Totp($secret, $this->m_renderer, $this->timeStep(), $this->referenceTimestamp(), $this->hashAlgorithm());
+        // NOTE the Totp constructor will clone the renderer, and the time step is guaranteed to be valid
+        return new Totp($secret, $this->renderer, new TotpTimeStep($this->timeStep()), $this->referenceTimestamp(), $this->hashAlgorithm());
     }
 }

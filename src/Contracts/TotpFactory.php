@@ -43,5 +43,5 @@ interface TotpFactory
     public function renderer(): string;
 
     /** Get a new Totp to calculate passcodes for a given secret. */
-    public function totp(string|TotpSecret $secret): Totp;
+    public function totp(TotpSecret $secret): Totp;
 }

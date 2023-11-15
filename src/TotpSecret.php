@@ -47,21 +47,21 @@ final class TotpSecret
     use SecurelyErasesProperties;
 
     /** @var string The raw bytes of the secret. */
-    private string $m_raw;
+    private string $raw;
 
     /**
      * @var string|null The Base32 encoding of the secret.
      *
      * Will be null if the secret was initialised as raw or Base64 and base32() has yet to be called.
      */
-    private ?string $m_base32 = null;
+    private ?string $base32 = null;
 
     /**
      * @var string|null The Base64 encoding of the secret.
      *
      * Will be null if the secret was initialised as Base32 or raw and base64() has yet to be called.
      */
-    private ?string $m_base64 = null;
+    private ?string $base64 = null;
 
     /**
      * @param string $secret The raw secret.
@@ -74,7 +74,7 @@ final class TotpSecret
             throw new InvalidSecretException($secret, "Raw secrets for TOTP are required to be 128 bits (16 bytes) or longer.");
         }
 
-        $this->m_raw = $secret;
+        $this->raw = $secret;
     }
 
     /**
@@ -84,7 +84,7 @@ final class TotpSecret
      */
     public function raw(): string
     {
-        return $this->m_raw;
+        return $this->raw;
     }
 
     /**
@@ -94,11 +94,11 @@ final class TotpSecret
      */
     public function base32(): string
     {
-        if (!isset($this->m_base32)) {
-            $this->m_base32 = Base32::encode($this->m_raw);
+        if (!isset($this->base32)) {
+            $this->base32 = Base32::encode($this->raw);
         }
 
-        return $this->m_base32;
+        return $this->base32;
     }
 
     /**
@@ -108,11 +108,11 @@ final class TotpSecret
      */
     public function base64(): string
     {
-        if (!isset($this->m_base64)) {
-            $this->m_base64 = Base64::encode($this->m_raw);
+        if (!isset($this->base64)) {
+            $this->base64 = Base64::encode($this->raw);
         }
 
-        return $this->m_base64;
+        return $this->base64;
     }
 
     /**
@@ -139,8 +139,8 @@ final class TotpSecret
      */
     public static function fromBase32(string $secret): self
     {
-        $ret           = new self(Base32::decode($secret));
-        $ret->m_base32 = $secret;
+        $ret = new self(Base32::decode($secret));
+        $ret->base32 = $secret;
         return $ret;
     }
 
@@ -155,8 +155,8 @@ final class TotpSecret
      */
     public static function fromBase64(string $secret): self
     {
-        $ret           = new self(Base64::decode($secret));
-        $ret->m_base64 = $secret;
+        $ret = new self(Base64::decode($secret));
+        $ret->base64 = $secret;
         return $ret;
     }
 }
