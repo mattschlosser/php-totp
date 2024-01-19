@@ -558,7 +558,7 @@ class UrlGeneratorTest extends TestCase
             $generator->setIncludeAlgorithm(true);
         }
         try {
-            $this->assertOtpUrlIsEquivalentTo($expectedUrl, $generator->urlFor($totp));
+            $this->assertOtpUrlIsEquivalentTo($expectedUrl, $generator->generateUrlUsing($totp));
         } catch (InvalidOtpUrlException $err) {
             $this->fail("The reference OTP URL '{$expectedUrl}' is not valid.");
         }

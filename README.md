@@ -18,7 +18,7 @@ authenticator apps such as Google Authenticator, KeePassXC, Microsoft Authentica
 2. Notify the user of the details of their TOTP for them to import into their authenticator app:
 
     ```php
-    UrlGenerator::for($user->username)->urlFor(new Totp($user->totpSecret))
+    UrlGenerator::for($user->username)->generateUrlUsing(new Totp($user->totpSecret))
     ```
 
 3. When a user logs in, ask them for their current TOTP and verify it:
@@ -44,7 +44,7 @@ authenticator apps such as Google Authenticator, KeePassXC, Microsoft Authentica
 ## See also
 
 - [Secrets.md](Secrets.md)
-- [API.md](API.md)
+- [API Documentation](https://software.equituk.net/php-totp/docs/namespaces/equit-totp.html)
 
 ## Introduction
 
@@ -146,7 +146,7 @@ URL format is [described here](https://github.com/google/google-authenticator/wi
 a `UrlGenerator` class to create these URLs:
 
 ```php
-$user->notify(UrlGenerator::from("MyWebApp")->for($user->username)->urlFor(new Totp(decrypt($user->totpSecret)));
+$user->notify(UrlGenerator::from("MyWebApp")->for($user->username)->generateUrlUsing(new Totp(decrypt($user->totpSecret)));
 ```
 
 Again, the `Totp` object is a temporary and goes out of scope immediately after it is used, so its secret is safely
@@ -157,7 +157,7 @@ TOTP setup. So if you are using the SHA512 hash algorithm, the generated URL wil
 but if you're using the default SHA1 algorithm, the `algorithm` URL parameter will be omitted. The `UrlGenerator` class
 provides a fluent interface to configure how it constructs the URLs (for example, you can force it to generate the
 `algorithm` URL parameter regardless of whether you are using a non-default algorithm by chaining the `withAlgorithm()`
-method before the `urlFor()` method).
+method before the `generateUrlUsing()` method).
 
 This method of notifying supports all custom setups except those that use a non-standard reference time (since there is
 no URL parameter for specifying it). Many TOTP-capable authenticator apps support URLs of this type, although you will
@@ -206,7 +206,7 @@ foreach ($users as $user) {
    $totp = new Totp(algorithm: Totp::Sha512Algorithm);
    $user->totpSecret = $totp->secret();
    $user->save();
-   $user->notify($generator->for($user->username)->urlFor($totp));
+   $user->notify($generator->for($user->username)->generateUrlUsing($totp));
 }
 
 unset($totp);

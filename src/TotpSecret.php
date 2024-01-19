@@ -25,19 +25,21 @@ use Equit\Totp\Exceptions\InvalidSecretException;
 /**
  * An abstraction of the different ways to set a secret for a Totp object.
  *
- * Instances of this class can only be instantiated using one of the factory mewthods fromRaw(), fromBase32() or
- * fromBase64(), and are immutable. The class exists primarily to ensure that it's easy to intialise a Totp with a
- * secret regardless of the encoding in which the secret is available - it avoids having to pass the Totp constructor
- * the secret's encoding in another parameter.
+ * Instances of this class can only be created using one of the factory mewthods `fromRaw()`, `fromBase32()` or
+ * `fromBase64()`, and are immutable. The class exists primarily to ensure that it's easy to intialise a `Totp` with a
+ * secret regardless of the encoding in which the secret is available - it avoids having to pass the `Totp` constructor
+ * the secret's encoding in another parameter. For example:
  *
- *     $totp = new Totp(TotpSecret::fromBase32($base32Secret));
+ * ```php
+ * $totp = new Totp(TotpSecret::fromBase32($base32Secret));
+ * ```
  *
  * It is not possible to create an instance with invalid Base32 or Base64 data - the factory methods ensure the given
- * string is valid Base32/Base64 respectively before instantiating the TotpSecret object.
+ * string is valid Base32/Base64 respectively before instantiating the `TotpSecret` object.
  *
  * For convenience the object provides access to the secret in raw, Base32 and Base64 forms. The raw form is always
  * stored internally; the Base64 and Base32 versions are only created the first time they are requested, unless the
- * secret was originally provided in the appropriate form.
+ * secret was originally provided in that form.
  */
 final class TotpSecret
 {
@@ -48,6 +50,7 @@ final class TotpSecret
 
     /**
      * @var string The raw bytes of the secret.
+     * @internal
      */
     private string $m_raw;
 
@@ -55,6 +58,8 @@ final class TotpSecret
      * @var string|null The Base32 encoding of the secret.
      *
      * Will be null if the secret was initialised as raw or Base64 and base32() has yet to be called.
+     *
+     * @internal
      */
     private ?string $m_base32 = null;
 
@@ -62,6 +67,8 @@ final class TotpSecret
      * @var string|null The Base64 encoding of the secret.
      *
      * Will be null if the secret was initialised as Base32 or raw and base64() has yet to be called.
+     *
+     * @internal
      */
     private ?string $m_base64 = null;
 
@@ -69,6 +76,7 @@ final class TotpSecret
      * @param string $secret The raw secret.
      *
      * @throws \Equit\Totp\Exceptions\InvalidSecretException if the secret is less than 128 bits (16 bytes) in length.
+     * @internal
      */
     private function __construct(string $secret)
     {

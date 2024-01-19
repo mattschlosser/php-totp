@@ -35,12 +35,80 @@ use Equit\Totp\Renderers\SixDigits;
 use Exception;
 
 /**
- * Class for generating Time-based One-Time Passwords.
+ * Calculate Time-based One-Time Passwords.
  *
- * RFC 6238 does not say anything on the subject of whether T0 (the reference timestamp) can be a negative value, only
- * that the timestamp integer type used must enable the authentication time to extend beyond 2038 (i.e not a 32-bit
- * integer). Since it mentions nothing regarding the signedness of T0, this implementation does not forbid reference
- * times before the Unix epoch (i.e. -ve timestamps).
+ * Instances of this class perform the calculation to generate one-time passwords. Instances serve two purposes:
+ * - provisioning a new user with TOTP
+ * - verifying the TOTP input by a user
+ *
+ * When provisioning new users, default instances are sufficient, unless you are using TOTP with non-default parameters.
+ * A secure secret will be automatically generated on construction, which can then be fetched using the `secret()`
+ * method and stored (encrypted) with the user's record.
+ *
+ * When verifying passwords input by users you must provide the secret when instantiating the `Totp` (or by calling
+ * `setSecret()` after instantiation). Again, it is sufficient to provide just the `$secret` argument unless you are
+ * using a non-standard TOTP setup/.
+ *
+ * Several aspects of the TOTP can be customised, within the bounds of the specification in RFC 6238:
+ * - the reference time (`T0`) from which time steps are counted
+ * - the size of the time steps
+ * - the hashing algorithm to use
+ * - how the final password is produced
+ *
+ * The reference time is a Unix timestamp, which defaults to `0`. RFC 6238 does not say anything on the subject of this
+ * can be a negative value, only that the timestamp integer type used must enable the authentication time to extend
+ * beyond 2038 (i.e not a 32-bit integer). This implementation therefore does not forbid reference times before the Unix
+ * epoch.
+ *
+ * To customise the reference time, either provide a value for the constructor/factory method for the
+ * $referenceTime parameter or call `setReferenceTime()`. The desired time can be provided either as a Unix timestamp or
+ * a `DateTime` object. Internally it is always stored as a Unix timestamp, and is always in the `UTC` timezone - take
+ * note of this if you choose to customise the reference time using a `DateTime` object. It is recommended that you are
+ * always explicit about the time zone for your DateTime objects, preferably using `UTC`, to avoid confusion.
+ *
+ * To customise the time step either provide a value for the constructor/factory method for the $timeStep parameter or
+ * call `setTimeStep()`. The time step is measured in seconds, and must be an integer >= 1.
+ *
+ * To customise the hashing algorithm either provide a value for the constructor/factory method for the $hashAlgorithm
+ * parameter or call `setHashAlgorithm()`. The algorithm must be one of the algorithms specified in RFC 6230, which
+ * means either SHA1, SHA256 or SHA512. Class constants are provided (`Sha1Algorithm`,`Sha256Algorithm`,
+ * `Sha512Algorithm`) , and it is recommended that you use these instead of string literals when specifying the
+ * algorithm to avoid errors. The class constants guarantee forward-compatibility - once adoption of PHP8.1 reaches a
+ * significant level it is likely that the API will change to use an enumeration for the valid algorithms; however,
+ * the class constants will remain available and will at that time be aliases for the respective enumerators, meaning
+ * code that uses them will not need any changes to remain compatible.
+ *
+ * To customise how the final password is produced you are most likely to want to use one of the convenience factory
+ * methods to instantiate your `Totp`. Passwords are most commonly rendered as (minimum) 6-digit numbers produced
+ * according to a fixed algorithm specified in RFC6238. Other numbers of digits are valid, and the following factory
+ * methods are provided to ease customisation:
+ * - `sixDigits()` Create a `Totp` that produces 6-digit passwords. (This is equivalent to calling the constructor.)
+ * - `eightDigits()` Create a `Totp` that produces 8-digit passwords.
+ * - `integer()` Create a `Totp` that produces N-digit passwords, where N is given as the value for the `$digits`
+ *   parameter.
+ *
+ * Other types of password are possible (for example Steam uses TOTP with a custom algorithm for rendering the final
+ * passwords). In order to use something other than the standard RFC6238 numeric passwords you can provide a value for
+ * the `$renderer` constructor parameter. It is recommended that you use this with extreme caution, especially if you
+ * are writing your own `Renderer` classes, since it would be easy to create a renderer that produces passwords that are
+ * not sufficiently unique.
+ *
+ * Instances provide access to most of the artefacts of the TOTP calculation - the counter, HMAC and password. For the
+ * most part you will be interested only in the password, and possibly the counter if you are using it to enforce the
+ * "one time" part of TOTP. Each of these can be retrieved for the current time (`counter()`, `hmac()` and `password()`)
+ * or for a time of your choosing (`counterAt()`, `hmacAt()` and `passwordAt()`). When specifying when you want the
+ * property, you can provide either a Unix timestamp or a `DateTime` object. The time must not be before the TOTP's
+ * reference time.
+ *
+ * In order to verify a user-provided password, use the `verify()` and `verifyAt()` methods. These will test the input
+ * provided by the user for equality with the expected password (at the given time) and return a `true`/`false` answer
+ * as to whether the user has provided the correct password. Each also accepts an optional window of verification,
+ * expressed as a number of time steps, which can help avoid issues where the user enters a password just before the
+ * time enters the next time step. The window is a count of time steps moving backwards from the current (or provided)
+ * time for which a match with the password provided by the user is also acceptable. So specifying a window of 1 will
+ * accept the password at the time being checked, or the password from the previous time step. The window, if given,
+ * must be an integer >= 0. It defaults to 0, meaning only the password from the expected time step is acceptable. It is
+ * strongly recommended that your window of verification is never more than 1.
  */
 class Totp
 {
@@ -50,17 +118,20 @@ class Totp
     use SecurelyErasesProperties;
 
     /**
-     * Use this to specify that the SHA1 algorithm should be used to generate HMACs.
+     * Use this to specify that the SHA1 algorithm should be used to generate HMACs when instantiating a Totp.
+     * @api
      */
     public const Sha1Algorithm = "sha1";
 
     /**
-     * Use this to specify that the SHA256 algorithm should be used to generate HMACs.
+     * Use this to specify that the SHA256 algorithm should be used to generate HMACs when instantiating a Totp.
+     * @api
      */
     public const Sha256Algorithm = "sha256";
 
     /**
-     * Use this to specify that the SHA512 algorithm should be used to generate HMACs.
+     * Use this to specify that the SHA512 algorithm should be used to generate HMACs when instantiating a Totp.
+     * @api
      */
     public const Sha512Algorithm = "sha512";
 
@@ -68,16 +139,19 @@ class Totp
      * The default algorithm to use to generate HMACs.
      *
      * This is equal to Sha1Algorithm.
+     * @api
      */
     public const DefaultAlgorithm = self::Sha1Algorithm;
 
     /**
      * The default update time step for passwords.
+     * @api
      */
     public const DefaultTimeStep = 30;
 
     /**
      * The default reference time for passwords.
+     * @api
      */
     public const DefaultReferenceTime = 0;
 
@@ -94,27 +168,32 @@ class Totp
 
     /**
      * @var string The hashing algorithm to use when generating HMACs.
+     * @internal
      */
     private string $m_hashAlgorithm = self::DefaultAlgorithm;
 
     /**
      * @var string The secret for password generation.
+     * @internal
      */
     private string $m_secret;
 
     /**
      * @var int The time step, in seconds, at which the password changes.
+     * @internal
      */
     private int $m_timeStep;
 
     /**
      * @var int The reference time from new password generation time steps are measured.
+     * @internal
      */
     private int $m_referenceTime;
 
     /**
      * @var Renderer The renderer that will perform the truncation that turns the computed HMAC into a user-readable
      * one-time password.
+     * @internal
      */
     private Renderer $m_renderer;
 
@@ -137,6 +216,7 @@ class Totp
      * the class constants.
      * @throws SecureRandomDataUnavailableException if a randomly-generated secret is required but a
      * source of cryptographically-secure random data is not available.
+     * @api
      */
     public function __construct(TotpSecret|string $secret = null, Renderer $renderer = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm)
     {
@@ -156,6 +236,7 @@ class Totp
      * @return string The random secret.
      * @throws SecureRandomDataUnavailableException if a known source of cryptographically secure random data is
      * not available.
+     * @api
      */
     public static function randomSecret(): string
     {
@@ -194,6 +275,7 @@ class Totp
      * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
+     * @api
      */
     public static function sixDigits(TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
     {
@@ -220,6 +302,7 @@ class Totp
      * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
+     * @api
      */
     public static function eightDigits(TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
     {
@@ -248,6 +331,7 @@ class Totp
      * @throws \Equit\Totp\Exceptions\SecureRandomDataUnavailableException
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
+     * @api
      */
     public static function integer(int $digits, TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
     {
@@ -258,6 +342,7 @@ class Totp
      * Helper to create the default renderer when none is provided to the constructor.
      *
      * @return Renderer The default renderer.
+     * @internal
      */
     protected static function defaultRenderer(): Renderer
     {
@@ -268,6 +353,7 @@ class Totp
      * Fetch the hashing algorithm to use to generate HMACs.
      *
      * @return string The hashing algorithm.
+     * @api
      */
     public function hashAlgorithm(): string
     {
@@ -282,6 +368,7 @@ class Totp
      * @param string $hashAlgorithm The hash algorithm.
      *
      * @throws InvalidHashAlgorithmException if the hash algorithm provided is not valid.
+     * @api
      */
     public function setHashAlgorithm(string $hashAlgorithm): void
     {
@@ -294,9 +381,11 @@ class Totp
     /**
      * Fetch the raw secret.
      *
-     * The raw secret is a byte sequence, not technically a string. It is likely to contain non-printable bytes.
+     * The raw secret is a byte sequence, not technically a string. It is likely to contain non-printable bytes. You
+     * must scrub the returned string before you discard it.
      *
      * @return string The raw secret.
+     * @api
      */
     public function secret(): string
     {
@@ -304,7 +393,12 @@ class Totp
     }
 
     /**
+     * Fetch the secret, Base32 encoded.
+     *
+     * You must scrub the returned string before you discard it.
+     *
      * @return string The secret, base32 encoded so that it's printable.
+     * @api
      */
     public function base32Secret(): string
     {
@@ -312,7 +406,12 @@ class Totp
     }
 
     /**
+     * Fetch the secret, Base64 encoded.
+     *
+     * You must scrub the returned string before you discard it.
+     *
      * @return string The secret, base64 encoded so that it's printable.
+     * @api
      */
     public function base64Secret(): string
     {
@@ -328,6 +427,7 @@ class Totp
      * @param TotpSecret|string $secret The secret. If given as a string, the string is assumed to be the raw secret.
      *
      * @throws InvalidSecretException if the secret is less than 128 bits in length.
+     * @api
      */
     public function setSecret(TotpSecret|string $secret): void
     {
@@ -347,6 +447,7 @@ class Totp
      * Fetch the renderer being used to generate one-time passwords from HMACs.
      *
      * @return \Equit\Totp\Renderers\Renderer The renderer.
+     * @api
      */
     public function renderer(): Renderer
     {
@@ -357,6 +458,8 @@ class Totp
      * Set the renderer to use to generate one-time passwords from HMACs.
      *
      * @param \Equit\Totp\Renderers\Renderer $renderer The renderer.
+     *
+     * @api
      */
     public function setRenderer(Renderer $renderer): void
     {
@@ -367,6 +470,7 @@ class Totp
      * Fetch the size of the time step at which the one-time password changes, in seconds.
      *
      * @return int The time step.
+     * @api
      */
     public function timeStep(): int
     {
@@ -377,6 +481,7 @@ class Totp
      * @param int $timeStep
      *
      * @throws InvalidTimeStepException
+     * @api
      */
     public function setTimeStep(int $timeStep): void
     {
@@ -393,6 +498,7 @@ class Totp
      * The reference time is returned as the number of seconds since the Unix epoch.
      *
      * @return int The reference time number of seconds.
+     * @api
      */
     public function referenceTimestamp(): int
     {
@@ -404,6 +510,7 @@ class Totp
      *
      * @return \DateTime The reference time.
      * @noinspection PhpDocMissingThrowsInspection DateTime constructor doesn't throw with Unix timestamp.
+     * @api
      */
     public function referenceTime(): DateTime
     {
@@ -421,7 +528,7 @@ class Totp
      *
      * @param int|\DateTime $referenceTime The
      *
-     * @return void
+     * @api
      */
     public function setReferenceTime(int|DateTime $referenceTime): void
     {
@@ -446,6 +553,7 @@ class Totp
      *
      * @return int The number of time steps between the reference time and the provided time.
      * @throws InvalidTimeException if the requested time is before the reference time.
+     * @api
      */
     public final function counterAt(DateTime|int $time): int
     {
@@ -479,6 +587,7 @@ class Totp
      *
      * @return int The number of time steps between the reference time and the current time.
      * @throws InvalidTimeException if the current system time is before the reference time.
+     * @api
      */
     public final function counter(): int
     {
@@ -492,6 +601,7 @@ class Totp
      *
      * @return string The 64 bits of the counter, in BIG ENDIAN format.
      * @throws InvalidTimeException if the requested time is before the reference time.
+     * @internal
      */
     protected final function counterBytesAt(DateTime|int $time): string
     {
@@ -503,6 +613,7 @@ class Totp
      *
      * @return string The 64 bits of the counter, in BIG ENDIAN format.
      * @throws InvalidTimeException if the current time is before the reference time.
+     * @internal
      */
     protected final function counterBytes(): string
     {
@@ -518,6 +629,7 @@ class Totp
      *
      * @return string The current HMAC for the given point in tim.
      * @throws InvalidTimeException if the requested time is before the reference time.
+     * @api
      */
     public final function hmacAt(DateTime|int $time): string
     {
@@ -531,6 +643,7 @@ class Totp
      *
      * @return string The HMAC at the current system time.
      * @throws InvalidTimeException if the current time is before the reference time.
+     * @api
      */
     public final function hmac(): string
     {
@@ -544,6 +657,7 @@ class Totp
      *
      * @return string The one-time password for the given point in time, formatted for display.
      * @throws InvalidTimeException if the requested time is before the reference time.
+     * @api
      */
     public final function passwordAt(DateTime|int $time): string
     {
@@ -555,6 +669,7 @@ class Totp
      *
      * @return string The current TOTP password.
      * @throws InvalidTimeException if the current time is before the reference time.
+     * @api
      */
     public final function password(): string
     {
@@ -582,6 +697,7 @@ class Totp
      * @return bool
      * @throws InvalidVerificationWindowException if the window is < 0 or extends before the reference time.
      * @throws InvalidTimeException if the requested time is before the reference time.
+     * @api
      */
     public final function verifyAt(string $password, DateTime|int $time, int $window = 0): bool
     {
@@ -634,6 +750,7 @@ class Totp
      * @return bool true if the password is verified, false if not.
      * @throws InvalidVerificationWindowException if the window is < 0.
      * @throws InvalidTimeException if the current system time is before the reference time.
+     * @api
      */
     public final function verify(string $password, int $window = 0): bool
     {
@@ -645,6 +762,7 @@ class Totp
      *
      * @return \DateTime The current time.
      * @noinspection PhpDocMissingThrowsInspection the DateTime constructor does not throw with "now".
+     * @internal
      */
     protected static final function currentTime(): DateTime
     {

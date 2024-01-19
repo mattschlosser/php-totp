@@ -28,50 +28,168 @@ use Equit\Totp\Renderers\Integer;
 use Equit\Totp\Renderers\IntegerRenderer;
 
 /**
- * Generate provisioning URLs for services that have OTP 2FA.
+ * Generate URLs that users can import into their TOTP authenticator apps.
  *
  * URLs are of the form:
  *
- *     otpauth://totp/[{issuer}:]{user}/?secret={secret}[&digits={digits}][&algorithm={algorithm}][&period={period}]
+ * `otpauth://totp/[`_`issuer`_`:]`_`user`_`/?secret=`_`secret`_`[&digits=`_`digits`_`][&algorithm=`_`algorithm`_`][&period=`_`period`_`]`
  *
- * The {issuer} (setIssuer(), issuer()) is optional; the {user} (setUser(), user()) is mandatory. By default, the
- * generator will generate the URL parameters for digits, algorithm and period if those properties of the provided Totp
- * instance are non-default (e.g. if the algorithm is SHA1 the algorithm won't be part of the URL, but if it's SHA256 it
- * will). You can force or suppress individual parameters by passing `true` or `false` respectively to
- * setIncludeDigits(), setIncludeAlgorithm() and setIncludePeriod() as required. To revert to the default behaviour,
- * pass `null` to the same methods.
+ * For example, the simplest URL, containing just a user and their secret, might be:
+ *
+ *     otpauth://totp/Darren/?secret=234567BCDEFG234567BC
+ *
+ * While the most complex URL, containing an issuer and user, the user's secret, and parameters that indicate the TOTPs
+ * should be 8 digits, use the SHA256 algorithm and a time step of 60 seconds might be:
+ *
+ *     otpauth://totp/Equit:Darren/?secret=234567BCDEFG234567BCDEFG234567BC&digits=8&algorithm=SHA256&period=60
+ *
+ * The _`issuer`_ (`setIssuer()`, `issuer()`) is optional; the _`user`_ (`setUser()`, `user()`) is mandatory. By
+ * default, the generator will generate the URL parameters for digits, algorithm and period if those properties of the
+ * provided `Totp` instance are non-default (e.g. if the algorithm is _SHA1_ the algorithm won't be part of the URL, but
+ * if it's _SHA256_ it will). You can force or suppress individual parameters by passing `true` or `false` respectively
+ * to `setIncludeDigits()`, `setIncludeAlgorithm()` and `setIncludePeriod()` as required. To revert to the default
+ * behaviour, pass `null` to the same methods.
+ *
+ * Note that if configure the generator to always include the `digits` URL parameter, the `Totp` you provide to
+ * `generateUrlFor()` must have a renderer that implements the `IntegerRenderer` interface.
  *
  * ## Static/fluent interface
  *
- * Each of these methods can be called statically to create a UrlGenerator. You can also chain them to construct a
- * UrlGenerator fluently with the required feature set. For example:
+ * Methods documented as _fluent_ can be called statically to create a `UrlGenerator`. You can also chain them to
+ * construct a `UrlGenerator` fluently with the required feature set. For example, both:
  *
- *     $generator = UrlGenerator::for("darren")->from("Equit")->withDigits();
- *
+ * ```php
+ * $generator = UrlGenerator::for("darren")->from("Equit")->withDigits();
+ * ```
  * and
+ * ```php
+ * $generator = UrlGenerator::from("Equit")->withDigits()->for("darren");
+ * ```
  *
- *     $generator = UrlGenerator::from("Equit")->for("darren")->withDigits();
+ * are valid, equivalent, and will produce `UrlGenerator`s with identical features.
  *
- * are both valid, and will produce UrlGenerators with the same features.
+ * The following methods constitute the fluent interface:
  *
- * @method static self for (string $user) Initialise a generator for a given user.
- * @method static self from(string|null $issuer) Initialise a generator from a given issuer.
- * @method static self withPeriod() Initialise a generator that includes the period parameter in URLs it generates.
- * @method static self withPeriodIfCustomised() Initialise a generator that includes the period parameter in URLs it
- * generates only if the period is not the default period.
- * @method static self withoutPeriod() Initialise a generator that never includes the period parameter in URLs it
- * generates.
- * @method static self withDigits() Initialise a generator that includes the digits parameter in URLs it generates
- * @method static self withDigitsIfCustomised() Initialise a generator that includes the digits parameter in URLs
- * it generates only if the digit count is not the default digit count.
- * @method static self withoutDigits() Initialise a generator that never includes the period parameter in URLs it
- * generates
- * @method static self withAlgorithm() Initialise a generator that includes the algorithm parameter in URLs it
- * generates.
- * @method static self withAlgorithmIfCustomised() Initialise a generator that includes the algorithm parameter in URLs
- * it generates only if the algorithm is not the default algorithm.
- * @method static self withoutAlgorithm() Initialise a generator that never includes the algorithm parameter in URLs it
- * generates.
+ * - `for(string $user)`
+ * - `from(string $issuer)`
+ * - `withPeriod()`
+ * - `withPeriodIfCustomised()`
+ * - `withoutPeriod()`
+ * - `withDigits()`
+ * - `withDigitsIfCustomised()`
+ * - `withoutDigits()`
+ * - `withAlgorithm()`
+ * - `withAlgorithmIfCustomised()`
+ * - `withoutAlgorithm()`
+ *
+ * @method static static for (string $user)
+ * Fluently configure an `UrlGenerator` for a specified user.
+ *
+ * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
+ * value is guaranteed to be the same instance.
+ *
+ * @param $user string The username.
+ *
+ * @param $issuer string The issuer.
+ *
+ * @return $this The configured UrlGenerator.
+ * @return $this The configured UrlGenerator.
+ * @return $this The configured UrlGenerator.
+ * @return $this The configured UrlGenerator.
+ * @return $this The configured UrlGenerator.
+ * @return $this The configured UrlGenerator.
+ * @return $this The configured UrlGenerator.
+ * @return $this The configured UrlGenerator.
+ * @return $this The configured UrlGenerator.
+ * @return $this The configured UrlGenerator.
+ * @return $this The configured UrlGenerator.
+ * @api
+ *
+ * @method static static from(string $issuer)
+ * Fluently configure an `UrlGenerator` for a specified issuer.
+ *
+ * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
+ * value is guaranteed to be the same instance.
+ *
+ * @api
+ *
+ * @method static static withPeriod()
+ * Fluently configure an `UrlGenerator` to include the period in the generated URL.
+ *
+ * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
+ * value is guaranteed to be the same instance.
+ *
+ * @api
+ *
+ * @method static static withPeriodIfCustomised()
+ * Fluently configure an `UrlGenerator` to include the period in the generated URL only if the default period is not in
+ * use.
+ *
+ * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
+ * value is guaranteed to be the same instance.
+ *
+ * @api
+ *
+ * @method static static withoutPeriod()
+ * Fluently configure an `UrlGenerator` to exclude the period from the generated URL.
+ *
+ * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
+ * value is guaranteed to be the same instance.
+ *
+ * @api
+ *
+ * @method static static withDigits()
+ * Fluently configure an `UrlGenerator` to include the password digit count in the generated URL.
+ *
+ * In order to include the digits, any Totp instance provided to the urlFor() method MUST use an IntegerRenderer or
+ * an InvalidRendererException will be thrown from urlFor().
+ *
+ * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
+ * value is guaranteed to be the same instance.
+ *
+ * @api
+ *
+ * @method static static withDigitsIfCustomised()
+ * Fluently configure an `UrlGenerator` to include the password digit count in the generated URL only if the `Totp`'s
+ * renderer is an `IntegerRenderer` and its number of digits is not the default.
+ *
+ * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
+ * value is guaranteed to be the same instance.
+ *
+ * @api
+ *
+ * @method static static withoutDigits()
+ * Fluently configure an `UrlGenerator` to exclude the password digit count from the generated URL.
+ *
+ * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
+ * value is guaranteed to be the same instance.
+ *
+ * @api
+ *
+ * @method static static withAlgorithm()
+ * Fluently configure an `UrlGenerator` to include the hash algorithm name in the generated URL.
+ *
+ * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
+ * value is guaranteed to be the same instance.
+ *
+ * @api
+ *
+ * @method static static withAlgorithmIfCustomised()
+ * Fluently configure an `UrlGenerator` to include the hash algorithm name in the generated URL only if the default
+ * algorithm is not in use.
+ *
+ * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
+ * value is guaranteed to be the same instance.
+ *
+ * @api
+ *
+ * @method static static withoutAlgorithm()
+ * Fluently configure an `UrlGenerator` to exclude the hash algorithm name from the generated URL.
+ *
+ * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
+ * value is guaranteed to be the same instance.
+ *
+ * @api
  */
 class UrlGenerator
 {
@@ -79,42 +197,49 @@ class UrlGenerator
      * The protocol for URLs.
      *
      * This is the only protocol for OTP provisioning URLs at the time of writing.
+     * @internal
      */
-    public const Protocol = "otpauth";
+    private const Protocol = "otpauth";
 
     /**
      * The authentication type.
      *
      * At the time of writing the options are "totp" and "hotp". Since this is a TOTP library, we only do "totp" (for
      * now).
+     * @internal
      */
-    public const AuthenticationType = "totp";
+    private const AuthenticationType = "totp";
 
     /**
      * @var string|null The issuer of the TOTP.
+     * @internal
      */
     private ?string $m_issuer = null;
 
     /**
      * @var string The user being provisioned.
+     * @internal
      */
     private string $m_user = "";
 
     /**
      * @var bool Whether the number of digits will be included in generated URLs. Will be null for default behaviour,
      * which is to include the digits if it's not the default digits (6).
+     * @internal
      */
     private ?bool $m_includeDigits = null;
 
     /**
      * @var bool Whether the hash algorithm will be included in generated URLs. Will be null for default behaviour,
      * which is to include the algorithm if it's not the default algorithm (SHA1).
+     * @internal
      */
     private ?bool $m_includeAlgorithm = null;
 
     /**
      * @var bool Whether the period will be included in generated URLs. Will be null for default behaviour, which is
      * to include the period if it's not the default period (30s).
+     * @internal
      */
     private ?bool $m_includePeriod = null;
 
@@ -122,6 +247,7 @@ class UrlGenerator
      * Determine whether an issuer has been set for the URL generator.
      *
      * @return bool true if an issuer has been set, false otherwise.
+     * @api
      */
     public function hasIssuer(): bool
     {
@@ -134,6 +260,7 @@ class UrlGenerator
      * This can be null if no issuer is to appear in the generated provisioning URLs.
      *
      * @return string|null The issuer.
+     * @api
      */
     public function issuer(): ?string
     {
@@ -149,6 +276,8 @@ class UrlGenerator
      * yourself.
      *
      * @param string|null $issuer The issuer.
+     *
+     * @api
      */
     public function setIssuer(string|null $issuer): void
     {
@@ -165,6 +294,7 @@ class UrlGenerator
      * yourself.
      *
      * @return string $user The user.
+     * @api
      */
     public function user(): string
     {
@@ -180,6 +310,7 @@ class UrlGenerator
      * @param string $user The user.
      *
      * @throws \Equit\Totp\Exceptions\UrlGenerator\InvalidUserException If the provided user is empty.
+     * @api
      */
     public function setUser(string $user): void
     {
@@ -196,6 +327,7 @@ class UrlGenerator
      * The default is "otpauth", and you probably don't want to change this.
      *
      * @return string The protocol.
+     * @api
      */
     public function protocol(): string
     {
@@ -209,6 +341,7 @@ class UrlGenerator
      * authentication types other than TOTP.
      *
      * @return string The authentication type.
+     * @api
      */
     public function authenticationType(): string
     {
@@ -221,6 +354,7 @@ class UrlGenerator
      * A return value of null indicates that the period will be included if it's not the default period.
      *
      * @return bool|null Whether the period will be included.
+     * @api
      */
     public function includesPeriod(): bool | null
     {
@@ -234,6 +368,8 @@ class UrlGenerator
      * algorithm.
      *
      * @param bool|null $include Whether to include the period.
+     *
+     * @api
      */
     public function setIncludePeriod(bool | null $include): void
     {
@@ -246,6 +382,7 @@ class UrlGenerator
      * A return value of null indicates that the digits will be included if it's not the default digits.
      *
      * @return bool|null Whether the digits will be included.
+     * @api
      */
     public function includesDigits(): bool | null
     {
@@ -262,6 +399,8 @@ class UrlGenerator
      * that implements the IntegerRenderer interface.
      *
      * @param bool|null $include Whether to include the number of digits.
+     *
+     * @api
      */
     public function setIncludeDigits(bool | null $include): void
     {
@@ -274,6 +413,7 @@ class UrlGenerator
      * A return value of null indicates that the algorithm will be included if it's not the default algorithm.
      *
      * @return bool|null Whether the algorithm will be included.
+     * @api
      */
     public function includesAlgorithm(): bool | null
     {
@@ -287,6 +427,8 @@ class UrlGenerator
      * algorithm.
      *
      * @param bool|null $include Whether to include the algorithm.
+     *
+     * @api
      */
     public function setIncludeAlgorithm(bool | null $include): void
     {
@@ -299,12 +441,14 @@ class UrlGenerator
      * @param Totp $totp The TOTP for which to generate the provisioning URL.
      *
      * @return string The URL.
-     * @throws \Equit\Totp\Exceptions\UrlGenerator\UnsupportedRendererException if the Totp's renderer is not an
-     *     Integer renderer.
+     * @throws \Equit\Totp\Exceptions\UrlGenerator\UnsupportedRendererException if the `UrlGenerator` is configured to
+     *     always include the digits URL parameter and the `Totp`'s renderer is not an `IntegerRenderer`.
      * @throws \Equit\Totp\Exceptions\UrlGenerator\InvalidUserException if no user has been set in the generator.
-     * @throws \Equit\Totp\Exceptions\UrlGenerator\UnsupportedReferenceTimeException if the provided Totp's reference time is not 0.
+     * @throws \Equit\Totp\Exceptions\UrlGenerator\UnsupportedReferenceTimeException if the provided `Totp`'s reference
+     * time is not 0.
+     * @api
      */
-    public function urlFor(Totp $totp): string
+    public function generateUrlUsing(Totp $totp): string
     {
         if (empty($this->user())) {
             throw new InvalidUserException($this->user(), "It is not possible to generate a URL with an empty user.");
@@ -350,93 +494,6 @@ class UrlGenerator
     }
 
     /**
-     * @method static self for (string $user)
-     * Fluently configure an UrlGenerator for a specified user.
-     *
-     * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
-     * value is guaranteed to be the same instance.
-     *
-     * @param $user string The username.
-     *
-     * @return static The configured UrlGenerator.
-     */
-
-    /**
-     * @method static self from(string $issuer)
-     * Fluently configure an UrlGenerator for a specified issuer.
-     *
-     * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
-     * value is guaranteed to be the same instance.
-     *
-     * @param $user string The issuer.
-     *
-     * @return static The configured UrlGenerator.
-     */
-
-    /**
-     * @method static self withPeriod()
-     * Fluently configure an UrlGenerator to include the period in the generated URL.
-     *
-     * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
-     * value is guaranteed to be the same instance.
-     *
-     * @return static The configured UrlGenerator.
-     */
-
-    /**
-     * @method static self withoutPeriod()
-     * Fluently configure an UrlGenerator to exclude the period in the generated URL.
-     *
-     * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
-     * value is guaranteed to be the same instance.
-     *
-     * @return static The configured UrlGenerator.
-     */
-
-    /**
-     * @method static self withDigits()
-     * Fluently configure an UrlGenerator to include the password digit count in the generated URL.
-     *
-     * In order to include the digits, any Totp instance provided to the urlFor() method MUST use an IntegerRenderer or
-     * an InvalidRendererException will be thrown from urlFor().
-     *
-     * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
-     * value is guaranteed to be the same instance.
-     *
-     * @return static The configured UrlGenerator.
-     */
-
-    /**
-     * @method static self withoutDigits()
-     * Fluently configure an UrlGenerator to exclude the password digit count in the generated URL.
-     *
-     * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
-     * value is guaranteed to be the same instance.
-     *
-     * @return static The configured UrlGenerator.
-     */
-
-    /**
-     * @method static self withAlgorithm()
-     * Fluently configure an UrlGenerator to include the hash algorithm name in the generated URL.
-     *
-     * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
-     * value is guaranteed to be the same instance.
-     *
-     * @return static The configured UrlGenerator.
-     */
-
-    /**
-     * @method static self withoutAlgorithm()
-     * Fluently configure an UrlGenerator to exclude the hash algorithm name in the generated URL.
-     *
-     * This method can be invoked both statically and on an UrlGenerator instance. If invoked on an instance the return
-     * value is guaranteed to be the same instance.
-     *
-     * @return static The configured UrlGenerator.
-     */
-
-    /**
      * Magic method to handle calls to methods in the fluent interface.
      *
      * The UrlGenerator class provides a fluent interface that can be used statically. This magic method is required to
@@ -448,6 +505,7 @@ class UrlGenerator
      *
      * @return $this
      * @throws \Equit\Totp\Exceptions\UrlGenerator\InvalidUserException if for() is called with an empty user.
+     * @internal
      */
     public function __call(string $method, array $args): self
     {
@@ -520,6 +578,7 @@ class UrlGenerator
      *
      * @return static
      * @throws \Equit\Totp\Exceptions\UrlGenerator\InvalidUserException if for() is called with an empty user.
+     * @internal
      */
     public static function __callStatic(string $method, array $args): static
     {

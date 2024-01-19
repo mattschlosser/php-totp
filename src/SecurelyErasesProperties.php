@@ -24,11 +24,18 @@ use ReflectionClass;
 
 /**
  * Import this trait to have your class automatically scrub all string properties on destruction.
+ *
+ * This trait provides its importing class with a `securelyEraseProperties()` private method that uses reflection to
+ * check for string properties and scrubs them using the `\Equit\Totp\scrubString()` function. This ensures that the
+ * data they carried is not left lingering in the memory they were using once it is released. It also provides a simple
+ * destructor that calls this method on destruction, ensuring that all the object's string properties are scrubbed when
+ * the object is no longer in use.
  */
 trait SecurelyErasesProperties
 {
     /**
      * Scrub all string properties by overwriting them with random data.
+     * @internal
      */
     private function securelyEraseProperties(): void
     {
@@ -42,7 +49,7 @@ trait SecurelyErasesProperties
     }
 
     /**
-     * Overwrite all string members on destruction.
+     * Scrub all string members on destruction.
      */
     public function __destruct()
     {

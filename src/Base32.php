@@ -25,14 +25,19 @@ use Equit\Totp\Exceptions\InvalidBase32DataException;
 /**
  * Codec class for Base32 data.
  *
- * @warn A 64-bit underlying platform is required.
+ * Converts between raw binary and Base32 encoding. Can be constructed with raw data, or can have either raw or encoded
+ * data set using `setRaw()` and `setEncoded()` respectively. The raw and Base32-encoded content can be retrieved
+ * using `raw()` and `encoded()` respectively.
  *
- * Enables conversion between raw binary and Base32 encoding. Can be constructed with raw data, or can have either raw
- * or encoded data set using setRaw() and setEncoded() respectively. The raw and Base32-encoded content can be retrieved
- * using raw() and encoded() respectively. setEncoded() will throw an InvalidBase32DataException if given data that is
- * not valid base32.
+ * `setEncoded()` will throw an `InvalidBase32DataException` if given data that is not valid Base32. The class is very
+ * strict about Base32 compliance, and the padding with `=` characters at the end of the encoded data must be present if
+ * the data requires it.
  *
  * Encoding/decoding is only performed when required, so the class is relatively lightweight.
+ *
+ * All members are scrubbed on destruction, so this class is safe to use with `Totp` secrets.
+ *
+ * @warn A 64-bit underlying platform is required.
  */
 class Base32
 {
@@ -43,22 +48,19 @@ class Base32
 
     /**
      * The base32 dictionary.
+     * @internal
      */
     protected const Dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
     /**
      * @var string|null The raw data.
-     *
-     * @warn Due to the decode-on-read feature, the member will be null after the encoded data has been set until
-     * decode() is called.
+     * @internal
      */
     private ?string $m_rawData;
 
     /**
      * @var string|null The raw data.
-     *
-     * @warn |Due to the encode-on-read feature, the member will be null after the raw data has been set until encode()
-     * is called.
+     * @internal
      */
     private ?string $m_encodedData;
 
@@ -76,6 +78,8 @@ class Base32
     /**
      * Set the raw data.
      *
+     * Subsequent calls to `encoded()` will return the Base32 encoding of the provided binary data.
+     *
      * @param string $data The raw data to encode.
      */
     public function setRaw(string $data): void
@@ -87,11 +91,13 @@ class Base32
     /**
      * Set the Base32 encoded content.
      *
+     * Subsequent calls to `raw()` will return the Base32 decoding of the provided Base32 data.
+     *
      * If the provided content is not valid Base32, the state of the object is undefined.
      *
      * @param string $base32 The base-32 encoded content.
      *
-     * @throws InvalidBase32DataException
+     * @throws InvalidBase32DataException if the provided data is not valid Base32.
      */
     public function setEncoded(string $base32): void
     {
@@ -177,7 +183,7 @@ class Base32
      * @param string $base32 The base32 string to decode.
      *
      * @return string The decoded data.
-     * @throws InvalidBase32DataException if the provided string is not a valid base32 encoding.
+     * @throws InvalidBase32DataException if the provided string is not valid Base32.
      */
     public static function decode(string $base32): string
     {
@@ -190,6 +196,8 @@ class Base32
      * Internal helper to decode the Base32 encoded content.
      *
      * This is called when the raw content is requested and the internal cache of the raw content is out of sync.
+     *
+     * @internal
      */
     protected function decodeBase32Data(): void
     {
@@ -249,6 +257,8 @@ class Base32
      *
      * This is called when the encoded content is requested and the internal cache of the encoded content is out of
      * sync.
+     *
+     * @internal
      */
     protected function encodeRawData(): void
     {

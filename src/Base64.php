@@ -25,9 +25,18 @@ use Equit\Totp\Exceptions\InvalidBase64DataException;
 /**
  * Codec class for Base64 data.
  *
- * Thin wrapper around PHP's built-in base64 encoding/decoding, for consistency with Base32 interface.
+ * Thin wrapper around PHP's built-in base64 encoding/decoding, for consistency with `Base32` interface, and to enforce
+ * secure destruction of data. Can be constructed with raw data, or can have either raw or encoded data set using
+ * `setRaw()` and `setEncoded()` respectively. The raw and Base64-encoded content can be retrieved using `raw()` and
+ * `encoded()` respectively.
+ *
+ * `setEncoded()` will throw an `InvalidBase64DataException` if given data that is not valid Base64. The class is very
+ * strict about Base64 compliance, and the padding with `=` characters at the end of the encoded data must be present if
+ * the data requires it.
  *
  * Encoding/decoding is only performed when required, so the class is relatively lightweight.
+ *
+ * All members are scrubbed on destruction, so this class is safe to use with `Totp` secrets.
  */
 class Base64
 {
@@ -38,22 +47,19 @@ class Base64
 
     /**
      * The base64 dictionary.
+     * @internal
      */
     protected const Dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     /**
      * @var string|null The raw data.
-     *
-     * Always use raw() instead of accessing this - due to decode-on-demand, the member will be null after the encoded
-     * data has been set until decode() is called.
+     * @internal
      */
     private ?string $m_rawData;
 
     /**
      * @var string|null The Base64 encoded data.
-     *
-     * Always use encoded() instead of accessing this - due to encode-on-demand, the member will be null after the raw
-     * data has been set until encode() is called.
+     * @internal
      */
     private ?string $m_encodedData;
 
@@ -71,6 +77,8 @@ class Base64
     /**
      * Set the raw data.
      *
+     * Subsequent calls to `encoded()` will return the Base64 encoding of the provided binary data.
+     *
      * @param string $rawData The raw data to encode.
      */
     public function setRaw(string $rawData): void
@@ -82,11 +90,13 @@ class Base64
     /**
      * Set the Base64 encoded content.
      *
-     * If the provided content is not valid Base64, the state of the object is undefined.
+     * Subsequent calls to `raw()` will return the Base64 decoding of the provided Base64 data.
+     *
+     * If the provided data is not valid Base64, the state of the object is undefined.
      *
      * @param string $base64
      *
-     * @throws InvalidBase64DataException
+     * @throws InvalidBase64DataException if the provided data is not valid Base64.
      */
     public function setEncoded(string $base64): void
     {
@@ -174,7 +184,7 @@ class Base64
      * @param string $base64 The base64 string to decode.
      *
      * @return string The decoded data.
-     * @throws InvalidBase64DataException if the provided string is not a valid base64 encoding.
+     * @throws InvalidBase64DataException if the provided string is not valid Base64.
      */
     public static function decode(string $base64): string
     {
@@ -187,6 +197,8 @@ class Base64
      * Internal helper to decode the Base64 encoded content when required.
      *
      * This is called when the raw content is requested and the internal cache of the raw content is out of sync.
+     *
+     * @internal
      */
     protected function decodeBase64Data(): void
     {
@@ -198,6 +210,8 @@ class Base64
      *
      * This is called when the encoded content is requested and the internal cache of the encoded content is out of
      * sync.
+     *
+     * @internal
      */
     protected function encodeRawData(): void
     {
