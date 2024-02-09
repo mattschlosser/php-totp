@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -18,9 +18,9 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Renderers;
+namespace Equit\Totp\Contracts;
 
-use Equit\Totp\Contracts\Renderer;
+use Equit\Totp\Types\Digits;
 
 /**
  * Interface for renderers that produce a fixed-width integer one-time password.
@@ -28,7 +28,7 @@ use Equit\Totp\Contracts\Renderer;
 interface IntegerRenderer extends Renderer
 {
     /**
-     * @return int The number of digits to render.
+     * @return Digits The number of digits to render.
      */
-    public function digits(): int;
+    public function digits(): Digits;
 }

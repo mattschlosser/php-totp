@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -20,28 +20,25 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Contracts;
 
-use Equit\Totp\TotpSecret;
+use Equit\Totp\Types\HashAlgorithm;
+use Equit\Totp\Types\Secret;
+use Equit\Totp\Types\TimeStep;
 
-interface TotpFactory
+/** Contract for factories that generate TOTP verifiers. */
+interface Factory
 {
-    /**
-     * @return string The hash algorithm that is being used when computing the OTP.
-     */
-    public function hashAlgorithm(): string;
+    /** @return HashAlgorithm The hash algorithm that is being used when computing the OTP. */
+    public function hashAlgorithm(): HashAlgorithm;
 
-    /**
-     * @return int The time step, in seconds, used when computing the OTP.
-     */
-    public function timeStep(): int;
+    /** @return TimeStep The time step, in seconds, used when computing the OTP. */
+    public function timeStep(): TimeStep;
 
-    /**
-     * @return int The reference unix timestamp (T0 in RFC6238-speak).
-     */
+    /** @return int The reference unix timestamp (T0 in RFC6238-speak). */
     public function referenceTimestamp(): int;
 
     /** The name/identifier of the rendering scheme used to produce the actual passcodes (e.g. 6-digit, steam,...) */
     public function renderer(): string;
 
     /** Get a new Totp to calculate passcodes for a given secret. */
-    public function totp(TotpSecret $secret): Totp;
+    public function totp(Secret $secret): Totp;
 }

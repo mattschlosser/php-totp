@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -20,31 +20,25 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Contracts;
 
+use Equit\Totp\Types\HashAlgorithm;
+use Equit\Totp\Types\TimeStep;
+
+/** Contract for TOTP verifiers. */
 interface Totp
 {
-    /**
-     * @return string The hash algorithm that is being used when computing the OTP.
-     */
-    public function hashAlgorithm(): string;
+    /** @return HashAlgorithm The hash algorithm that is being used when computing the OTP. */
+    public function hashAlgorithm(): HashAlgorithm;
 
-    /**
-     * @return int The time step, in seconds, used when computing the OTP.
-     */
-    public function timeStep(): int;
+    /** @return TimeStep The time step, used when computing the OTP. */
+    public function timeStep(): TimeStep;
 
-    /**
-     * @return int The reference unix timestamp (T0 in RFC6238-speak).
-     */
+    /** @return int The reference unix timestamp (T0 in RFC6238-speak). */
     public function referenceTimestamp(): int;
 
-    /**
-     * @return int The current counter.
-     */
+    /** @return int The current counter. */
     public function counter(): int;
 
-    /**
-     * @return string The current OTP.
-     */
+    /** @return string The current OTP. */
     public function password(): string;
 
     /**

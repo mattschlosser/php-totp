@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -22,7 +22,7 @@ namespace Equit\Totp\Tests\Exceptions;
 
 use Equit\Totp\Exceptions\InvalidHashAlgorithmException;
 use Equit\Totp\Tests\Framework\TestCase;
-use Equit\Totp\TotpFactory;
+use Equit\Totp\Factory;
 use Exception;
 use Generator;
 use TypeError;
@@ -45,7 +45,7 @@ class InvalidHashAlgorithmExceptionTest extends TestCase
 
         if (!isset($algorithms)) {
             $algorithms = array_values(array_filter(hash_algos(), fn(string $algorithm): bool => match ($algorithm) {
-                TotpFactory::Sha1Algorithm, TotpFactory::Sha256Algorithm, TotpFactory::Sha512Algorithm => false,
+                Factory::Sha1Algorithm, Factory::Sha256Algorithm, Factory::Sha512Algorithm => false,
                 default => true,
             }));
         }

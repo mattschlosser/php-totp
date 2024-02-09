@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -20,9 +20,7 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Contracts;
 
-/**
- * Interface for renderers that turn TOTP HMACs into the actual one-time passwords required.
- */
+/** Contract for renderers that turn TOTP HMACs into the actual one-time passwords required. */
 interface Renderer
 {
     /** The name of the rendering scheme used to turn the TOTP HMAC into a passcode. */

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -31,8 +31,8 @@ require_once(__DIR__ . "/../bootstrap.php");
 
 use DateTime;
 use DateTimeZone;
-use Equit\Totp\Base32;
-use Equit\Totp\Base64;
+use Equit\Totp\Codecs\Base32;
+use Equit\Totp\Codecs\Base64;
 use Exception;
 use function Equit\Totp\Tools\toPhpHexString;
 

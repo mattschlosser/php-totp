@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -21,14 +21,14 @@ declare(strict_types=1);
 namespace Equit\Totp\Tests;
 
 use BadMethodCallException;
-use Equit\Totp\Base32;
+use Equit\Totp\Codecs\Base32;
 use Equit\Totp\Contracts\Renderer;
 use Equit\Totp\Exceptions\UrlGenerator\InvalidUserException;
 use Equit\Totp\Exceptions\UrlGenerator\UnsupportedReferenceTimeException;
 use Equit\Totp\Exceptions\UrlGenerator\UnsupportedRendererException;
+use Equit\Totp\Factory;
 use Equit\Totp\Tests\Framework\Exceptions\InvalidOtpUrlException;
 use Equit\Totp\Tests\Framework\TestCase;
-use Equit\Totp\TotpFactory;
 use Equit\Totp\UrlGenerator;
 use Generator;
 use InvalidArgumentException;
@@ -368,7 +368,7 @@ class UrlGeneratorTest extends TestCase
                 ],
                 [
                     "secret" => "password-password",
-                    "hashAlgorithm" => TotpFactory::Sha512Algorithm,
+                    "hashAlgorithm" => Factory::Sha512Algorithm,
                 ],
                 "otpauth://totp/arthur.dent/?secret=OBQXG43XN5ZGILLQMFZXG53POJSA====&algorithm=SHA512",
             ],
@@ -389,7 +389,7 @@ class UrlGeneratorTest extends TestCase
                 ],
                 [
                     "secret" => "password-password",
-                    "hashAlgorithm" => TotpFactory::Sha512Algorithm,
+                    "hashAlgorithm" => Factory::Sha512Algorithm,
                 ],
                 "otpauth://totp/arthur.dent/?secret=OBQXG43XN5ZGILLQMFZXG53POJSA====&algorithm=SHA512",
             ],
@@ -531,7 +531,7 @@ class UrlGeneratorTest extends TestCase
         }
 
         if (isset($totpConfig["renderer"])) {
-            $totp = new TotpFactory(secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? TotpFactory::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? TotpFactory::DefaultAlgorithm);
+            $totp = new Factory(secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? TimeStep::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? Factory::DefaultAlgorithm);
 
             if (is_string($totpConfig["renderer"])) {
                 $totp->withRenderer(new $totpConfig["renderer"]());
@@ -543,7 +543,7 @@ class UrlGeneratorTest extends TestCase
                 throw new InvalidArgumentException("The renderer provided in the TOTP config is not valid.");
             }
         } else {
-            $totp = TotpFactory::integer(digits: $totpConfig["digits"] ?? 6, secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? TotpFactory::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? TotpFactory::DefaultAlgorithm);
+            $totp = Factory::integer(digits: $totpConfig["digits"] ?? 6, secret: $totpConfig["secret"], timeStep: $totpConfig["time-step"] ?? TimeStep::DefaultTimeStep, referenceTime: $totpConfig["referenceTime"] ?? 0, hashAlgorithm: $totpConfig["hashAlgorithm"] ?? Factory::DefaultAlgorithm);
         }
 
         if ($urlConfig["withDigits"] ?? false) {

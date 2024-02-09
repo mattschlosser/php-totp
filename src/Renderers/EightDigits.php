@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -20,7 +20,9 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Renderers;
 
+use Equit\Totp\Contracts\IntegerRenderer;
 use Equit\Totp\Renderers\Traits\RendersStandardIntegerPasswords;
+use Equit\Totp\Types\Digits;
 
 /**
  * Render a TOTP of eight decimal digits.
@@ -29,9 +31,19 @@ use Equit\Totp\Renderers\Traits\RendersStandardIntegerPasswords;
  * significant 8 digits of which are used as the password. The password is padded to the left with 0s if it has fewer
  * than 8 digits.
  */
-class EightDigits implements IntegerRenderer
+final class EightDigits implements IntegerRenderer
 {
     use RendersStandardIntegerPasswords;
 
-    protected int $digitCount = 8;
+    /** @return Digits 8 */
+    public function digits(): Digits
+    {
+        static $digits = null;
+
+        if (null === $digits) {
+            $digits = new Digits(8);
+        }
+
+        return $digits;
+    }
 }

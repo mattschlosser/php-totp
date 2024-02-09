@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -23,14 +23,10 @@ namespace Equit\Totp\Traits;
 use ReflectionClass;
 use function Equit\Totp\scrubString;
 
-/**
- * Import this trait to have your class automatically scrub all string properties on destruction.
- */
+/** Import this trait to have your class automatically scrub all string properties on destruction. */
 trait SecurelyErasesProperties
 {
-    /**
-     * Scrub all string properties by overwriting them with random data.
-     */
+    /** Scrub all string properties by overwriting them with random data. */
     private function securelyEraseProperties(): void
     {
         foreach ((new ReflectionClass($this))->getProperties() as $property) {
@@ -40,9 +36,7 @@ trait SecurelyErasesProperties
         }
     }
 
-    /**
-     * Overwrite all string members on destruction.
-     */
+    /** Overwrite all string members on destruction. */
     public function __destruct()
     {
         $this->securelyEraseProperties();

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -22,14 +22,19 @@ namespace Equit\Totp;
 
 use DateTime;
 use DateTimeZone;
+use Equit\Totp\Codecs\Base32;
+use Equit\Totp\Codecs\Base64;
 use Equit\Totp\Contracts\Renderer;
 use Equit\Totp\Contracts\Totp as TotpContract;
 use Equit\Totp\Exceptions\InvalidTimeException;
 use Equit\Totp\Exceptions\InvalidVerificationWindowException;
 use Equit\Totp\Traits\SecurelyErasesProperties;
+use Equit\Totp\Types\HashAlgorithm;
+use Equit\Totp\Types\Secret;
+use Equit\Totp\Types\TimeStep;
 
 /**
- * Class for generating Time-based One-Time Passwords.
+ * Generates and verifies time-based one-time passcodes.
  *
  * RFC 6238 does not say anything on the subject of whether T0 (the reference timestamp) can be a negative value, only
  * that the timestamp integer type used must enable the authentication time to extend beyond 2038 (i.e not a 32-bit
@@ -38,14 +43,10 @@ use Equit\Totp\Traits\SecurelyErasesProperties;
  */
 class Totp implements TotpContract
 {
-    /**
-     * Import the trait that securely erases all string properties on destruction.
-     */
+    /** Ensure all string properties are securely erased on destruction. */
     use SecurelyErasesProperties;
 
-    /**
-     * Error code for InvalidVerificationWindowException when the window is < 0.
-     */
+    /** Error code for InvalidVerificationWindowException when the window is < 0. */
     public const ErrNegativeWindow = 1;
 
     /**
@@ -55,9 +56,9 @@ class Totp implements TotpContract
     public const ErrWindowViolatesReferenceTime = 2;
 
     /**
-     * @var string The hashing algorithm to use when generating HMACs.
+     * @var HashAlgorithm The hashing algorithm to use when generating HMACs.
      */
-    private string $hashAlgorithm;
+    private HashAlgorithm $hashAlgorithm;
 
     /**
      * @var string The secret for password generation.
@@ -65,9 +66,9 @@ class Totp implements TotpContract
     private string $secret;
 
     /**
-     * @var int The time step, in seconds, at which the password changes.
+     * @var TimeStep The time step, in seconds, at which the password changes.
      */
-    private int $timeStep;
+    private TimeStep $timeStep;
 
     /**
      * @var int The reference time from new password generation time steps are measured.
@@ -86,18 +87,18 @@ class Totp implements TotpContract
      * If the reference time is specified as an int, it is interpreted as the number of seconds since the Unix epoch.
      * The default hashing algorithm is SHA1.
      *
-     * @param TotpSecret $secret The TOTP secret.
+     * @param Secret $secret The TOTP secret.
      * @param Renderer $renderer The renderer that produces one-time passwords from HMACs.
-     * @param TotpTimeStep $timeStep The update time step for the passwords. Defaults to 30 seconds.
+     * @param TimeStep $timeStep The update time step for the passwords. Defaults to 30 seconds.
      * @param int|DateTime $referenceTime The reference time from which time steps are measured. Defaults to 0.
-     * @param string $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
+     * @param HashAlgorithm $hashAlgorithm The hash algorithm to use when generating OTPs. Must be one of the algorithm class
      * constants. Defaults to Sha1Algorithm.
      */
-    public function __construct(TotpSecret $secret, Renderer $renderer, TotpTimeStep $timeStep, int|DateTime $referenceTime, string $hashAlgorithm)
+    public function __construct(Secret $secret, Renderer $renderer, TimeStep $timeStep, int|DateTime $referenceTime, HashAlgorithm $hashAlgorithm)
     {
         $this->secret = $secret->raw();
         $this->renderer = clone $renderer;
-        $this->timeStep = $timeStep->seconds();
+        $this->timeStep = $timeStep;
         $this->hashAlgorithm = $hashAlgorithm;
         $this->referenceTime = ($referenceTime instanceof DateTime ? $referenceTime->getTimestamp() : $referenceTime);
     }
@@ -105,9 +106,9 @@ class Totp implements TotpContract
     /**
      * Fetch the hashing algorithm to use to generate HMACs.
      *
-     * @return string The hashing algorithm.
+     * @return HashAlgorithm The hashing algorithm.
      */
-    public function hashAlgorithm(): string
+    public function hashAlgorithm(): HashAlgorithm
     {
         return $this->hashAlgorithm;
     }
@@ -156,9 +157,9 @@ class Totp implements TotpContract
     /**
      * Fetch the size of the time step at which the one-time password changes, in seconds.
      *
-     * @return int The time step.
+     * @return TimeStep The time step.
      */
-    public function timeStep(): int
+    public function timeStep(): TimeStep
     {
         return $this->timeStep;
     }
@@ -213,7 +214,7 @@ class Totp implements TotpContract
             throw new InvalidTimeException(($time instanceof DateTime ? $time->getTimestamp() : $time), "The time at which the counter was requested is before the reference time.");
         }
 
-        return (int)floor(($time - $this->referenceTimestamp()) / $this->timeStep());
+        return (int) floor(($time - $this->referenceTimestamp()) / $this->timeStep()->seconds());
     }
 
     /**
@@ -281,7 +282,7 @@ class Totp implements TotpContract
      */
     public final function hmacAt(DateTime|int $time): string
     {
-        return hash_hmac($this->hashAlgorithm(), $this->counterBytesAt($time), $this->secret(), true);
+        return hash_hmac((string) $this->hashAlgorithm(), $this->counterBytesAt($time), $this->secret(), true);
     }
 
     /**
@@ -361,7 +362,7 @@ class Totp implements TotpContract
             throw new InvalidTimeException($time, "The time at which to verify the password is before the TOTP's reference time.");
         }
 
-        $threshold = $time - ($window * $this->timeStep());
+        $threshold = $time - ($window * $this->timeStep()->seconds());
 
         if ($threshold < $this->referenceTimestamp()) {
             throw new InvalidVerificationWindowException($window, "The verification window would extend before the reference time for the TOTP.", self::ErrWindowViolatesReferenceTime);
@@ -372,7 +373,7 @@ class Totp implements TotpContract
                 return true;
             }
 
-            $time -= $this->timeStep();
+            $time -= $this->timeStep()->seconds();
         }
 
         return false;
@@ -408,7 +409,6 @@ class Totp implements TotpContract
     /**
      * Helper to get the current time.
      *
-     * @api
      * @return DateTime The current time.
      * @noinspection PhpDocMissingThrowsInspection the DateTime constructor does not throw with "now".
      */

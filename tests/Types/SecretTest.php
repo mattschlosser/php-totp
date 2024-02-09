@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -18,21 +18,21 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests;
+namespace Equit\Totp\Tests\Types;
 
 use Equit\Totp\Exceptions\InvalidBase32DataException;
 use Equit\Totp\Exceptions\InvalidBase64DataException;
 use Equit\Totp\Exceptions\InvalidSecretException;
 use Equit\Totp\Tests\Framework\TestCase;
-use Equit\Totp\TotpSecret;
+use Equit\Totp\Types\Secret;
 use Generator;
 use ReflectionProperty;
 use TypeError;
 
 /**
- * Tests for the TotpSecret class.
+ * Tests for the Secret class.
  */
-class TotpSecretTest extends TestCase
+class SecretTest extends TestCase
 {
     /**
      * Test data for testDestructor().
@@ -65,7 +65,7 @@ class TotpSecretTest extends TestCase
     public function testDestructor(string $secret): void
     {
         /** @noinspection PhpUnhandledExceptionInspection TotpSecret::fromRaw() shouldn't throw with test data. */
-        $totpSecret = TotpSecret::fromRaw($secret);
+        $totpSecret = Secret::fromRaw($secret);
         $base32     = $totpSecret->base32();
         $base64     = $totpSecret->base64();
 
@@ -141,7 +141,7 @@ class TotpSecretTest extends TestCase
 			$this->expectException($exceptionClass);
 		}
 		
-		$secret = TotpSecret::fromRaw($raw);
+		$secret = Secret::fromRaw($raw);
 		$this->assertEquals($raw, $secret->raw(), "Raw bytes in TotpSecret are not as expected.");
 	}
 	
@@ -189,7 +189,7 @@ class TotpSecretTest extends TestCase
 			$this->expectException($exceptionClass);
 		}
 
-		$secret = TotpSecret::fromBase32($base32);
+		$secret = Secret::fromBase32($base32);
 		$this->assertEquals($base32, $secret->base32(), "Base32 in TotpSecret is not as expected.");
 		$this->assertEquals($raw, $secret->raw(), "Raw bytes in TotpSecret are not as expected.");
 	}
@@ -238,7 +238,7 @@ class TotpSecretTest extends TestCase
 			$this->expectException($exceptionClass);
 		}
 
-		$secret = TotpSecret::fromBase64($base64);
+		$secret = Secret::fromBase64($base64);
 		$this->assertEquals($base64, $secret->base64(), "Base64 in TotpSecret is not as expected.");
 		$this->assertEquals($raw, $secret->raw(), "Raw bytes in TotpSecret are not as expected.");
 	}
@@ -283,7 +283,7 @@ class TotpSecretTest extends TestCase
 	 */
 	public function testRaw(string $raw): void
 	{
-		$secret = TotpSecret::fromRaw($raw);
+		$secret = Secret::fromRaw($raw);
 		$this->assertEquals($raw, $secret->raw(), "The secret did not contain the expected raw bytes.");
 	}
 	
@@ -315,7 +315,7 @@ class TotpSecretTest extends TestCase
 	 */
 	public function testBase32(string $raw, string $expectedBase32): void
 	{
-		$secret = TotpSecret::fromRaw($raw);
+		$secret = Secret::fromRaw($raw);
 		$this->assertEquals($expectedBase32, $secret->base32(), "The base32 provided by the TotpSecret object is not the same as the expected base32.");
 	}
 	
@@ -347,7 +347,7 @@ class TotpSecretTest extends TestCase
 	 */
 	public function testBase64(string $raw, string $expectedBase64): void
 	{
-		$secret = TotpSecret::fromRaw($raw);
+		$secret = Secret::fromRaw($raw);
 		$this->assertEquals($expectedBase64, $secret->base64(), "The base64 provided by the TotpSecret object is not the same as the expected base64.");
 	}
 }

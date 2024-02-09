@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -18,33 +18,33 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp;
+namespace Equit\Totp\Types;
 
+use Equit\Totp\Codecs\Base32;
+use Equit\Totp\Codecs\Base64;
 use Equit\Totp\Exceptions\InvalidBase32DataException;
 use Equit\Totp\Exceptions\InvalidBase64DataException;
 use Equit\Totp\Exceptions\InvalidSecretException;
 use Equit\Totp\Traits\SecurelyErasesProperties;
 
 /**
- * Enforces rules for secrets used in TOTP.
+ * Named type for secrets used in TOTP.
  *
- * Instances of this class can only be instantiated using one of the factory methods fromRaw(), fromBase32() or
- * fromBase64(), and are immutable. The class exists primarily to ensure that it's only possible to intialise a Totp
- * with a valid secret regardless of the encoding in which the secret is available.
+ * Instances of this class can only be created using one of the factory methods `fromRaw()`, `fromBase32()` or
+ * `fromBase64()`, and are immutable.
  *
  *     $totp = new Totp(TotpSecret::fromBase32($base32Secret), ...);
  *
  * It is not possible to create an instance with invalid Base32 or Base64 data - the factory methods ensure the given
  * string is valid Base32/Base64 respectively before instantiating the TotpSecret object.
- *
- * For convenience the object provides access to the secret in raw, Base32 and Base64 forms. The raw form is always
- * stored internally; the Base64 and Base32 versions are only created the first time they are requested, unless the
- * secret was originally provided in the appropriate form.
  */
-final class TotpSecret
+final class Secret
 {
-    /** Import the trait that securely erases all string properties on destruction. */
+    /** Ensure all string properties are securely erased on destruction. */
     use SecurelyErasesProperties;
+
+    /** @var int Raw secrets must have at least this many bytes. */
+    public const MinimumSecretBytes = 16;
 
     /** @var string The raw bytes of the secret. */
     private string $raw;
@@ -70,7 +70,7 @@ final class TotpSecret
      */
     private function __construct(string $secret)
     {
-        if (16 > strlen($secret)) {
+        if (self::MinimumSecretBytes > strlen($secret)) {
             throw new InvalidSecretException($secret, "Raw secrets for TOTP are required to be 128 bits (16 bytes) or longer.");
         }
 
@@ -94,7 +94,7 @@ final class TotpSecret
      */
     public function base32(): string
     {
-        if (!isset($this->base32)) {
+        if (null === $this->base32) {
             $this->base32 = Base32::encode($this->raw);
         }
 
@@ -108,7 +108,7 @@ final class TotpSecret
      */
     public function base64(): string
     {
-        if (!isset($this->base64)) {
+        if (null === $this->base64) {
             $this->base64 = Base64::encode($this->raw);
         }
 

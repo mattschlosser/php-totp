@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -20,8 +20,9 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Renderers;
 
-use Equit\Totp\Exceptions\InvalidDigitsException;
+use Equit\Totp\Contracts\IntegerRenderer;
 use Equit\Totp\Renderers\Traits\RendersStandardIntegerPasswords;
+use Equit\Totp\Types\Digits;
 
 /**
  * Render a TOTP with an arbitrary number of decimal digits.
@@ -36,39 +37,26 @@ class Integer implements IntegerRenderer
 {
     use RendersStandardIntegerPasswords;
 
-    /**
-     * The minimum number of digits, as per RFC 6238.
-     */
-    public const MinimumDigits = 6;
-
-    /**
-     * The default number of digits.
-     */
+    /** The default number of digits. */
     public const DefaultDigits = 6;
 
-    /**
-     * @var int The number of digits.
-     */
-    protected int $digitCount;
+    /** @var Digits The number of digits. */
+    protected Digits $digitCount;
 
     /**
      * Initialise a new renderer for a given number of digits.
      *
-     * @param int $digits The digit count for rendered passwords. Defaults to 6.
-     *
-     * @throws InvalidDigitsException if the number of digits is < 6.
+     * @param Digits|null $digits The digit count for rendered passwords. Defaults to 6.
      */
-    public function __construct(int $digits = self::DefaultDigits)
+    public function __construct(?Digits $digits = null)
     {
-        self::checkDigits($digits);
-        $this->digitCount = $digits;
+        $this->digitCount = $digits ?? new Digits(self::DefaultDigits);
     }
 
-    private static function checkDigits(int $digits): void
+    /** @return Digits The number of digits in rendered passwords. */
+    public function digits(): Digits
     {
-        if (self::MinimumDigits > $digits) {
-            throw new InvalidDigitsException($digits, "Integer renderers must have at least six digits in the password.");
-        }
+        return $this->digits();
     }
 
     /**
@@ -80,13 +68,11 @@ class Integer implements IntegerRenderer
      *
      * The renderer is cloned, the digits are set on the clone, and the clone is returned.
      *
-     * @param int $digits The number of digits.
+     * @param Digits $digits The number of digits.
      * @return $this
-     * @throws InvalidDigitsException if the number of digits is < 6.
      */
-    public function withDigits(int $digits): self
+    public function withDigits(Digits $digits): self
     {
-        self::checkDigits($digits);
         $clone = clone $this;
         $clone->digitCount = $digits;
         return $clone;

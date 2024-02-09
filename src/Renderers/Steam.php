@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -32,24 +32,18 @@ class Steam implements Renderer
 {
     use ExtractsStandard31BitInteger;
 
-	/**
-	 * The Steam authenticator alphabet.
-	 */
+	/** The Steam authenticator alphabet. */
 	public const ValidCharacters = "23456789BCDFGHJKMNPQRTVWXY";
 
-	/**
-	 * The number of characters in the rendered passwords.
-	 */
+	/** The number of characters in the rendered passwords. */
 	protected const CharacterCount = 5;
 
+    /** @return string "Steam" */
     public function name(): string
     {
         return "Steam";
     }
 
-	/**
-	 * @inheritDoc
-	 */
 	public function render(string $hmac): string
 	{
         $passwordValue = self::extractIntegerFromHmac($hmac);

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -27,7 +27,7 @@ namespace Equit\Totp\Tools\Dev\RandomBinaryString;
 require_once(__DIR__ . "/../bootstrap.php");
 
 use DateTime;
-use Equit\Totp\TotpFactory;
+use Equit\Totp\Factory;
 use ReflectionMethod;
 use function Equit\Totp\Tools\toPhpHexString;
 
@@ -55,9 +55,9 @@ if (isset($argv[1]) && "--help" === $argv[1]) {
     exit(1);
 }
 
-$totp = TotpFactory::integer(
+$totp = Factory::integer(
     digits: 6,
-    secret: TotpFactory::randomSecret(),
+    secret: Factory::randomSecret(),
     timeStep: 10 * mt_rand(1, 6),                                  // random time-step, 10, 20, 30 40, 50 or 60 seconds
     referenceTime: mt_rand(0, time() - (60 * 60 * 24 * 365 * 20))  // reference time is a random time up to 20 years ago
 );

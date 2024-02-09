@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -20,7 +20,9 @@ declare(strict_types=1);
 
 namespace Equit\Totp\Renderers;
 
+use Equit\Totp\Contracts\IntegerRenderer;
 use Equit\Totp\Renderers\Traits\RendersStandardIntegerPasswords;
+use Equit\Totp\Types\Digits;
 
 /**
  * Render a TOTP of six decimal digits.
@@ -33,5 +35,15 @@ class SixDigits implements IntegerRenderer
 {
     use RendersStandardIntegerPasswords;
 
-    protected int $digitCount = 6;
+    /** @return Digits 6 */
+    public function digits(): Digits
+    {
+        static $digits = null;
+
+        if (null === $digits) {
+            $digits = new Digits(6);
+        }
+
+        return $digits;
+    }
 }

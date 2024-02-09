@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -18,7 +18,7 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp;
+namespace Equit\Totp\Codecs;
 
 use Equit\Totp\Contracts\Codec;
 use Equit\Totp\Exceptions\InvalidBase32DataException;
@@ -35,17 +35,15 @@ use Equit\Totp\Traits\SecurelyErasesProperties;
  * not valid base32.
  *
  * Encoding/decoding is only performed when required, so the class is relatively lightweight.
+ *
+ * Instances are immutable.
  */
 class Base32 implements Codec
 {
-    /**
-     * Import the trait that securely erases all string properties on destruction.
-     */
+    /** Ensure all string properties are securely erased on destruction. */
     use SecurelyErasesProperties;
 
-    /**
-     * The base32 dictionary.
-     */
+    /** The base32 dictionary. */
     protected const Dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
     /**
@@ -65,7 +63,7 @@ class Base32 implements Codec
     private ?string $m_encodedData;
 
     /**
-     * Initialise a new object, optionally with some specified raw data.
+     * Initialise a new Base32 codec, optionally with some specified raw data.
      *
      * @param string $rawData The raw data.
      */
@@ -82,7 +80,7 @@ class Base32 implements Codec
      */
     public function setRaw(string $data): void
     {
-        $this->m_rawData     = $data;
+        $this->m_rawData = $data;
         $this->m_encodedData = null;
     }
 
@@ -130,7 +128,7 @@ class Base32 implements Codec
         }
 
         $this->m_encodedData = $base32;
-        $this->m_rawData     = null;
+        $this->m_rawData = null;
     }
 
     /**
@@ -195,7 +193,7 @@ class Base32 implements Codec
      */
     protected function decodeBase32Data(): void
     {
-        $byteSequence    = strtoupper($this->m_encodedData);
+        $byteSequence = strtoupper($this->m_encodedData);
         $this->m_rawData = "";
 
         // tolerate badly terminated encoded strings by padding with = to appropriate len
@@ -209,7 +207,7 @@ class Base32 implements Codec
 
         if (0 < $remainder) {
             $byteSequence .= str_repeat("=", 8 - $remainder);
-            $len          += 8 - $remainder;
+            $len += 8 - $remainder;
         }
 
         for ($i = 0; $i < $len; $i += 8) {
@@ -237,7 +235,7 @@ class Base32 implements Codec
                 default => assert(false, "Processed invalid chunk size - error in Base32 decoding algorithm implementation."),
             };
 
-            $outBytes        = chr(($out >> 32) & 0xff)
+            $outBytes = chr(($out >> 32) & 0xff)
                 . chr(($out >> 24) & 0xff)
                 . chr(($out >> 16) & 0xff)
                 . chr(($out >> 8) & 0xff)
@@ -255,7 +253,7 @@ class Base32 implements Codec
     protected function encodeRawData(): void
     {
         $this->m_encodedData = "";
-        $len                 = strlen($this->m_rawData);
+        $len = strlen($this->m_rawData);
 
         if (0 == $len) {
             return;
@@ -294,12 +292,12 @@ class Base32 implements Codec
             // iteration to extract the next 5 bits, and we need to track how far to shift the extracted bits so
             // that they represent a valid Dictionary index. hence, $mask and $shift
             $shift = 35;
-            $mask  = 0x1f << $shift;
+            $mask = 0x1f << $shift;
 
             while (0 !== $mask) {
                 $this->m_encodedData .= self::Dictionary[($bits & $mask) >> $shift];
-                $mask                >>= 5;
-                $shift               -= 5;
+                $mask >>= 5;
+                $shift -= 5;
             }
 
             $pos += 5;
@@ -318,7 +316,7 @@ class Base32 implements Codec
         // undo the temporary padding of the raw data and pad the encoded data
         if (0 != $encodedPadding) {
             $this->m_encodedData = substr($this->m_encodedData, 0, -$encodedPadding) . str_repeat("=", $encodedPadding);
-            $this->m_rawData     = substr($this->m_rawData, 0, $len);
+            $this->m_rawData = substr($this->m_rawData, 0, $len);
         }
     }
 }

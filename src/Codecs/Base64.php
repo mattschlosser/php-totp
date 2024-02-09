@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Darren Edale
+ * Copyright 2024 Darren Edale
  *
  * This file is part of the php-totp package.
  *
@@ -18,7 +18,7 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp;
+namespace Equit\Totp\Codecs;
 
 use Equit\Totp\Contracts\Codec;
 use Equit\Totp\Exceptions\InvalidBase64DataException;
@@ -30,17 +30,15 @@ use Equit\Totp\Traits\SecurelyErasesProperties;
  * Thin wrapper around PHP's built-in base64 encoding/decoding, for consistency with Base32 interface.
  *
  * Encoding/decoding is only performed when required, so the class is relatively lightweight.
+ *
+ * Instances are immutable.
  */
 class Base64 implements Codec
 {
-    /**
-     * Import the trait that securely erases all string properties on destruction.
-     */
+    /** Ensure all string properties are securely erased on destruction. */
     use SecurelyErasesProperties;
 
-    /**
-     * The base64 dictionary.
-     */
+    /** The base64 dictionary. */
     protected const Dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     /**
@@ -49,7 +47,7 @@ class Base64 implements Codec
      * Always use raw() instead of accessing this - due to decode-on-demand, the member will be null after the encoded
      * data has been set until decode() is called.
      */
-    private ?string $m_rawData;
+    private ?string $rawData;
 
     /**
      * @var string|null The Base64 encoded data.
@@ -57,7 +55,7 @@ class Base64 implements Codec
      * Always use encoded() instead of accessing this - due to encode-on-demand, the member will be null after the raw
      * data has been set until encode() is called.
      */
-    private ?string $m_encodedData;
+    private ?string $encodedData;
 
     /**
      * Initialise a new object, optionally with some specified raw data.
@@ -66,8 +64,8 @@ class Base64 implements Codec
      */
     public function __construct(string $rawData = "")
     {
-        $this->m_rawData     = $rawData;
-        $this->m_encodedData = null;
+        $this->rawData = $rawData;
+        $this->encodedData = null;
     }
 
     /**
@@ -77,8 +75,8 @@ class Base64 implements Codec
      */
     public function setRaw(string $rawData): void
     {
-        $this->m_rawData     = $rawData;
-        $this->m_encodedData = null;
+        $this->rawData = $rawData;
+        $this->encodedData = null;
     }
 
     /**
@@ -124,8 +122,8 @@ class Base64 implements Codec
             throw new InvalidBase64DataException($base64, "Invalid base64 character found at position {$validLength}.");
         }
 
-        $this->m_encodedData = $base64;
-        $this->m_rawData     = null;
+        $this->encodedData = $base64;
+        $this->rawData = null;
     }
 
     /**
@@ -135,11 +133,11 @@ class Base64 implements Codec
      */
     public function raw(): string
     {
-        if (!isset($this->m_rawData)) {
+        if (!isset($this->rawData)) {
             $this->decodeBase64Data();
         }
 
-        return $this->m_rawData;
+        return $this->rawData;
     }
 
     /**
@@ -151,11 +149,11 @@ class Base64 implements Codec
      */
     public function encoded(): string
     {
-        if (!isset($this->m_encodedData)) {
+        if (!isset($this->encodedData)) {
             $this->encodeRawData();
         }
 
-        return $this->m_encodedData;
+        return $this->encodedData;
     }
 
     /**
@@ -192,7 +190,7 @@ class Base64 implements Codec
      */
     protected function decodeBase64Data(): void
     {
-        $this->m_rawData = base64_decode($this->m_encodedData);
+        $this->rawData = base64_decode($this->encodedData);
     }
 
     /**
@@ -203,6 +201,6 @@ class Base64 implements Codec
      */
     protected function encodeRawData(): void
     {
-        $this->m_encodedData = base64_encode($this->m_rawData);
+        $this->encodedData = base64_encode($this->rawData);
     }
 }
