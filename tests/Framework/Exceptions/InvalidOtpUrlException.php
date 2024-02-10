@@ -18,7 +18,7 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Framework\Exceptions;
+namespace Equit\TotpTests\Framework\Exceptions;
 
 use Exception;
 use Throwable;

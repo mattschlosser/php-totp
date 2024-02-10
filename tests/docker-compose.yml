@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  totp-test-cli:
+    container_name: php-totp-test-cli
+    image: darrenedale/equit:php-8.2-cli
+    environment:
+      variable: value
+    volumes:
+      - ../:/php-totp
+    stdin_open: true
+    tty: false
+    working_dir: /php-totp

@@ -18,10 +18,10 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Renderers;
+namespace Equit\TotpTests\Renderers;
 
 use Equit\Totp\Renderers\Steam;
-use Equit\Totp\Tests\Framework\TestCase;
+use Equit\TotpTests\Framework\TestCase;
 
 /**
  * Test the Steam password renderer.

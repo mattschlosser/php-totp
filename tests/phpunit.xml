@@ -1,27 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-     xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
-     beStrictAboutTestsThatDoNotTestAnything="true"
-     beStrictAboutOutputDuringTests="true"
-     bootstrap="../vendor/autoload.php"
-     colors="true"
-     convertErrorsToExceptions="true"
-     convertNoticesToExceptions="true"
-     convertWarningsToExceptions="true"
-     failOnRisky="true"
-     failOnWarning="true"
-     processIsolation="false"
-     stopOnError="false"
-     stopOnFailure="false"
-     verbose="true"
-     executionOrder="random"
->
-    <coverage processUncoveredFiles="true">
-        <include>
-            <directory suffix=".php">../src</directory>
-        </include>
-    </coverage>
-
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         beStrictAboutOutputDuringTests="true"
+         bootstrap="../vendor/autoload.php"
+         colors="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         processIsolation="false"
+         stopOnError="false"
+         stopOnFailure="false"
+         executionOrder="random"
+         cacheDirectory=".phpunit.cache">
     <testsuites>
         <testsuite name="Equit Totp Full Test Suite">
             <directory>./</directory>
@@ -30,4 +20,9 @@
             <directory>./Renderers/</directory>
         </testsuite>
     </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">../src</directory>
+        </include>
+    </source>
 </phpunit>

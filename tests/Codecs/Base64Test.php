@@ -18,11 +18,11 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Codecs;
+namespace Equit\TotpTests\Codecs;
 
 use Equit\Totp\Codecs\Base64;
 use Equit\Totp\Exceptions\InvalidBase64DataException;
-use Equit\Totp\Tests\Framework\TestCase;
+use Equit\TotpTests\Framework\TestCase;
 use Error;
 use Generator;
 use ReflectionProperty;

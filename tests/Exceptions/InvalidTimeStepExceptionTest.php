@@ -18,10 +18,10 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Exceptions;
+namespace Equit\TotpTests\Exceptions;
 
 use Equit\Totp\Exceptions\InvalidTimeStepException;
-use Equit\Totp\Tests\Framework\TestCase;
+use Equit\TotpTests\Framework\TestCase;
 use Exception;
 use Generator;
 use TypeError;

@@ -18,11 +18,11 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Framework;
+namespace Equit\TotpTests\Framework;
 
-use Equit\Totp\Tests\Framework\Constraints\AllCharactersHaveChanged;
-use Equit\Totp\Tests\Framework\Constraints\EquivalentOtpAuthUrl;
-use Equit\Totp\Tests\Framework\Constraints\StringContainsOnly;
+use Equit\TotpTests\Framework\Constraints\AllCharactersHaveChanged;
+use Equit\TotpTests\Framework\Constraints\EquivalentOtpAuthUrl;
+use Equit\TotpTests\Framework\Constraints\StringContainsOnly;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Stringable;
 

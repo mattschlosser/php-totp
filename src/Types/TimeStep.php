@@ -20,7 +20,7 @@ final class TimeStep implements Stringable
     public function __construct(int $seconds)
     {
         if (1 > $seconds) {
-            throw new InvalidTimeStepException($seconds, "Expected valid TOTP time step, found {$seconds}.");
+            throw new InvalidTimeStepException($seconds, "Expected valid TOTP time step, found {$seconds}");
         }
 
         $this->seconds = $seconds;
@@ -36,7 +36,7 @@ final class TimeStep implements Stringable
      * @api
      * @throws InvalidTimeStepException
      */
-    public function fromSeconds(int $seconds): self
+    public static function fromSeconds(int $seconds): self
     {
         return new self($seconds);
     }
@@ -45,7 +45,7 @@ final class TimeStep implements Stringable
      * @api
      * @throws InvalidTimeStepException
      */
-    public function fromMinutes(int $minutes): self
+    public static function fromMinutes(int $minutes): self
     {
         return new self($minutes * 60);
     }
@@ -56,16 +56,16 @@ final class TimeStep implements Stringable
      * @return self
      * @throws InvalidTimeStepException
      */
-    public function fromDateInterval(DateInterval $interval): self
+    public static function fromDateInterval(DateInterval $interval): self
     {
         if (0 !== $interval->y || 0 !== $interval->m) {
-            throw new InvalidTimeStepException(0, "DateIntervals that include years or months cannot be used as they don't represent a fixed time interval.");
+            throw new InvalidTimeStepException(0, "Expected DateInterval without years or months, found {$interval->y} year(s), {$interval->m} month(s)");
         }
 
         return new self(
             ($interval->d * 24 * 60 * 60)
             + ($interval->h * 60 * 60)
-            + ($interval->m * 60)
+            + ($interval->i * 60)
             + $interval->s);
     }
 

@@ -18,9 +18,9 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Framework\Constraints;
+namespace Equit\TotpTests\Framework\Constraints;
 
-use Equit\Totp\Tests\Framework\Exceptions\InvalidOtpUrlException;
+use Equit\TotpTests\Framework\Exceptions\InvalidOtpUrlException;
 use PHPUnit\Framework\Constraint\Constraint;
 use RuntimeException;
 

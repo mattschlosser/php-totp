@@ -18,10 +18,10 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Exceptions;
+namespace Equit\TotpTests\Exceptions;
 
 use Equit\Totp\Exceptions\InvalidTimeException;
-use Equit\Totp\Tests\Framework\TestCase;
+use Equit\TotpTests\Framework\TestCase;
 use DateTime;
 use DateTimeZone;
 use Exception;

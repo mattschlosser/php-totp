@@ -20,7 +20,7 @@
     "php": ">=8.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^9.5",
+    "phpunit/phpunit": "^10",
     "ext-mbstring": "*"
   },
   "autoload": {
@@ -33,7 +33,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Equit\\Totp\\Tests\\": "tests/"
+      "Equit\\TotpTests\\": "tests/"
     }
   },
   "scripts": {

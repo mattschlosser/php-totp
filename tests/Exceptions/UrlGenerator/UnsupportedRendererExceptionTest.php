@@ -18,14 +18,14 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Exceptions\UrlGenerator;
+namespace Equit\TotpTests\Exceptions\UrlGenerator;
 
 use Equit\Totp\Contracts\Renderer;
 use Equit\Totp\Exceptions\UrlGenerator\UnsupportedRendererException;
 use Equit\Totp\Renderers\EightDigits;
 use Equit\Totp\Renderers\Integer;
 use Equit\Totp\Renderers\SixDigits;
-use Equit\Totp\Tests\Framework\TestCase;
+use Equit\TotpTests\Framework\TestCase;
 use Exception;
 use TypeError;
 

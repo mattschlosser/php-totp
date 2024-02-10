@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Types;
+namespace Equit\TotpTests\Types;
 
 use Equit\Totp\Exceptions\InvalidHashAlgorithmException;
-use Equit\Totp\Tests\Framework\TestCase;
+use Equit\TotpTests\Framework\TestCase;
 use Equit\Totp\Types\HashAlgorithm;
 
 class HashAlgorithmTest extends TestCase
@@ -24,9 +24,9 @@ class HashAlgorithmTest extends TestCase
 
     public static function dataForTestConstructor1(): iterable
     {
-        yield "sha1" => [HashAlgorithm::Sha1Algorithm];
-        yield "sha256" => [HashAlgorithm::Sha256Algorithm];
-        yield "sha512" => [HashAlgorithm::Sha512Algorithm];
+        yield "sha1" => [HashAlgorithm::Sha1Algorithm,];
+        yield "sha256" => [HashAlgorithm::Sha256Algorithm,];
+        yield "sha512" => [HashAlgorithm::Sha512Algorithm,];
     }
 
     /**
@@ -42,9 +42,12 @@ class HashAlgorithmTest extends TestCase
 
     public static function dataForTestConstructor2(): iterable
     {
-        yield "empty" => [""];
-        yield "whitespace" => ["  "];
-        yield "whitespace" => ["sha11"];
+        yield "empty" => ["",];
+        yield "whitespace" => ["  ",];
+        yield "almost-valid-algorithm" => ["sha11",];
+        yield "valid-algorithm-prefixed-with-whitespace" => [" sha1",];
+        yield "valid-algorithm-suffixed-with-whitespace" => ["sha1 ",];
+        yield "valid-algorithm-surrounded-with-whitespace" => [" sha1 ",];
     }
 
     /**
@@ -65,21 +68,25 @@ class HashAlgorithmTest extends TestCase
         self::assertSame(HashAlgorithm::DefaultAlgorithm, $this->hashAlgorithm->algorithm());
     }
 
+    /** Ensure we can get a Sha1 instance with the correct algorithm. */
     public function testSha11(): void
     {
         self::assertSame(HashAlgorithm::Sha1Algorithm, HashAlgorithm::sha1()->algorithm());
     }
 
+    /** Ensure we can get a Sha256 instance with the correct algorithm. */
     public function testSha2561(): void
     {
         self::assertSame(HashAlgorithm::Sha256Algorithm, HashAlgorithm::sha256()->algorithm());
     }
 
+    /** Ensure we can get a Sha512 instance with the correct algorithm. */
     public function testSha5121(): void
     {
         self::assertSame(HashAlgorithm::Sha512Algorithm, HashAlgorithm::sha512()->algorithm());
     }
 
+    /** Ensure we get the algorithm when stringified. */
     public function testToString1(): void
     {
         self::assertSame(HashAlgorithm::DefaultAlgorithm, $this->hashAlgorithm->__toString());

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Types;
+namespace Equit\TotpTests\Types;
 
 use Equit\Totp\Exceptions\InvalidDigitsException;
-use Equit\Totp\Tests\Framework\TestCase;
+use Equit\TotpTests\Framework\TestCase;
 use Equit\Totp\Types\Digits;
 
 class DigitsTest extends TestCase
@@ -54,7 +54,7 @@ class DigitsTest extends TestCase
      */
     public function testConstructor2(int $digits): void
     {
-        self::expecteException(InvalidDigitsException::class);
+        self::expectException(InvalidDigitsException::class);
         self::expectExceptionMessage("Expected digits >= 6, found {$digits}");
         new Digits($digits);
     }

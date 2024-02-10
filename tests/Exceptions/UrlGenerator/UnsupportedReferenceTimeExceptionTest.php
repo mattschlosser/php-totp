@@ -18,10 +18,10 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Exceptions\UrlGenerator;
+namespace Equit\TotpTests\Exceptions\UrlGenerator;
 
 use Equit\Totp\Exceptions\UrlGenerator\UnsupportedReferenceTimeException;
-use Equit\Totp\Tests\Framework\TestCase;
+use Equit\TotpTests\Framework\TestCase;
 use DateTime;
 use DateTimeZone;
 use Exception;

@@ -31,7 +31,7 @@ use Equit\Totp\Exceptions\InvalidVerificationWindowException;
 use Equit\Totp\Renderers\EightDigits;
 use Equit\Totp\Renderers\Integer;
 use Equit\Totp\Renderers\SixDigits;
-use Equit\Totp\Tests\Framework\TestCase;
+use Equit\TotpTests\Framework\TestCase;
 use Equit\Totp\Factory;
 use Equit\Totp\Types\Secret;
 use Equit\Totp\Types\TimeStep;

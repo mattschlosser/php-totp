@@ -18,7 +18,7 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Framework\Constraints;
+namespace Equit\TotpTests\Framework\Constraints;
 
 use PHPUnit\Framework\Constraint\Constraint;
 

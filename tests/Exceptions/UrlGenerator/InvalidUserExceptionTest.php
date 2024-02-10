@@ -18,10 +18,10 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Exceptions\UrlGenerator;
+namespace Equit\TotpTests\Exceptions\UrlGenerator;
 
 use Equit\Totp\Exceptions\UrlGenerator\InvalidUserException;
-use Equit\Totp\Tests\Framework\TestCase;
+use Equit\TotpTests\Framework\TestCase;
 use Exception;
 use Generator;
 use TypeError;

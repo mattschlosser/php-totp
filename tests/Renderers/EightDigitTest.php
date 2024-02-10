@@ -18,10 +18,10 @@
 
 declare(strict_types=1);
 
-namespace Equit\Totp\Tests\Renderers;
+namespace Equit\TotpTests\Renderers;
 
 use Equit\Totp\Renderers\EightDigits;
-use Equit\Totp\Tests\Framework\TestCase;
+use Equit\TotpTests\Framework\TestCase;
 
 /**
  * Test case for EightDigit Totp renderer.
