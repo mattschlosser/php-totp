@@ -138,7 +138,7 @@ class Totp
      * @throws SecureRandomDataUnavailableException if a randomly-generated secret is required but a
      * source of cryptographically-secure random data is not available.
      */
-    public function __construct(TotpSecret|string $secret = null, Renderer $renderer = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm)
+    public function __construct(TotpSecret|string|null $secret = null, ?Renderer $renderer = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm)
     {
         $this->setSecret($secret ?? static::randomSecret());
         $this->setRenderer($renderer ?? static::defaultRenderer());
@@ -195,7 +195,7 @@ class Totp
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
      */
-    public static function sixDigits(TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
+    public static function sixDigits(TotpSecret|string|NULL $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         return new Totp(secret: $secret, renderer: new SixDigits(), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
@@ -221,7 +221,7 @@ class Totp
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
      */
-    public static function eightDigits(TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
+    public static function eightDigits(TotpSecret|string|null $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
     {
         /** @noinspection PhpUnhandledExceptionInspection */
         return new Totp(secret: $secret, renderer: new EightDigits(), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
@@ -249,7 +249,7 @@ class Totp
      * @noinspection PhpDocMissingThrowsInspection algorithm will be default so can't throw
      *  InvalidHashAlgorithmException; secret given so can't throw CryptographicallySecureRandomDataUnavailableException
      */
-    public static function integer(int $digits, TotpSecret|string $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
+    public static function integer(int $digits, TotpSecret|string|null $secret = null, int $timeStep = self::DefaultTimeStep, int|DateTime $referenceTime = self::DefaultReferenceTime, string $hashAlgorithm = self::DefaultAlgorithm): Totp
     {
         return new Totp(secret: $secret, renderer: new Integer($digits), timeStep: $timeStep, referenceTime: $referenceTime, hashAlgorithm: $hashAlgorithm);
     }
